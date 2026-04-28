@@ -69,7 +69,7 @@ export function Pricing() {
           </h2>
         </motion.div>
 
-        <div className="grid grid-cols-1 items-stretch border-l border-t border-border lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-y-6 items-stretch border-l border-t border-border lg:grid-cols-3 lg:gap-y-0">
           {tiers.map((tier, index) => (
             <motion.div
               key={tier.name}

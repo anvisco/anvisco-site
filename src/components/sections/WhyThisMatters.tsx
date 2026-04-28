@@ -33,7 +33,7 @@ export function WhyThisMatters() {
 
         <span
           aria-hidden="true"
-          className="absolute right-0 top-0 select-none font-bold leading-none text-white pointer-events-none tabular-nums"
+          className="absolute right-0 top-0 hidden select-none font-bold leading-none text-white pointer-events-none tabular-nums md:block"
           style={{
             fontSize: 'clamp(4rem, 9vw, 7rem)',
             opacity: 0.09,
@@ -60,7 +60,7 @@ export function WhyThisMatters() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6, ease: 'easeOut' }}
-          className="text-2xl md:text-3xl font-medium leading-relaxed max-w-3xl mb-6 text-white"
+          className="text-xl sm:text-2xl md:text-3xl font-medium leading-[1.28] md:leading-relaxed max-w-3xl mb-6 text-white"
         >
           A website is not a brochure. It is where your systems, operations,
           and first impressions either work together or fall apart. Most sites

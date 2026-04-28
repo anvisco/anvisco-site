@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { Nav } from '@/components/layout/Nav'
 import { Footer } from '@/components/layout/Footer'
@@ -93,6 +93,10 @@ export function CheckoutPage() {
   const planParam = searchParams.get('plan')?.toLowerCase() ?? ''
   const selectedKey = PLAN_ORDER.includes(planParam as PlanKey) ? (planParam as PlanKey) : null
   const selectedPlan = selectedKey ? PLANS[selectedKey] : null
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'auto' })
+  }, [])
 
   function selectPlan(plan: PlanKey) {
     setSearchParams({ plan })

@@ -26,7 +26,7 @@ export function About() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.6, ease: 'easeOut' }}
-              className="text-2xl md:text-3xl font-medium leading-relaxed max-w-2xl mb-6"
+              className="max-w-2xl mb-6 text-xl leading-[1.28] font-medium text-white sm:text-2xl md:text-3xl md:leading-relaxed"
             >
               Over the past two years, I have built websites for organizations
               that needed more than something that "looks nice." Membership

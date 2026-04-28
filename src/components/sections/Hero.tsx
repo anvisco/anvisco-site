@@ -35,7 +35,7 @@ export function Hero() {
           <motion.h1
             variants={fadeUp}
             transition={{ duration: 0.6, ease: 'easeOut' }}
-            className="text-5xl md:text-6xl xl:text-[5.5rem] font-bold tracking-tight leading-[1.03] mb-8 text-white"
+            className="text-[clamp(2.4rem,11vw,3.4rem)] font-bold tracking-tight leading-[0.95] mb-8 text-white md:text-6xl md:leading-[1.03] xl:text-[5.5rem]"
           >
             Websites that run,
             <br />

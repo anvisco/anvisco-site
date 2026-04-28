@@ -13,7 +13,7 @@ export function Contact() {
 
         <span
           aria-hidden="true"
-          className="absolute right-0 top-0 select-none font-bold leading-none text-white pointer-events-none tabular-nums"
+          className="absolute right-0 top-0 hidden select-none font-bold leading-none text-white pointer-events-none tabular-nums md:block"
           style={{
             fontSize: 'clamp(4rem, 9vw, 7rem)',
             opacity: 0.09,
@@ -42,7 +42,7 @@ export function Contact() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6, ease: 'easeOut' }}
-            className="text-4xl md:text-5xl font-bold tracking-tight leading-tight mb-6 text-white"
+            className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight leading-tight mb-6 text-white"
           >
             Got a website that is not pulling its weight?
           </motion.h2>
