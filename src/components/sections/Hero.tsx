@@ -29,7 +29,7 @@ export function Hero() {
             transition={{ duration: 0.5, ease: 'easeOut' }}
             className="mb-8 text-xs uppercase tracking-[0.2em] text-muted-foreground"
           >
-            Brian Nguyen / Business Systems + Websites
+            Business Systems + Website
           </motion.p>
 
           <motion.h1
@@ -37,11 +37,22 @@ export function Hero() {
             transition={{ duration: 0.6, ease: 'easeOut' }}
             className="text-[clamp(2.4rem,11vw,3.4rem)] font-bold tracking-tight leading-[0.95] mb-8 text-white md:text-6xl md:leading-[1.03] xl:text-[5.5rem]"
           >
-            Websites that run,
-            <br />
-            optimize, and grow
-            <br />
-            your business.
+            <span className="md:hidden">
+              <span className="block">Websites that</span>
+              <span className="block">run</span>
+              <span className="block">optimize</span>
+              <span className="block">and grow</span>
+              <span className="block">your business.</span>
+            </span>
+            <span className="hidden md:block">
+              Websites that run
+              <br />
+              optimize
+              <br />
+              and grow
+              <br />
+              your business.
+            </span>
           </motion.h1>
 
           <motion.p
