@@ -18,6 +18,11 @@ interface CheckoutPlan {
 }
 
 const PLAN_ORDER: PlanKey[] = ['essentials', 'standard', 'premium']
+const PAYPAL_LINKS: Record<PlanKey, string> = {
+  essentials: 'https://www.paypal.com/ncp/payment/CV2ZJKHHFZ4UG',
+  standard: 'https://www.paypal.com/ncp/payment/ASTJ8G2TQAH2E',
+  premium: 'https://www.paypal.com/ncp/payment/RZMJZW7TEHG3E',
+}
 
 const PLANS: Record<PlanKey, CheckoutPlan> = {
   essentials: {
@@ -71,18 +76,18 @@ const PLANS: Record<PlanKey, CheckoutPlan> = {
 const PAYMENT_METHODS: { key: PaymentMethod; label: string; sub: string }[] = [
   {
     key: 'card',
-    label: 'Credit / debit card',
-    sub: 'Secure payment by card through Stripe.',
-  },
-  {
-    key: 'etransfer',
-    label: 'E-transfer',
-    sub: 'Available for Canadian clients. Instructions shown below.',
+    label: 'Card (Stripe)',
+    sub: 'Secure card checkout through Stripe.',
   },
   {
     key: 'paypal',
     label: 'PayPal',
-    sub: 'Available on request.',
+    sub: 'Direct PayPal checkout for the selected plan.',
+  },
+  {
+    key: 'etransfer',
+    label: 'E-transfer',
+    sub: 'Manual transfer instructions shown below.',
   },
 ]
 
@@ -93,6 +98,12 @@ export function CheckoutPage() {
   const planParam = searchParams.get('plan')?.toLowerCase() ?? ''
   const selectedKey = PLAN_ORDER.includes(planParam as PlanKey) ? (planParam as PlanKey) : null
   const selectedPlan = selectedKey ? PLANS[selectedKey] : null
+  const selectedCheckoutLink =
+    selectedKey && paymentMethod === 'card'
+      ? selectedPlan?.stripeLink
+      : selectedKey && paymentMethod === 'paypal'
+        ? PAYPAL_LINKS[selectedKey]
+        : null
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'auto' })
@@ -111,7 +122,7 @@ export function CheckoutPage() {
             to="/#pricing"
             className="mb-10 inline-flex text-sm text-muted-foreground transition-colors duration-150 hover:text-white"
           >
-            ← Back to pricing
+            {'<- Back to pricing'}
           </Link>
 
           <div className="mb-12 max-w-3xl">
@@ -130,7 +141,7 @@ export function CheckoutPage() {
             {/* Left column: step 1 + step 2 */}
             <div className="self-start space-y-10">
 
-              {/* Step 1 — Package selection */}
+              {/* Step 1 - Package selection */}
               <section>
                 <h2 className="mb-5 text-sm font-semibold text-white">1. Choose your package</h2>
 
@@ -189,7 +200,7 @@ export function CheckoutPage() {
                 </div>
               </section>
 
-              {/* Step 2 — Payment method */}
+              {/* Step 2 - Payment method */}
               <section>
                 <h2 className="mb-5 text-sm font-semibold text-white">2. Choose your payment method</h2>
 
@@ -299,18 +310,22 @@ export function CheckoutPage() {
                   <div className="my-6 border-t border-border" />
 
                   {/* CTA — changes by payment method */}
-                  {paymentMethod === 'card' && (
+                  {(paymentMethod === 'card' || paymentMethod === 'paypal') && selectedCheckoutLink && (
                     <>
                       <a
-                        href={selectedPlan.stripeLink}
+                        href={selectedCheckoutLink}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="mb-3 flex min-h-[52px] w-full items-center justify-center rounded-md bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground transition-colors duration-150 hover:bg-primary/85"
                       >
-                        Pay {selectedPlan.deposit} deposit by card
+                        {paymentMethod === 'card'
+                          ? `Pay ${selectedPlan.deposit} deposit by card`
+                          : `Pay ${selectedPlan.deposit} deposit with PayPal`}
                       </a>
                       <p className="text-center text-xs text-muted-foreground">
-                        Remaining balance is due before launch.
+                        {paymentMethod === 'card'
+                          ? 'Remaining balance is due before launch.'
+                          : 'PayPal opens directly for the selected plan.'}
                       </p>
                     </>
                   )}
@@ -342,30 +357,14 @@ export function CheckoutPage() {
                         <p className="text-muted-foreground">
                           Once sent, email confirmation to{' '}
                           <a
-                            href="mailto:nducanhnguyenn@gmail.com"
+                            href="mailto:brian@anvisco.com"
                             className="text-primary transition-colors duration-150 hover:underline"
                           >
-                            nducanhnguyenn@gmail.com
+                            brian@anvisco.com
                           </a>
                           .
                         </p>
                       </div>
-                    </div>
-                  )}
-
-                  {paymentMethod === 'paypal' && (
-                    <div className="space-y-3 text-sm">
-                      <p className="font-medium text-white">PayPal available on request</p>
-                      <p className="text-muted-foreground">
-                        Email{' '}
-                        <a
-                          href="mailto:brian@anvisco.com"
-                          className="text-primary transition-colors duration-150 hover:underline"
-                        >
-                          brian@anvisco.com
-                        </a>{' '}
-                        and I'll send the payment details.
-                      </p>
                     </div>
                   )}
                 </>
