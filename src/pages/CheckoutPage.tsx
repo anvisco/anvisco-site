@@ -134,7 +134,7 @@ export function CheckoutPage() {
               <section>
                 <h2 className="mb-5 text-sm font-semibold text-white">1. Choose your package</h2>
 
-                <div className="grid gap-6 sm:gap-3">
+                <div className="grid gap-8 md:gap-3">
                   {PLAN_ORDER.map((key) => {
                     const plan = PLANS[key]
                     const selected = key === selectedKey
@@ -144,13 +144,13 @@ export function CheckoutPage() {
                         key={key}
                         type="button"
                         onClick={() => selectPlan(key)}
-                        className={`group w-full rounded-md border p-4 text-left transition-colors duration-150 sm:p-5 ${
+                        className={`group w-full rounded-md border p-5 text-left transition-colors duration-150 sm:p-5 ${
                           selected
                             ? 'border-primary/70 bg-muted/30 ring-1 ring-primary/40'
                             : 'border-border bg-background hover:border-primary/50 hover:bg-muted/20'
                         }`}
                       >
-                        <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
+                        <div className="mb-4 flex flex-col gap-3 md:flex-row md:items-start md:justify-between md:gap-4">
                           <div className="min-w-0">
                             <div className="mb-2 flex items-center gap-3 min-w-0">
                               <span
@@ -164,18 +164,18 @@ export function CheckoutPage() {
                           </div>
 
                           {plan.recommended && (
-                            <span className="self-start rounded-sm border border-primary/40 px-2 py-1 text-[0.65rem] font-semibold uppercase tracking-[0.14em] text-primary">
+                            <span className="self-start rounded-sm border border-primary/40 px-2 py-1 text-[0.65rem] font-semibold uppercase tracking-[0.14em] text-primary md:self-start">
                               Recommended
                             </span>
                           )}
                         </div>
 
-                        <div className="mb-4 flex flex-col items-start gap-1 sm:flex-row sm:flex-wrap sm:items-end sm:gap-x-4 sm:gap-y-1">
+                        <div className="mb-4 flex flex-col items-start gap-1 md:flex-row md:flex-wrap md:items-end md:gap-x-4 md:gap-y-1">
                           <p className="text-2xl font-bold tracking-tight text-foreground">{plan.total}</p>
                           <p className="pb-1 text-sm text-primary">{plan.deposit} deposit</p>
                         </div>
 
-                        <ul className="grid gap-x-6 gap-y-2 text-sm leading-snug text-muted-foreground sm:grid-cols-2">
+                        <ul className="grid gap-x-6 gap-y-2 text-sm leading-snug text-muted-foreground md:grid-cols-2">
                           {plan.features.map((feature) => (
                             <li key={feature} className="flex items-start gap-2.5">
                               <span className="mt-2 h-1 w-1 shrink-0 rounded-full bg-primary/70" />

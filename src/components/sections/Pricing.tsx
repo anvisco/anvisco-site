@@ -69,7 +69,7 @@ export function Pricing() {
           </h2>
         </motion.div>
 
-        <div className="grid grid-cols-1 gap-y-6 items-stretch border-l border-t border-border lg:grid-cols-3 lg:gap-y-0">
+        <div className="grid grid-cols-1 gap-y-8 items-stretch border-l border-t border-border lg:grid-cols-3 lg:gap-y-0">
           {tiers.map((tier, index) => (
             <motion.div
               key={tier.name}
@@ -77,14 +77,14 @@ export function Pricing() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.45, ease: 'easeOut', delay: index * 0.08 }}
-              className={`relative flex h-full flex-col border-b border-r border-border bg-background p-6 transition-colors duration-150 lg:p-8 ${
+              className={`relative flex h-full flex-col border-b border-r border-border bg-background p-5 transition-colors duration-150 sm:p-6 lg:p-8 ${
                 tier.recommended
                   ? 'z-10 bg-muted/25 shadow-[0_0_44px_hsl(var(--primary)/0.08)] ring-1 ring-primary/45'
                   : 'hover:bg-muted/20'
               }`}
             >
               {tier.recommended && (
-                <p className="absolute left-6 top-0 inline-flex -translate-y-1/2 rounded-sm border border-primary/40 bg-background px-2 py-1 text-[0.65rem] font-semibold uppercase tracking-[0.14em] text-primary shadow-[0_0_18px_hsl(var(--background)/0.9)] lg:left-8">
+                <p className="mb-4 inline-flex rounded-sm border border-primary/40 bg-background px-2 py-1 text-[0.65rem] font-semibold uppercase tracking-[0.14em] text-primary shadow-[0_0_18px_hsl(var(--background)/0.9)] lg:mb-0 lg:absolute lg:left-8 lg:top-0 lg:-translate-y-1/2">
                   Recommended
                 </p>
               )}
