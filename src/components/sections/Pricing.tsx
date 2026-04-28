@@ -69,7 +69,7 @@ export function Pricing() {
           </h2>
         </motion.div>
 
-        <div className="grid grid-cols-1 gap-y-8 items-stretch border-l border-t border-border lg:grid-cols-3 lg:gap-y-0">
+        <div className="grid grid-cols-1 items-stretch gap-3 border-border lg:grid-cols-3 lg:gap-0 lg:border-l lg:border-t">
           {tiers.map((tier, index) => (
             <motion.div
               key={tier.name}
@@ -77,7 +77,7 @@ export function Pricing() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.45, ease: 'easeOut', delay: index * 0.08 }}
-              className={`relative flex h-full flex-col border-b border-r border-border bg-background p-5 transition-colors duration-150 sm:p-6 lg:p-8 ${
+              className={`relative flex h-full flex-col rounded-md border border-border bg-background p-5 transition-colors duration-150 sm:p-6 lg:rounded-none lg:border-0 lg:border-b lg:border-r lg:p-8 ${
                 tier.recommended
                   ? 'z-10 bg-muted/25 shadow-[0_0_44px_hsl(var(--primary)/0.08)] ring-1 ring-primary/45'
                   : 'hover:bg-muted/20'
