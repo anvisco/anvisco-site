@@ -14,7 +14,7 @@ export const projects: Project[] = [
     id: 'dgs',
     tag: 'Systems & Engagement',
     client: 'Do Good Society',
-    image: '/images/dgs.png',
+    image: '/images/work/dgs.png',
     link: 'https://www.dogood-society.com',
     alt: 'Do Good Society membership platform with pricing and conversion flow',
     shortDescription:
@@ -25,7 +25,7 @@ export const projects: Project[] = [
     id: 'iwb',
     tag: 'Operations & Continuity',
     client: 'Immigrant Women in Business',
-    image: '/images/iwb.png',
+    image: '/images/work/iwib.png',
     link: 'https://iwbstore.myshopify.com/',
     alt: 'Immigrant Women in Business website showing community engagement and content structure',
     shortDescription:
@@ -36,7 +36,7 @@ export const projects: Project[] = [
     id: 'pdt',
     tag: 'Scale & Investment',
     client: 'Purpose Driven Transformations',
-    image: '/images/pdt.png',
+    image: '/images/work/pdt.png',
     link: 'https://pdttoronto.com',
     alt: 'Purpose Driven Transformations membership economics and impact allocation system',
     shortDescription:
@@ -47,7 +47,7 @@ export const projects: Project[] = [
     id: 'rtg',
     tag: 'Corporate & Partnership',
     client: 'RTG Group',
-    image: '/images/rtg.png',
+    image: '/images/work/rtg.png',
     link: 'https://rtggroupinc.com',
     alt: 'RTG Group ecosystem showing multiple programs and structured information architecture',
     shortDescription:

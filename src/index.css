@@ -108,4 +108,21 @@
       transition-duration: 0.01ms !important;
     }
   }
+
+  @keyframes work-frame-pan {
+    0%, 18% {
+      object-position: top;
+    }
+    82%, 100% {
+      object-position: bottom;
+    }
+  }
+
+  .work-frame-image {
+    animation: work-frame-pan 28s ease-in-out infinite alternate;
+  }
+
+  .group\/frame:hover .work-frame-image {
+    animation-duration: 20s;
+  }
 }

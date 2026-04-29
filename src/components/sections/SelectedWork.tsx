@@ -10,7 +10,7 @@ export function SelectedWork() {
       <div className="max-w-screen-xl mx-auto px-6 lg:px-12">
 
         {/* Section header */}
-        <div className="flex items-baseline justify-between mb-16 border-t border-[var(--color-border)] pt-7">
+        <div className="mb-20 flex items-baseline justify-between border-t border-[var(--color-border)] pt-7 md:mb-24">
           <div className="flex items-center gap-4">
             <span className="text-[0.7rem] tabular-nums text-amber font-medium tracking-[0.08em]">02</span>
             <motion.div
