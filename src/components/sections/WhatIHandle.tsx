@@ -45,7 +45,7 @@ export function WhatIHandle() {
               Most of my work involves{' '}
               <span className="font-medium text-ink">simplifying complex websites</span>
               {' '}into clearer systems,{' '}
-              <span className="text-ink-subtle">not just making them look better.</span>
+              <span className="text-ink-muted">not just making them look better.</span>
             </p>
           </motion.div>
 

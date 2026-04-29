@@ -45,12 +45,12 @@ export function ProjectCard({ project, index }: ProjectCardProps) {
 
           {/* Project name */}
           <div className="flex items-center gap-3 mb-4">
-            <h3 className="text-xl font-medium tracking-[-0.01em] text-ink transition-colors duration-150 group-hover:text-amber">
+            <h3 className="text-xl font-medium tracking-[-0.01em] text-ink">
               {project.client}
             </h3>
             <span
               aria-hidden="true"
-              className="text-amber opacity-0 group-hover:opacity-100 transition-opacity duration-200 text-sm"
+              className="text-xl text-amber"
             >
               →
             </span>
@@ -66,7 +66,7 @@ export function ProjectCard({ project, index }: ProjectCardProps) {
             {project.stack.map((tech) => (
               <span
                 key={tech}
-                className="text-[0.65rem] tracking-[0.08em] uppercase text-ink-subtle border border-[var(--color-border)] px-2 py-1"
+                className="bg-surface border border-border-strong px-2.5 py-1 text-xs tracking-wider uppercase text-ink-muted"
               >
                 {tech}
               </span>

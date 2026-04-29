@@ -129,23 +129,23 @@ export function PortalPage() {
               <p className="mb-4 text-xs uppercase tracking-[0.2em] text-muted-foreground">
                 No project found
               </p>
-              <h1 className="mb-3 text-3xl font-bold tracking-tight text-white">
+              <h1 className="mb-3 text-3xl font-bold tracking-tight text-ink">
                 Plan not found.
               </h1>
-              <p className="mb-8 text-base leading-relaxed text-muted-foreground">
+              <p className="mb-8 text-base leading-relaxed text-ink-muted">
                 This portal link looks incomplete. If you've already paid, email Brian and he'll
                 send you the correct link.
               </p>
               <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
                 <a
                   href="mailto:brian@anvisco.com"
-                  className="inline-flex min-h-[52px] items-center justify-center rounded-md bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground transition-colors duration-150 hover:bg-primary/85"
+                  className="inline-flex min-h-[52px] items-center justify-center rounded-sm border border-amber bg-transparent px-6 py-3 text-sm font-semibold text-amber transition-colors duration-150 hover:underline"
                 >
                   Email brian@anvisco.com
                 </a>
                 <Link
                   to="/#pricing"
-                  className="text-sm text-muted-foreground transition-colors duration-150 hover:text-white"
+                  className="text-sm text-ink-muted transition-colors duration-150 hover:text-ink"
                 >
                   ← Back to pricing
                 </Link>
@@ -167,20 +167,20 @@ export function PortalPage() {
           {/* Back link */}
           <Link
             to="/#pricing"
-            className="mb-10 inline-flex text-sm text-muted-foreground transition-colors duration-150 hover:text-white"
+            className="mb-10 inline-flex text-sm text-ink-muted transition-colors duration-150 hover:text-ink"
           >
             ← Back to pricing
           </Link>
 
           {/* Header */}
           <div className="mb-12 max-w-2xl">
-            <p className="mb-4 text-xs uppercase tracking-[0.2em] text-muted-foreground">
+            <p className="mb-4 text-xs uppercase tracking-[0.2em] text-ink-subtle">
               Your project portal
             </p>
-            <h1 className="mb-3 text-3xl font-bold tracking-tight text-white md:text-4xl">
+            <h1 className="mb-3 text-3xl font-bold tracking-tight text-ink md:text-4xl">
               {plan.name} — Project tracker
             </h1>
-            <p className="text-base leading-relaxed text-muted-foreground">
+            <p className="text-base leading-relaxed text-ink-muted">
               This is your live project reference. Brian will update your stage link as your
               project progresses.
             </p>
@@ -194,7 +194,7 @@ export function PortalPage() {
 
               {/* Stage tracker */}
               <section>
-                <h2 className="mb-6 text-sm font-semibold text-white">Project stages</h2>
+                <h2 className="mb-6 text-sm font-semibold text-ink">Project stages</h2>
                 <div>
                   {STAGES.map(({ n, label }, i) => {
                     const isCompleted = n < currentStage
@@ -208,10 +208,10 @@ export function PortalPage() {
                           <div
                             className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full border text-xs font-semibold ${
                               isCurrent
-                                ? 'border-primary bg-primary text-primary-foreground'
+                                ? 'border-2 border-amber bg-bg text-amber'
                                 : isCompleted
-                                ? 'border-primary/40 bg-primary/15 text-primary'
-                                : 'border-border bg-background text-muted-foreground'
+                                ? 'border border-border-strong bg-bg text-amber'
+                                : 'border border-border-strong bg-bg text-ink-subtle'
                             }`}
                           >
                             {isCompleted ? '✓' : n}
@@ -219,7 +219,7 @@ export function PortalPage() {
                           {!isLast && (
                             <div
                               className={`mt-1 w-px flex-1 ${
-                                n < currentStage ? 'bg-primary/25' : 'bg-border'
+                                n < currentStage ? 'bg-amber/30' : 'bg-border'
                               }`}
                               style={{ minHeight: '2rem' }}
                             />
@@ -231,16 +231,16 @@ export function PortalPage() {
                           <p
                             className={`text-sm font-medium leading-7 ${
                               isCurrent
-                                ? 'text-white'
+                                ? 'text-ink'
                                 : isCompleted
-                                ? 'text-muted-foreground'
-                                : 'text-muted-foreground/60'
+                                ? 'text-ink-muted'
+                                : 'text-ink-muted/70'
                             }`}
                           >
                             {label}
                           </p>
                           {isCurrent && (
-                            <p className="text-xs text-primary">Current stage</p>
+                            <p className="text-xs text-amber">Current stage</p>
                           )}
                         </div>
                       </div>
@@ -251,14 +251,14 @@ export function PortalPage() {
 
               {/* Next steps */}
               <section>
-                <h2 className="mb-5 text-sm font-semibold text-white">
+                <h2 className="mb-5 text-sm font-semibold text-ink">
                   Next steps — {STAGES[currentStage - 1].label}
                 </h2>
-                <p className="mb-5 text-sm font-medium text-primary">{stageContent.title}</p>
+                <p className="mb-5 text-sm font-medium text-amber">{stageContent.title}</p>
                 <ul className="space-y-3">
                   {stageContent.items.map((item) => (
-                    <li key={item} className="flex gap-3 text-sm leading-relaxed text-muted-foreground">
-                      <span className="mt-2 h-1 w-1 shrink-0 rounded-full bg-primary/70" />
+                    <li key={item} className="flex gap-3 text-sm leading-relaxed text-ink-muted">
+                      <span className="mt-2 h-1 w-1 shrink-0 rounded-full bg-amber" />
                       <span>{item}</span>
                     </li>
                   ))}
@@ -266,25 +266,25 @@ export function PortalPage() {
               </section>
 
               {/* Contact block */}
-              <section className="rounded-md border border-border bg-muted/10 p-6">
-                <h2 className="mb-4 text-sm font-semibold text-white">Get in touch</h2>
+              <section className="rounded-sm border border-border bg-surface p-6">
+                <h2 className="mb-4 text-sm font-semibold text-ink">Get in touch</h2>
                 <div className="space-y-3">
                   <div>
-                    <p className="mb-1 text-xs text-muted-foreground">Email</p>
+                    <p className="mb-1 text-xs text-ink-subtle">Email</p>
                     <a
                       href="mailto:brian@anvisco.com"
-                      className="text-sm text-primary transition-colors duration-150 hover:underline"
+                      className="text-sm text-amber transition-colors duration-150 hover:underline"
                     >
                       brian@anvisco.com
                     </a>
                   </div>
                   <div>
-                    <p className="mb-1 text-xs text-muted-foreground">Book a call</p>
+                    <p className="mb-1 text-xs text-ink-subtle">Book a call</p>
                     <a
                       href={CALENDLY}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-sm text-primary transition-colors duration-150 hover:underline"
+                      className="text-sm text-amber transition-colors duration-150 hover:underline"
                     >
                       15-minute discovery call →
                     </a>
@@ -297,45 +297,45 @@ export function PortalPage() {
             <aside className="space-y-5 lg:sticky lg:top-24">
 
               {/* Plan summary */}
-              <div className="rounded-md border border-border bg-muted/10 p-6">
-                <p className="mb-4 text-xs uppercase tracking-[0.2em] text-muted-foreground">
+              <div className="rounded-sm border border-border bg-surface p-6">
+                <p className="mb-4 text-xs uppercase tracking-[0.2em] text-ink-subtle">
                   Plan summary
                 </p>
-                <h3 className="mb-5 text-xl font-semibold text-white">{plan.name}</h3>
+                <h3 className="mb-5 text-xl font-semibold text-ink">{plan.name}</h3>
                 <div className="space-y-3 text-sm">
                   <div className="flex items-center justify-between gap-4">
-                    <span className="text-muted-foreground">Founding price</span>
-                    <span className="font-semibold text-white">{plan.total}</span>
+                    <span className="text-ink-muted">Founding price</span>
+                    <span className="font-semibold text-ink">{plan.total}</span>
                   </div>
                   <div className="flex items-center justify-between gap-4">
-                    <span className="text-muted-foreground">Deposit paid</span>
-                    <span className="font-semibold text-primary">{plan.deposit}</span>
+                    <span className="text-ink-muted">Deposit paid</span>
+                    <span className="font-semibold text-amber">{plan.deposit}</span>
                   </div>
                   <div className="flex items-center justify-between gap-4">
-                    <span className="text-muted-foreground">Remaining balance</span>
-                    <span className="text-muted-foreground">{plan.remaining}</span>
+                    <span className="text-ink-muted">Remaining balance</span>
+                    <span className="text-ink-muted">{plan.remaining}</span>
                   </div>
                   <div className="flex items-center justify-between gap-4">
-                    <span className="text-muted-foreground">Timeline</span>
-                    <span className="text-muted-foreground">{plan.timeline}</span>
+                    <span className="text-ink-muted">Timeline</span>
+                    <span className="text-ink-muted">{plan.timeline}</span>
                   </div>
                 </div>
               </div>
 
               {/* Payment status */}
-              <div className="rounded-md border border-border bg-muted/10 p-6">
-                <p className="mb-4 text-xs uppercase tracking-[0.2em] text-muted-foreground">
+              <div className="rounded-sm border border-border bg-surface p-6">
+                <p className="mb-4 text-xs uppercase tracking-[0.2em] text-ink-subtle">
                   Payment status
                 </p>
                 <div className="space-y-3">
                   {/* Deposit */}
                   <div className="flex items-center justify-between gap-4">
-                    <span className="text-sm text-muted-foreground">Deposit</span>
+                    <span className="text-sm text-ink-muted">Deposit</span>
                     <span
-                      className={`rounded-sm px-2 py-0.5 text-xs font-medium ${
+                      className={`rounded-sm border px-2 py-0.5 text-xs font-medium ${
                         currentStage >= 1
-                          ? 'bg-primary/15 text-primary'
-                          : 'bg-muted/30 text-muted-foreground'
+                          ? 'border-amber bg-transparent text-amber'
+                          : 'border-border-strong bg-transparent text-ink-muted'
                       }`}
                     >
                       {currentStage >= 1 ? 'Received' : 'Pending'}
@@ -344,14 +344,14 @@ export function PortalPage() {
 
                   {/* Final payment */}
                   <div className="flex items-center justify-between gap-4">
-                    <span className="text-sm text-muted-foreground">Final payment</span>
+                    <span className="text-sm text-ink-muted">Final payment</span>
                     <span
-                      className={`rounded-sm px-2 py-0.5 text-xs font-medium ${
+                      className={`rounded-sm border px-2 py-0.5 text-xs font-medium ${
                         currentStage >= 6
-                          ? 'bg-primary/15 text-primary'
+                          ? 'border-amber bg-transparent text-amber'
                           : currentStage === 5
-                          ? 'bg-amber-500/15 text-amber-400'
-                          : 'bg-muted/30 text-muted-foreground'
+                          ? 'border-amber bg-transparent text-amber'
+                          : 'border-border-strong bg-transparent text-ink-muted'
                       }`}
                     >
                       {currentStage >= 6 ? 'Received' : currentStage === 5 ? 'Due now' : 'Due before launch'}
@@ -360,12 +360,12 @@ export function PortalPage() {
 
                   {/* Care plan */}
                   <div className="flex items-center justify-between gap-4">
-                    <span className="text-sm text-muted-foreground">Care Plan</span>
+                    <span className="text-sm text-ink-muted">Care Plan</span>
                     <span
-                      className={`rounded-sm px-2 py-0.5 text-xs font-medium ${
+                      className={`rounded-sm border px-2 py-0.5 text-xs font-medium ${
                         currentStage >= 6
-                          ? 'bg-primary/15 text-primary'
-                          : 'bg-muted/30 text-muted-foreground'
+                          ? 'border-border-strong bg-transparent text-ink-muted'
+                          : 'border-border-strong bg-transparent text-ink-muted'
                       }`}
                     >
                       {currentStage >= 6 ? 'Available' : 'Available after launch'}
@@ -377,13 +377,13 @@ export function PortalPage() {
                 {currentStage === 5 && (
                   <>
                     <div className="my-5 border-t border-border" />
-                    <p className="mb-3 text-sm text-muted-foreground">
+                    <p className="mb-3 text-sm text-ink-muted">
                       Ready to pay your final balance of{' '}
-                      <span className="font-medium text-white">{plan.remaining}</span>?
+                      <span className="font-medium text-ink">{plan.remaining}</span>?
                     </p>
                     <a
                       href="mailto:brian@anvisco.com?subject=Final payment — ready to proceed"
-                      className="flex min-h-[48px] w-full items-center justify-center rounded-md bg-primary px-4 py-3 text-sm font-semibold text-primary-foreground transition-colors duration-150 hover:bg-primary/85"
+                      className="flex min-h-[48px] w-full items-center justify-center rounded-sm border border-amber bg-transparent px-4 py-3 text-sm font-semibold text-amber transition-colors duration-150 hover:underline"
                     >
                       Request final invoice
                     </a>
@@ -394,12 +394,12 @@ export function PortalPage() {
                 {currentStage === 6 && (
                   <>
                     <div className="my-5 border-t border-border" />
-                    <p className="mb-3 text-sm text-muted-foreground">
+                    <p className="mb-3 text-sm text-ink-muted">
                       Keep your site running smoothly with the Care Plan at $149/month.
                     </p>
                     <a
                       href="mailto:brian@anvisco.com?subject=Care Plan — interested"
-                      className="flex min-h-[48px] w-full items-center justify-center rounded-md border border-border bg-transparent px-4 py-3 text-sm font-medium text-white transition-colors duration-150 hover:bg-muted/30"
+                      className="flex min-h-[48px] w-full items-center justify-center rounded-sm border border-border-strong bg-transparent px-4 py-3 text-sm font-medium text-ink transition-colors duration-150 hover:border-amber"
                     >
                       Ask about the Care Plan
                     </a>

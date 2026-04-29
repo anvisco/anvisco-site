@@ -1,5 +1,3 @@
-import { BracketLabel } from '@/components/ui/BracketLabel'
-
 const EMAIL = 'brian@anvisco.com'
 
 const links = [
@@ -19,7 +17,7 @@ export function Footer() {
           <p className="text-sm font-medium tracking-tight mb-1 text-ink">anvisco</p>
           <a
             href={`mailto:${EMAIL}`}
-            className="text-[0.7rem] text-ink-subtle transition-colors duration-150 hover:text-amber"
+            className="text-base text-ink-muted transition-colors duration-150 hover:text-ink"
             style={{
               fontFamily: '"Instrument Serif", Georgia, serif',
               fontStyle: 'italic',
@@ -35,9 +33,11 @@ export function Footer() {
             <a
               key={link.href}
               href={link.href}
-              className="transition-colors duration-150 hover:text-amber"
+              className="text-ink-muted transition-colors duration-150 hover:text-ink"
             >
-              <BracketLabel>{link.label}</BracketLabel>
+              <span className="font-sans text-[0.7rem] font-medium uppercase tracking-[0.12em]">
+                [ {link.label} ]
+              </span>
             </a>
           ))}
         </nav>

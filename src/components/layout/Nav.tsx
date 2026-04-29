@@ -12,11 +12,19 @@ const links = [
 export function Nav() {
   const [open, setOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
+  const [activeHash, setActiveHash] = useState('')
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 24)
     window.addEventListener('scroll', onScroll, { passive: true })
     return () => window.removeEventListener('scroll', onScroll)
+  }, [])
+
+  useEffect(() => {
+    const syncHash = () => setActiveHash(window.location.hash)
+    syncHash()
+    window.addEventListener('hashchange', syncHash)
+    return () => window.removeEventListener('hashchange', syncHash)
   }, [])
 
   useEffect(() => {
@@ -46,24 +54,35 @@ export function Nav() {
 
         {/* Desktop nav — bracket style */}
         <nav className="hidden md:flex items-center gap-7">
-          {links.map((link) => (
-            <a
-              key={link.href}
-              href={link.href}
-              className="text-[0.7rem] tracking-[0.12em] uppercase text-ink-subtle transition-colors duration-200 hover:text-amber"
-            >
-              {`[ ${link.label} ]`}
-            </a>
-          ))}
+          {links.map((link) => {
+            const hash = link.href.slice(link.href.indexOf('#'))
+            const active = activeHash === hash
+
+            return (
+              <a
+                key={link.href}
+                href={link.href}
+                className={`group relative text-[0.7rem] tracking-[0.12em] uppercase transition-colors duration-200 hover:text-ink ${
+                  active ? 'text-amber' : 'text-ink-muted'
+                }`}
+              >
+                {`[ ${link.label} ]`}
+                <span
+                  aria-hidden="true"
+                  className="absolute -bottom-1 left-0 h-px w-0 bg-amber transition-all duration-200 group-hover:w-full"
+                />
+              </a>
+            )
+          })}
         </nav>
 
         {/* Contact CTA — outlined */}
         <a
           href="/#contact"
-          className="hidden md:inline-flex items-center gap-2 border border-[var(--color-border-strong)] px-4 py-2 text-[0.7rem] tracking-[0.1em] uppercase text-ink transition-all duration-200 hover:border-amber hover:text-amber group"
+          className="hidden md:inline-flex items-center gap-2 border-[1.5px] border-ink px-4 py-2 text-[0.7rem] tracking-[0.1em] uppercase text-ink transition-all duration-200 hover:border-amber hover:text-amber group"
         >
           <span>[ contact ]</span>
-          <span className="transition-transform duration-200 group-hover:translate-x-0.5">→</span>
+          <span className="text-amber transition-transform duration-200 group-hover:translate-x-0.5">→</span>
         </a>
 
         {/* Mobile hamburger */}
@@ -84,7 +103,7 @@ export function Nav() {
               key={link.href}
               href={link.href}
               onClick={() => setOpen(false)}
-              className="text-[0.7rem] tracking-[0.14em] uppercase text-ink-subtle transition-colors duration-150 hover:text-amber"
+              className="text-[0.7rem] tracking-[0.14em] uppercase text-ink-muted transition-colors duration-150 hover:text-ink"
             >
               {`[ ${link.label} ]`}
             </a>
@@ -92,9 +111,9 @@ export function Nav() {
           <a
             href="/#contact"
             onClick={() => setOpen(false)}
-            className="mt-2 inline-flex items-center gap-2 border border-[var(--color-border-strong)] px-4 py-3 text-[0.7rem] tracking-[0.1em] uppercase text-ink transition-all duration-150 hover:border-amber hover:text-amber w-fit"
+            className="mt-2 inline-flex items-center gap-2 border-[1.5px] border-ink px-4 py-3 text-[0.7rem] tracking-[0.1em] uppercase text-ink transition-all duration-150 hover:border-amber hover:text-amber w-fit"
           >
-            [ contact ] →
+            [ contact ] <span className="text-amber">→</span>
           </a>
         </div>
       )}

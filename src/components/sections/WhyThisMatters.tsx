@@ -48,7 +48,7 @@ export function WhyThisMatters() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6, ease: 'easeOut' }}
-          className="text-xl sm:text-2xl md:text-3xl font-medium leading-[1.28] md:leading-relaxed max-w-3xl mb-6 text-ink tracking-[-0.01em]"
+          className="text-lg md:text-xl leading-relaxed max-w-3xl mb-6 text-ink-muted"
         >
           A website is not a brochure. It is where your systems, operations,
           and first impressions either work together or fall apart. Most sites
@@ -76,7 +76,7 @@ export function WhyThisMatters() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.4, ease: 'easeOut', delay: i * 0.07 }}
-              className={`pt-6 pb-8 pr-6 border-b border-[var(--color-border)] ${
+              className={`group pt-6 pb-8 pr-6 border-b border-[var(--color-border)] transition-colors duration-200 hover:border-[var(--color-border-strong)] ${
                 i < sides.length - 1
                   ? 'sm:border-r sm:border-[var(--color-border)]'
                   : ''
@@ -86,9 +86,11 @@ export function WhyThisMatters() {
                 {String(i + 1).padStart(2, '0')}
               </span>
               <div className="mb-3">
-                <BracketLabel>{side.tag}</BracketLabel>
+                <span className="font-sans text-xs font-medium tracking-[0.12em] uppercase text-amber transition-colors duration-200 group-hover:text-amber-soft">
+                  [ {side.tag} ]
+                </span>
               </div>
-              <p className="text-sm leading-relaxed text-ink-muted">
+              <p className="text-base leading-relaxed text-ink">
                 <span className="font-medium text-ink">{side.project}</span>
                 {': '}{side.description}
               </p>
@@ -101,7 +103,7 @@ export function WhyThisMatters() {
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
           transition={{ duration: 0.5, delay: 0.2 }}
-          className="mt-10 max-w-2xl text-ink-muted"
+          className="mt-10 max-w-2xl text-base text-ink-muted"
         >
           Most "great-looking" websites fail one of these tests. My work starts
           by identifying which of these matter for your business, then building

@@ -64,6 +64,7 @@ export default {
         amber: 'var(--color-amber)',
         'amber-soft': 'var(--color-amber-soft)',
         navy: 'var(--color-navy)',
+        bg: 'var(--color-bg)',
         surface: 'var(--color-surface)',
         'surface-2': 'var(--color-surface-2)',
         'border-strong': 'var(--color-border-strong)',

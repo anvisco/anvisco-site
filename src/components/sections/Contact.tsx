@@ -25,7 +25,7 @@ export function Contact() {
           </motion.div>
         </div>
 
-        <div className="max-w-2xl">
+        <div className="max-w-2xl border-r border-[var(--color-border)] pr-8 max-sm:border-r-0 max-sm:pr-0">
 
           {/* Headline */}
           <motion.h2
@@ -63,10 +63,10 @@ export function Contact() {
               href={CALENDLY}
               target="_blank"
               rel="noopener noreferrer"
-              className="group inline-flex items-center gap-2.5 border border-[var(--color-border-strong)] px-8 py-4 text-sm font-medium text-ink tracking-[-0.005em] transition-all duration-200 hover:border-amber hover:text-amber"
+              className="group inline-flex items-center gap-2.5 border-[1.5px] border-ink px-8 py-4 text-sm font-medium text-ink tracking-[-0.005em] transition-all duration-200 hover:border-amber hover:text-amber"
             >
               Book a 15-minute call
-              <span className="transition-transform duration-200 group-hover:translate-x-0.5">→</span>
+              <span className="text-amber transition-transform duration-200 group-hover:translate-x-0.5">→</span>
             </a>
 
             {/* Email — serif italic editorial touch */}

@@ -111,7 +111,7 @@ export function CheckoutPage() {
           {/* Back link */}
           <Link
             to="/#pricing"
-            className="mb-12 inline-flex items-center gap-2 text-[0.7rem] tracking-[0.1em] uppercase text-ink-subtle transition-colors duration-150 hover:text-amber"
+            className="mb-12 inline-flex items-center gap-2 text-[0.7rem] tracking-[0.1em] uppercase text-ink-muted transition-colors duration-150 hover:text-amber"
           >
             ← Back to pricing
           </Link>
@@ -223,7 +223,7 @@ export function CheckoutPage() {
                         />
                         <div>
                           <p className="text-sm font-medium text-ink">{label}</p>
-                          <p className="mt-0.5 text-[0.7rem] text-ink-subtle">{sub}</p>
+                          <p className="mt-0.5 text-[0.7rem] text-ink-muted">{sub}</p>
                         </div>
                       </button>
                     )

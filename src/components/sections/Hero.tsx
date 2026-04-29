@@ -85,15 +85,15 @@ export function Hero() {
                   href={CALENDLY}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="group inline-flex items-center gap-2.5 border border-[var(--color-border-strong)] px-6 py-3 text-sm font-medium text-ink tracking-[-0.005em] transition-all duration-200 hover:border-amber hover:text-amber"
+                  className="group inline-flex items-center gap-2.5 border-[1.5px] border-ink px-6 py-3 text-sm font-medium text-ink tracking-[-0.005em] transition-all duration-200 hover:border-amber hover:text-amber"
                 >
                   Book a 15-minute call
-                  <span className="transition-transform duration-200 group-hover:translate-x-0.5">→</span>
+                  <span className="text-amber transition-transform duration-200 group-hover:translate-x-0.5">→</span>
                 </a>
 
                 <a
                   href="#work"
-                  className="group relative text-sm text-ink-subtle transition-colors duration-200 hover:text-ink"
+                  className="group relative text-sm text-ink-muted transition-colors duration-200 hover:text-ink"
                 >
                   See the work
                   <span
@@ -145,12 +145,12 @@ function HeroGrid() {
         {/* Vertical grid lines */}
         {[0, 140, 280, 420, 560].map((x) => (
           <line key={`v-${x}`} x1={x} y1="0" x2={x} y2="800"
-            stroke="var(--color-border)" strokeWidth="0.75" />
+            stroke="var(--color-border-strong)" strokeWidth="0.75" opacity="0.55" />
         ))}
         {/* Horizontal grid lines */}
         {[0, 160, 320, 480, 640, 800].map((y) => (
           <line key={`h-${y}`} x1="0" y1={y} x2="560" y2={y}
-            stroke="var(--color-border)" strokeWidth="0.75" />
+            stroke="var(--color-border-strong)" strokeWidth="0.75" opacity="0.55" />
         ))}
 
         {/* Bracket annotations inside grid cells */}
@@ -158,8 +158,6 @@ function HeroGrid() {
           letterSpacing="1.5" fontFamily="Inter, sans-serif" opacity="0.55">[ SCOPE ]</text>
         <text x="156" y="338" fontSize="7" fill="var(--color-ink-subtle)"
           letterSpacing="1.5" fontFamily="Inter, sans-serif" opacity="0.55">[ STRUCTURE ]</text>
-        <text x="296" y="178" fontSize="7" fill="var(--color-amber)"
-          letterSpacing="1.5" fontFamily="Inter, sans-serif" opacity="0.65">[ 01 ]</text>
         <text x="436" y="498" fontSize="7" fill="var(--color-ink-subtle)"
           letterSpacing="1.5" fontFamily="Inter, sans-serif" opacity="0.55">[ LAUNCH ]</text>
         <text x="16" y="498" fontSize="7" fill="var(--color-ink-subtle)"
