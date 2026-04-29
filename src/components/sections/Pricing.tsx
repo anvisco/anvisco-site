@@ -1,5 +1,6 @@
 import { motion } from 'motion/react'
 import { Link } from 'react-router-dom'
+import { BracketLabel } from '@/components/ui/BracketLabel'
 
 const tiers = [
   {
@@ -7,7 +8,8 @@ const tiers = [
     slug: 'essentials',
     cta: 'Start Essentials',
     price: '$1,800',
-    founding: 'Founding: $1,200',
+    priceLabel: 'CAD',
+    founding: '$1,200',
     features: [
       'Up to 5 pages',
       'Mobile-optimized',
@@ -22,7 +24,8 @@ const tiers = [
     slug: 'standard',
     cta: 'Start Standard',
     price: '$3,200',
-    founding: 'Founding: $2,200',
+    priceLabel: 'CAD',
+    founding: '$2,200',
     recommended: true,
     features: [
       'Up to 10 pages',
@@ -39,7 +42,8 @@ const tiers = [
     slug: 'premium',
     cta: 'Start Premium',
     price: '$5,500',
-    founding: 'Founding: $3,800',
+    priceLabel: 'CAD',
+    founding: '$3,800',
     features: [
       'Everything in Standard',
       'Custom features (insurance verification flow, member portal, API integration)',
@@ -52,24 +56,34 @@ const tiers = [
 
 export function Pricing() {
   return (
-    <section id="pricing" className="scroll-mt-16 border-t border-border bg-background py-24 md:py-32">
+    <section id="pricing" className="scroll-mt-16 py-24 md:py-32 bg-[var(--color-bg)]">
       <div className="mx-auto max-w-screen-xl px-6 lg:px-12">
-        <motion.div
+
+        {/* Section header */}
+        <div className="flex items-center gap-4 mb-16 border-t border-[var(--color-border)] pt-7">
+          <span className="text-[0.7rem] tabular-nums text-amber font-medium tracking-[0.08em]">05</span>
+          <motion.div
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.4 }}
+          >
+            <BracketLabel>Pricing</BracketLabel>
+          </motion.div>
+        </div>
+
+        <motion.h2
           initial={{ opacity: 0, y: 16 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          transition={{ duration: 0.45, ease: 'easeOut' }}
-          className="mb-14 max-w-none"
+          transition={{ duration: 0.5, ease: 'easeOut' }}
+          className="mb-14 text-[2.5rem] font-medium tracking-[-0.02em] text-ink leading-[1.1] max-w-xl"
         >
-          <p className="mb-4 text-xs uppercase tracking-[0.2em] text-muted-foreground">
-            Pricing
-          </p>
-          <h2 className="text-3xl font-bold tracking-tight text-white md:whitespace-nowrap md:text-4xl">
-            Clear scopes. Fixed timelines. No surprises.
-          </h2>
-        </motion.div>
+          Clear scopes. Fixed timelines. No surprises.
+        </motion.h2>
 
-        <div className="grid grid-cols-1 items-stretch gap-3 border-border lg:grid-cols-3 lg:gap-0 lg:border-l lg:border-t">
+        {/* Three-column editorial grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 border-t border-[var(--color-border)]">
           {tiers.map((tier, index) => (
             <motion.div
               key={tier.name}
@@ -77,65 +91,77 @@ export function Pricing() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.45, ease: 'easeOut', delay: index * 0.08 }}
-              className={`relative flex h-full flex-col rounded-md border border-border bg-background p-5 transition-colors duration-150 sm:p-6 lg:rounded-none lg:border-0 lg:border-b lg:border-r lg:p-8 ${
-                tier.recommended
-                  ? 'z-10 bg-muted/25 shadow-[0_0_44px_hsl(var(--primary)/0.08)] ring-1 ring-primary/45'
-                  : 'hover:bg-muted/20'
+              className={`relative flex flex-col pt-8 pb-10 px-0 lg:px-8 border-b border-[var(--color-border)] lg:border-r lg:border-b-0 ${
+                index === 0 ? 'lg:pl-0' : ''
               }`}
             >
+              {/* Recommended label — top right, amber bracket style */}
               {tier.recommended && (
-                <p className="mb-4 inline-flex rounded-sm border border-primary/40 bg-background px-2 py-1 text-[0.65rem] font-semibold uppercase tracking-[0.14em] text-primary shadow-[0_0_18px_hsl(var(--background)/0.9)] lg:mb-0 lg:absolute lg:left-8 lg:top-0 lg:-translate-y-1/2">
-                  Recommended
-                </p>
+                <div className="absolute top-8 right-0 lg:right-8">
+                  <BracketLabel>recommended</BracketLabel>
+                </div>
               )}
 
-              <div className="mb-7">
-                <h3 className="mb-4 text-xl font-semibold text-white">{tier.name}</h3>
-                <p className="mb-2 text-4xl font-bold tracking-tight text-foreground">
-                  {tier.price}
+              {/* Tier name */}
+              <p className="text-sm font-medium text-ink mb-6 tracking-[-0.005em]">
+                {tier.name}
+              </p>
+
+              {/* Price block */}
+              <div className="mb-6">
+                <div className="flex items-baseline gap-2 mb-1">
+                  <span className="text-[2.5rem] font-medium tracking-[-0.03em] text-amber tabular-nums">
+                    {tier.founding}
+                  </span>
+                  <span className="text-sm text-ink-muted">{tier.priceLabel}</span>
+                </div>
+                <p className="text-sm text-ink-subtle">
+                  <span className="line-through">{tier.price}</span>
+                  {' '}
+                  <span className="text-[0.7rem] tracking-[0.08em] uppercase">founding rate</span>
                 </p>
-                <p className="text-sm font-medium text-primary">{tier.founding}</p>
               </div>
 
-              <ul className="mb-8 space-y-3 text-sm leading-relaxed text-muted-foreground">
+              {/* Features list */}
+              <ul className="mb-8 space-y-3 flex-1">
                 {tier.features.map((feature) => (
-                  <li key={feature} className="flex gap-3">
-                    <span className="mt-2 h-1 w-1 shrink-0 rounded-full bg-primary/70" />
+                  <li key={feature} className="flex gap-3 text-sm leading-relaxed text-ink-muted">
+                    <span className="mt-2 h-1 w-1 shrink-0 bg-[var(--color-border-strong)]" />
                     <span>{feature}</span>
                   </li>
                 ))}
               </ul>
 
+              {/* CTA — outlined style matching hero */}
               <Link
                 to={`/checkout?plan=${tier.slug}`}
-                className={`mt-auto flex w-full items-center justify-center rounded-md px-4 py-3 text-sm font-medium transition-colors duration-150 ${
-                  tier.recommended
-                    ? 'bg-primary text-primary-foreground hover:bg-primary/85'
-                    : 'border border-border bg-transparent text-white hover:bg-muted/30'
-                }`}
+                className="group mt-auto inline-flex items-center gap-2.5 border border-[var(--color-border-strong)] px-5 py-3 text-[0.7rem] tracking-[0.1em] uppercase text-ink font-medium transition-all duration-200 hover:border-amber hover:text-amber w-fit"
               >
                 {tier.cta}
+                <span className="transition-transform duration-200 group-hover:translate-x-0.5">→</span>
               </Link>
             </motion.div>
           ))}
         </div>
 
+        {/* Care plan footnote */}
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.45, ease: 'easeOut', delay: 0.12 }}
-          className="mt-12 max-w-3xl border-l border-border pl-5"
+          className="mt-12 pl-5 border-l border-[var(--color-border)]"
         >
-          <p className="mb-3 text-sm font-semibold text-white">Care Plan - $149/month</p>
-          <p className="text-sm leading-relaxed text-muted-foreground">
+          <p className="mb-3 text-sm font-medium text-ink">Care Plan — $149/month</p>
+          <p className="text-sm leading-relaxed text-ink-muted max-w-2xl">
             Hosting, monthly content updates (up to 2 hours), security monitoring,
             weekly backups, priority response.
           </p>
-          <p className="mt-6 text-xs leading-relaxed text-muted-foreground">
+          <p className="mt-6 text-[0.7rem] leading-relaxed text-ink-subtle uppercase tracking-[0.08em]">
             Taking on 3 clients at founding rates. Once those spots are filled, pricing returns to standard.
           </p>
         </motion.div>
+
       </div>
     </section>
   )

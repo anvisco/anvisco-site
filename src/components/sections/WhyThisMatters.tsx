@@ -1,4 +1,5 @@
 import { motion } from 'motion/react'
+import { BracketLabel } from '@/components/ui/BracketLabel'
 
 const sides = [
   {
@@ -25,42 +26,29 @@ const sides = [
 
 export function WhyThisMatters() {
   return (
-    <section
-      id="why"
-      className="py-32 md:py-40 border-t border-border bg-background"
-    >
-      <div className="max-w-screen-xl mx-auto px-6 lg:px-12 relative">
+    <section id="why" className="py-24 md:py-32 bg-[var(--color-bg)]">
+      <div className="max-w-screen-xl mx-auto px-6 lg:px-12">
 
-        <span
-          aria-hidden="true"
-          className="absolute right-0 top-0 hidden select-none font-bold leading-none text-white pointer-events-none tabular-nums md:block"
-          style={{
-            fontSize: 'clamp(4rem, 9vw, 7rem)',
-            opacity: 0.09,
-            letterSpacing: '-0.04em',
-            fontWeight: 800,
-            lineHeight: 1,
-          }}
-        >
-          01
-        </span>
+        {/* Section header */}
+        <div className="flex items-center gap-4 mb-14 border-t border-[var(--color-border)] pt-7">
+          <span className="text-[0.7rem] tabular-nums text-amber font-medium tracking-[0.08em]">01</span>
+          <motion.div
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.4 }}
+          >
+            <BracketLabel>Why this work matters</BracketLabel>
+          </motion.div>
+        </div>
 
-        <motion.p
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.4 }}
-          className="mb-4 text-xs uppercase tracking-[0.2em] text-muted-foreground"
-        >
-          Why this work matters
-        </motion.p>
-
+        {/* Lead copy */}
         <motion.p
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6, ease: 'easeOut' }}
-          className="text-xl sm:text-2xl md:text-3xl font-medium leading-[1.28] md:leading-relaxed max-w-3xl mb-6 text-white"
+          className="text-xl sm:text-2xl md:text-3xl font-medium leading-[1.28] md:leading-relaxed max-w-3xl mb-6 text-ink tracking-[-0.01em]"
         >
           A website is not a brochure. It is where your systems, operations,
           and first impressions either work together or fall apart. Most sites
@@ -74,12 +62,13 @@ export function WhyThisMatters() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.5, ease: 'easeOut', delay: 0.1 }}
-          className="mb-10 max-w-2xl text-foreground/80"
+          className="mb-12 max-w-2xl text-ink-muted"
         >
           The four projects below each show a different side of this:
         </motion.p>
 
-        <div className="grid grid-cols-1 border-l border-t border-border sm:grid-cols-2 lg:grid-cols-4">
+        {/* Four-column grid — no side-stripe, use amber number instead */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 border-t border-[var(--color-border)]">
           {sides.map((side, i) => (
             <motion.div
               key={side.tag}
@@ -87,17 +76,22 @@ export function WhyThisMatters() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.4, ease: 'easeOut', delay: i * 0.07 }}
-              className="border-b border-r border-border bg-card/50 p-7 lg:p-9"
+              className={`pt-6 pb-8 pr-6 border-b border-[var(--color-border)] ${
+                i < sides.length - 1
+                  ? 'sm:border-r sm:border-[var(--color-border)]'
+                  : ''
+              } ${i > 0 ? 'lg:pl-6' : ''}`}
             >
-              <div className="border-l-2 border-primary pl-4">
-                <p className="mb-3 whitespace-nowrap text-xs font-semibold uppercase tracking-[0.07em] text-primary">
-                  {side.tag}
-                </p>
-                <p className="text-sm leading-relaxed text-foreground/80">
-                  <span className="font-semibold text-white">{side.project}</span>
-                  {': '}{side.description}
-                </p>
+              <span className="block text-[0.65rem] tabular-nums text-amber font-medium tracking-[0.08em] mb-4">
+                {String(i + 1).padStart(2, '0')}
+              </span>
+              <div className="mb-3">
+                <BracketLabel>{side.tag}</BracketLabel>
               </div>
+              <p className="text-sm leading-relaxed text-ink-muted">
+                <span className="font-medium text-ink">{side.project}</span>
+                {': '}{side.description}
+              </p>
             </motion.div>
           ))}
         </div>
@@ -107,7 +101,7 @@ export function WhyThisMatters() {
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
           transition={{ duration: 0.5, delay: 0.2 }}
-          className="mt-12 max-w-2xl text-muted-foreground"
+          className="mt-10 max-w-2xl text-ink-muted"
         >
           Most "great-looking" websites fail one of these tests. My work starts
           by identifying which of these matter for your business, then building

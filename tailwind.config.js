@@ -11,6 +11,7 @@ export default {
     extend: {
       fontFamily: {
         sans: ['Inter', 'system-ui', 'sans-serif'],
+        serif: ['"Instrument Serif"', 'Georgia', 'serif'],
       },
       colors: {
         border: 'hsl(var(--border))',
@@ -56,6 +57,16 @@ export default {
           border: 'hsl(var(--sidebar-border))',
           ring: 'hsl(var(--sidebar-ring))',
         },
+        /* Editorial tokens */
+        ink: 'var(--color-ink)',
+        'ink-muted': 'var(--color-ink-muted)',
+        'ink-subtle': 'var(--color-ink-subtle)',
+        amber: 'var(--color-amber)',
+        'amber-soft': 'var(--color-amber-soft)',
+        navy: 'var(--color-navy)',
+        surface: 'var(--color-surface)',
+        'surface-2': 'var(--color-surface-2)',
+        'border-strong': 'var(--color-border-strong)',
       },
       borderRadius: {
         lg: 'var(--radius)',

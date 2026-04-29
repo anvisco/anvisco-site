@@ -6,7 +6,7 @@ import { PortalPage } from '@/pages/PortalPage'
 
 function App() {
   return (
-    <div className="dark min-h-screen bg-background text-foreground">
+    <div className="dark min-h-screen bg-[var(--color-bg)] text-ink">
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/checkout" element={<CheckoutPage />} />

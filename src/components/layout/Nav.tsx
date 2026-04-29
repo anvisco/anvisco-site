@@ -2,15 +2,22 @@ import { useState, useEffect } from 'react'
 import { Menu, X } from 'lucide-react'
 
 const links = [
-  { label: 'Work', href: '/#work' },
-  { label: 'Services', href: '/#services' },
-  { label: 'Process', href: '/#process' },
-  { label: 'Pricing', href: '/#pricing' },
-  { label: 'About', href: '/#about' },
+  { label: 'work', href: '/#work' },
+  { label: 'services', href: '/#services' },
+  { label: 'process', href: '/#process' },
+  { label: 'pricing', href: '/#pricing' },
+  { label: 'about', href: '/#about' },
 ]
 
 export function Nav() {
   const [open, setOpen] = useState(false)
+  const [scrolled, setScrolled] = useState(false)
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 24)
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [])
 
   useEffect(() => {
     if (open) document.body.style.overflow = 'hidden'
@@ -20,68 +27,74 @@ export function Nav() {
 
   return (
     <header
-      className="fixed inset-x-0 top-0 z-50 border-b border-border bg-background transition-all duration-200"
+      className={`fixed inset-x-0 top-0 z-50 transition-all duration-300 ${
+        scrolled
+          ? 'bg-[var(--color-bg)]/80 backdrop-blur-md border-b border-[var(--color-border)]'
+          : 'bg-transparent border-b border-transparent'
+      }`}
     >
       <div className="max-w-screen-xl mx-auto px-6 lg:px-12 h-16 flex items-center justify-between">
+
+        {/* Wordmark */}
         <a
           href="/"
           onClick={() => setOpen(false)}
-          className="text-sm font-semibold tracking-tight text-white transition-colors duration-200 hover:text-primary"
+          className="text-sm font-medium tracking-tight text-ink transition-colors duration-200 hover:text-amber"
         >
-          Brian Nguyen
+          anvisco
         </a>
 
-        {/* Desktop nav */}
-        <nav className="hidden md:flex items-center gap-8">
+        {/* Desktop nav — bracket style */}
+        <nav className="hidden md:flex items-center gap-7">
           {links.map((link) => (
             <a
               key={link.href}
               href={link.href}
-              className="text-sm text-muted-foreground transition-colors duration-200 hover:text-white"
+              className="text-[0.7rem] tracking-[0.12em] uppercase text-ink-subtle transition-colors duration-200 hover:text-amber"
             >
-              {link.label}
+              {`[ ${link.label} ]`}
             </a>
           ))}
         </nav>
 
+        {/* Contact CTA — outlined */}
         <a
           href="/#contact"
-          className="hidden md:inline-flex items-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors duration-150 hover:bg-primary/85"
+          className="hidden md:inline-flex items-center gap-2 border border-[var(--color-border-strong)] px-4 py-2 text-[0.7rem] tracking-[0.1em] uppercase text-ink transition-all duration-200 hover:border-amber hover:text-amber group"
         >
-          Book a call
+          <span>[ contact ]</span>
+          <span className="transition-transform duration-200 group-hover:translate-x-0.5">→</span>
         </a>
 
         {/* Mobile hamburger */}
         <button
           onClick={() => setOpen((v) => !v)}
-          className="-mr-2 p-2 text-white transition-colors duration-200 hover:text-primary md:hidden"
+          className="-mr-2 p-2 text-ink-muted transition-colors duration-200 hover:text-amber md:hidden"
           aria-label={open ? 'Close menu' : 'Open menu'}
         >
-          {open ? <X size={20} /> : <Menu size={20} />}
+          {open ? <X size={18} /> : <Menu size={18} />}
         </button>
       </div>
 
       {/* Mobile menu */}
       {open && (
-        <div
-          className="md:hidden border-t border-border bg-background px-6 py-6 flex flex-col gap-6"
-        >
+        <div className="md:hidden border-t border-[var(--color-border)] bg-[var(--color-bg)] px-6 py-8 flex flex-col gap-6">
           {links.map((link) => (
             <a
               key={link.href}
               href={link.href}
               onClick={() => setOpen(false)}
-              className="text-sm font-medium text-white transition-colors duration-150 hover:text-primary"
+              className="text-[0.7rem] tracking-[0.14em] uppercase text-ink-subtle transition-colors duration-150 hover:text-amber"
             >
-              {link.label}
+              {`[ ${link.label} ]`}
             </a>
           ))}
           <a
             href="/#contact"
             onClick={() => setOpen(false)}
-            className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-3 text-sm font-medium text-primary-foreground transition-colors duration-150 hover:bg-primary/85"
+            className="mt-2 inline-flex items-center gap-2 border border-[var(--color-border-strong)] px-4 py-3 text-[0.7rem] tracking-[0.1em] uppercase text-ink transition-all duration-150 hover:border-amber hover:text-amber w-fit"
           >
-            Book a call
+            [ contact ] →
           </a>
         </div>
       )}
