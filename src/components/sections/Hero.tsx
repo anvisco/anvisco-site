@@ -134,7 +134,7 @@ function HeroGrid() {
   return (
     <div
       aria-hidden="true"
-      className="pointer-events-none absolute right-0 top-0 z-0 hidden h-full w-[55%] lg:block"
+      className="pointer-events-none absolute right-0 top-16 z-0 hidden h-[calc(100%-4rem)] w-[55%] lg:block"
     >
       <svg
         className="absolute inset-0 h-full w-full"

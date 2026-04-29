@@ -109,20 +109,23 @@
     }
   }
 
-  @keyframes work-frame-pan {
-    0%, 18% {
-      object-position: top;
+  @keyframes work-frame-float {
+    0%, 100% {
+      transform: translateY(0);
+      box-shadow: 0 18px 60px rgba(0, 0, 0, 0.22), inset 0 1px 0 rgba(245, 244, 238, 0.04);
     }
-    82%, 100% {
-      object-position: bottom;
+    50% {
+      transform: translateY(-2px);
+      box-shadow: 0 22px 64px rgba(0, 0, 0, 0.24), inset 0 1px 0 rgba(245, 244, 238, 0.05);
     }
   }
 
-  .work-frame-image {
-    animation: work-frame-pan 28s ease-in-out infinite alternate;
+  .work-frame-shell {
+    animation: work-frame-float 12s ease-in-out infinite;
+    will-change: transform, box-shadow;
   }
 
-  .group\/frame:hover .work-frame-image {
-    animation-duration: 20s;
+  .group\/frame:hover .work-frame-shell {
+    animation-duration: 8s;
   }
 }
