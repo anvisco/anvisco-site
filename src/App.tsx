@@ -8,6 +8,7 @@ import { CheckoutSuccessPage } from '@/pages/CheckoutSuccessPage'
 import { ThankYouPage } from '@/pages/ThankYouPage'
 import { PortalPage } from '@/pages/PortalPage'
 import { AdminPage } from '@/pages/AdminPage'
+import { AdminClientDetailPage } from '@/pages/AdminClientDetailPage'
 import { NextStepsPage } from '@/pages/NextStepsPage'
 
 function App() {
@@ -23,6 +24,7 @@ function App() {
         <Route path="/thank-you" element={<ThankYouPage />} />
         <Route path="/portal" element={<PortalPage />} />
         <Route path="/admin" element={<AdminPage />} />
+        <Route path="/admin/clients/:id" element={<AdminClientDetailPage />} />
         <Route path="/next-steps/audit" element={<NextStepsPage stage="audit" />} />
         <Route path="/next-steps/scope" element={<NextStepsPage stage="scope" />} />
         <Route path="/next-steps/build" element={<NextStepsPage stage="build" />} />

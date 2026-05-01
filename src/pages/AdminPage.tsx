@@ -7,6 +7,8 @@ import {
   A_BTN_PRIMARY,
   A_BTN_GHOST,
 } from '@/components/admin/AdminShell'
+import { StatusBadge, Field } from '@/lib/adminUtils'
+import { fmtDate } from '@/lib/adminFormatters'
 import { supabase } from '@/lib/supabase'
 import type { ClientStatus } from '@/types/backend'
 
@@ -94,30 +96,37 @@ function Dashboard() {
   const [payments, setPayments] = useState<DbPayment[]>([])
   const [statusFilter, setStatusFilter] = useState<string>('all')
   const [showAdd, setShowAdd] = useState(false)
+  const [refreshKey, setRefreshKey] = useState(0)
+  const refresh = () => setRefreshKey((k) => k + 1)
 
-  async function load() {
-    if (!supabase) return
-    setLoading(true)
-    setError(null)
-    const [clientsRes, paymentsRes] = await Promise.all([
-      supabase
-        .from('clients')
-        .select(
-          'id, name, business_name, email, phone, website_url, status, notes, created_at, client_packages(id, package_name, package_type, status, next_payment_due_at)',
-        )
-        .order('created_at', { ascending: false }),
-      supabase
-        .from('payment_schedules')
-        .select('id, client_id, status, due_date, amount_cents'),
-    ])
-    if (clientsRes.error) { setError(clientsRes.error.message); setLoading(false); return }
-    if (paymentsRes.error) { setError(paymentsRes.error.message); setLoading(false); return }
-    setClients((clientsRes.data as DbClient[]) ?? [])
-    setPayments((paymentsRes.data as DbPayment[]) ?? [])
-    setLoading(false)
-  }
-
-  useEffect(() => { load() }, [])
+  useEffect(() => {
+    if (!supabase) {
+      Promise.resolve().then(() => setLoading(false))
+      return
+    }
+    const sb = supabase
+    Promise.resolve()
+      .then(() => {
+        setLoading(true)
+        setError(null)
+        return Promise.all([
+          sb
+            .from('clients')
+            .select(
+              'id, name, business_name, email, phone, website_url, status, notes, created_at, client_packages(id, package_name, package_type, status, next_payment_due_at)',
+            )
+            .order('created_at', { ascending: false }),
+          sb.from('payment_schedules').select('id, client_id, status, due_date, amount_cents'),
+        ])
+      })
+      .then(([clientsRes, paymentsRes]) => {
+        if (clientsRes.error) { setError(clientsRes.error.message); setLoading(false); return }
+        if (paymentsRes.error) { setError(paymentsRes.error.message); setLoading(false); return }
+        setClients((clientsRes.data as DbClient[]) ?? [])
+        setPayments((paymentsRes.data as DbPayment[]) ?? [])
+        setLoading(false)
+      })
+  }, [refreshKey])
 
   const summary = computeSummary(clients, payments)
   const filtered = statusFilter === 'all'
@@ -185,7 +194,7 @@ function Dashboard() {
       {showAdd && (
         <AddClientModal
           onClose={() => setShowAdd(false)}
-          onSaved={() => { setShowAdd(false); load() }}
+          onSaved={() => { setShowAdd(false); refresh() }}
         />
       )}
     </div>
@@ -457,72 +466,3 @@ function AddClientModal({
   )
 }
 
-// ----- Shared admin utilities (used here and in detail page) -----
-
-export function StatusBadge({ status }: { status: string }) {
-  const map: Record<string, string> = {
-    lead: 'text-ink-muted border-[var(--color-border-strong)]',
-    active: 'text-amber border-amber/60',
-    paused: 'text-ink-muted border-[var(--color-border-strong)]',
-    completed: 'text-ink-subtle border-[var(--color-border)]',
-    archived: 'text-ink-subtle border-[var(--color-border)]',
-    requested: 'text-ink-muted border-[var(--color-border-strong)]',
-    scoped: 'text-amber border-amber/40',
-    in_progress: 'text-amber border-amber/60',
-    complete: 'text-ink-subtle border-[var(--color-border)]',
-    cancelled: 'text-ink-subtle border-[var(--color-border)]',
-    not_started: 'text-ink-subtle border-[var(--color-border)]',
-    pending: 'text-ink-muted border-[var(--color-border-strong)]',
-    paid: 'text-amber border-amber/40',
-    overdue: 'text-amber border-amber/60',
-    draft: 'text-ink-subtle border-[var(--color-border)]',
-    sent: 'text-amber border-amber/40',
-    failed: 'text-ink-subtle border-[var(--color-border)]',
-  }
-  return (
-    <span
-      className={`inline-flex items-center border px-1.5 py-0.5 text-[0.62rem] uppercase tracking-[0.06em] ${map[status] ?? 'text-ink-muted border-[var(--color-border-strong)]'}`}
-    >
-      {status.replace(/_/g, ' ')}
-    </span>
-  )
-}
-
-export function fmtDate(d: string | null | undefined): string {
-  if (!d) return '—'
-  return new Date(d).toLocaleDateString('en-CA', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-  })
-}
-
-export function fmtCents(cents: number): string {
-  return new Intl.NumberFormat('en-CA', {
-    style: 'currency',
-    currency: 'CAD',
-    maximumFractionDigits: 0,
-  }).format(cents / 100)
-}
-
-export function Field({
-  label,
-  required,
-  full,
-  children,
-}: {
-  label: string
-  required?: boolean
-  full?: boolean
-  children: React.ReactNode
-}) {
-  return (
-    <label className={`flex flex-col gap-1.5 ${full ? 'sm:col-span-2' : ''}`}>
-      <span className="text-[0.65rem] uppercase tracking-[0.08em] text-ink-subtle">
-        {label}
-        {required && <span className="ml-1 text-amber">*</span>}
-      </span>
-      {children}
-    </label>
-  )
-}

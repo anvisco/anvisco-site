@@ -35,7 +35,7 @@ export function useAdmin(): UseAdminReturn {
 
   useEffect(() => {
     if (!isSupabaseConfigured || !supabase) {
-      setState({ loading: false, session: null, isAdmin: false })
+      Promise.resolve().then(() => setState({ loading: false, session: null, isAdmin: false }))
       return
     }
 

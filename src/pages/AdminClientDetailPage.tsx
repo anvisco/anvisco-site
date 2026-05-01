@@ -7,11 +7,9 @@ import {
   A_BTN_PRIMARY,
   A_BTN_GHOST,
   A_BTN_DANGER,
-  StatusBadge,
-  fmtDate,
-  fmtCents,
-  Field,
-} from '@/pages/AdminPage'
+} from '@/components/admin/AdminShell'
+import { StatusBadge, Field } from '@/lib/adminUtils'
+import { fmtDate, fmtCents } from '@/lib/adminFormatters'
 import { supabase } from '@/lib/supabase'
 import type { ClientStatus, PackageStatus, PaymentStatus, ProjectStage } from '@/types/backend'
 
@@ -129,60 +127,51 @@ function Detail({ clientId }: { clientId: string }) {
   const activePackage: DbPackage | null =
     packages.find((p) => p.status !== 'cancelled') ?? null
 
-  async function load() {
+  const [refreshKey, setRefreshKey] = useState(0)
+  const refresh = () => setRefreshKey((k) => k + 1)
+
+  useEffect(() => {
     if (!supabase) return
-    setLoading(true)
-    setError(null)
+    const sb = supabase
+    Promise.resolve()
+      .then(() => {
+        setLoading(true)
+        setError(null)
+        return Promise.all([
+          sb.from('clients').select('*').eq('id', clientId).single(),
+          sb.from('client_packages').select('*').eq('client_id', clientId).order('created_at', { ascending: false }),
+          sb.from('payment_schedules').select('*').eq('client_id', clientId).order('due_date', { ascending: true }),
+          sb.from('project_updates').select('*').eq('client_id', clientId).order('created_at', { ascending: false }),
+          sb.from('email_logs').select('*').eq('client_id', clientId).order('created_at', { ascending: false }),
+        ])
+      })
+      .then(([cRes, pRes, payRes, uRes, eRes]) => {
+        if (cRes.error) { setError(cRes.error.message); setLoading(false); return }
 
-    const [cRes, pRes, payRes, uRes, eRes] = await Promise.all([
-      supabase.from('clients').select('*').eq('id', clientId).single(),
-      supabase
-        .from('client_packages')
-        .select('*')
-        .eq('client_id', clientId)
-        .order('created_at', { ascending: false }),
-      supabase
-        .from('payment_schedules')
-        .select('*')
-        .eq('client_id', clientId)
-        .order('due_date', { ascending: true }),
-      supabase
-        .from('project_updates')
-        .select('*')
-        .eq('client_id', clientId)
-        .order('created_at', { ascending: false }),
-      supabase
-        .from('email_logs')
-        .select('*')
-        .eq('client_id', clientId)
-        .order('created_at', { ascending: false }),
-    ])
+        const pkgs: DbPackage[] = (pRes.data as DbPackage[]) ?? []
+        const active = pkgs.find((p) => p.status !== 'cancelled') ?? null
 
-    if (cRes.error) { setError(cRes.error.message); setLoading(false); return }
+        setClient(cRes.data as DbClient)
+        setPackages(pkgs)
+        setPayments((payRes.data as DbPayment[]) ?? [])
+        setUpdates((uRes.data as DbUpdate[]) ?? [])
+        setEmails((eRes.data as DbEmailLog[]) ?? [])
 
-    const pkgs: DbPackage[] = (pRes.data as DbPackage[]) ?? []
-    const active = pkgs.find((p) => p.status !== 'cancelled') ?? null
-
-    let mods: DbModuleSelection[] = []
-    if (active && supabase) {
-      const { data: modData } = await supabase
-        .from('client_module_selections')
-        .select('*')
-        .eq('package_id', active.id)
-        .order('created_at', { ascending: true })
-      mods = (modData as DbModuleSelection[]) ?? []
-    }
-
-    setClient(cRes.data as DbClient)
-    setPackages(pkgs)
-    setModuleSelections(mods)
-    setPayments((payRes.data as DbPayment[]) ?? [])
-    setUpdates((uRes.data as DbUpdate[]) ?? [])
-    setEmails((eRes.data as DbEmailLog[]) ?? [])
-    setLoading(false)
-  }
-
-  useEffect(() => { load() }, [clientId])
+        if (active) {
+          sb.from('client_module_selections')
+            .select('*')
+            .eq('package_id', active.id)
+            .order('created_at', { ascending: true })
+            .then(({ data: modData }) => {
+              setModuleSelections((modData as DbModuleSelection[]) ?? [])
+              setLoading(false)
+            })
+        } else {
+          setModuleSelections([])
+          setLoading(false)
+        }
+      })
+  }, [clientId, refreshKey])
 
   if (loading) return <p className="py-8 text-sm text-ink-muted">Loading…</p>
   if (error) return <p className="py-8 text-sm text-amber">Error: {error}</p>
@@ -222,15 +211,14 @@ function Detail({ clientId }: { clientId: string }) {
 
       {/* Tab panels */}
       {tab === 'overview' && (
-        <OverviewTab client={client} onRefresh={load} />
+        <OverviewTab client={client} onRefresh={refresh} />
       )}
       {tab === 'package' && (
         <PackageTab
           pkg={activePackage}
           allPackages={packages}
           moduleSelections={moduleSelections}
-          clientId={clientId}
-          onRefresh={load}
+          onRefresh={refresh}
         />
       )}
       {tab === 'payments' && (
@@ -238,7 +226,7 @@ function Detail({ clientId }: { clientId: string }) {
           payments={payments}
           clientId={clientId}
           packageId={activePackage?.id ?? null}
-          onRefresh={load}
+          onRefresh={refresh}
         />
       )}
       {tab === 'updates' && (
@@ -247,7 +235,7 @@ function Detail({ clientId }: { clientId: string }) {
           clientId={clientId}
           packageId={activePackage?.id ?? null}
           currentStage={(updates[0]?.stage as ProjectStage) ?? null}
-          onRefresh={load}
+          onRefresh={refresh}
         />
       )}
       {tab === 'emails' && (
@@ -255,7 +243,7 @@ function Detail({ clientId }: { clientId: string }) {
           emails={emails}
           clientId={clientId}
           defaultToEmail={client.email}
-          onRefresh={load}
+          onRefresh={refresh}
         />
       )}
     </div>
@@ -391,13 +379,11 @@ function PackageTab({
   pkg,
   allPackages,
   moduleSelections,
-  clientId,
   onRefresh,
 }: {
   pkg: DbPackage | null
   allPackages: DbPackage[]
   moduleSelections: DbModuleSelection[]
-  clientId: string
   onRefresh: () => void
 }) {
   const [editForm, setEditForm] = useState<{
