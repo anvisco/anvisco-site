@@ -120,6 +120,14 @@ export default async function handler(request: Request): Promise<Response> {
     })
   }
 
+  if (request.method === 'GET') {
+    return json(200, {
+      ok: true,
+      function: 'stripe-webhook',
+      jwt: 'disabled-required',
+    })
+  }
+
   if (request.method !== 'POST') {
     return json(405, { error: 'Method not allowed.' })
   }

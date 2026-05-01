@@ -25,8 +25,15 @@ supabase secrets set \
 Deploy both functions:
 
 ```bash
-supabase functions deploy create-checkout-session
-supabase functions deploy stripe-webhook
+npx supabase functions deploy create-checkout-session --project-ref evvozwtspivyumboqcnu
+npx supabase functions deploy stripe-webhook --project-ref evvozwtspivyumboqcnu
+```
+
+If Supabase still reports `UNAUTHORIZED_NO_AUTH_HEADER`, force the deploy without JWT verification:
+
+```bash
+npx supabase functions deploy create-checkout-session --no-verify-jwt --project-ref evvozwtspivyumboqcnu
+npx supabase functions deploy stripe-webhook --no-verify-jwt --project-ref evvozwtspivyumboqcnu
 ```
 
 These functions are intentionally configured with `verify_jwt = false` in `supabase/config.toml`.
@@ -52,6 +59,28 @@ Listen for these events:
 2. Pick a paid path.
 3. Submit the plan.
 4. Confirm the browser redirects to Stripe Checkout.
+
+## Debugging the deployed function
+
+After deploy, test:
+
+`https://evvozwtspivyumboqcnu.supabase.co/functions/v1/create-checkout-session`
+
+Expected:
+
+```json
+{ "ok": true, "function": "create-checkout-session", "cors": true, "jwt": "disabled-required" }
+```
+
+If it returns:
+
+`UNAUTHORIZED_NO_AUTH_HEADER`
+
+then JWT verification is still enabled. Redeploy with:
+
+```bash
+npx supabase functions deploy create-checkout-session --no-verify-jwt --project-ref evvozwtspivyumboqcnu
+```
 
 ## 6. Test the webhook
 

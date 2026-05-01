@@ -236,7 +236,7 @@ export function CheckoutPage() {
               Build your plan.
             </h1>
             <p className="max-w-[58ch] text-base leading-relaxed text-ink-muted md:text-[1.0625rem]">
-              Choose your path and continue to secure checkout. Payment happens through Stripe.
+              Choose your path and continue to secure Stripe checkout. Payment happens through Stripe.
             </p>
           </div>
 
