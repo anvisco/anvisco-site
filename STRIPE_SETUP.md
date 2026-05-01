@@ -29,6 +29,10 @@ supabase functions deploy create-checkout-session
 supabase functions deploy stripe-webhook
 ```
 
+These functions are intentionally configured with `verify_jwt = false` in `supabase/config.toml`.
+That is required because Stripe webhooks and the browser preflight for checkout must reach the
+Edge Function without Supabase platform JWT blocking the request first.
+
 ## 4. Configure the Stripe webhook endpoint
 
 Point Stripe to the deployed Supabase function URL for `stripe-webhook`.
@@ -66,3 +70,5 @@ Listen for these events:
 - Never expose `STRIPE_SECRET_KEY` to browser code.
 - Webhook signature verification must use the raw request body.
 - Do not mark payments paid from frontend redirects.
+- Security is enforced server-side with Supabase secrets, server-side pricing, request validation,
+  and Stripe signature verification.

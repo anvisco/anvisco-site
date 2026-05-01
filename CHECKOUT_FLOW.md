@@ -70,6 +70,9 @@ On submit, `/checkout`:
 4. The function creates a Stripe Checkout Session and returns the hosted `session.url`.
 5. The browser redirects the client to Stripe-hosted Checkout.
 
+`create-checkout-session` must be deployed with `verify_jwt = false` so the browser preflight can
+reach the Edge Function without Supabase platform auth blocking it first.
+
 If Stripe or Supabase returns an error, the page surfaces the message in the summary and keeps
 the form filled in.
 
@@ -104,4 +107,6 @@ a similar "setup required" panel.
 - **No emails** are sent. Email sending wires up in a later pass via Resend or Postmark.
 - **Stripe webhooks** update payment status after Checkout completes. The frontend never marks a
   payment paid on redirect.
+- **Stripe webhooks require `verify_jwt = false`.** Stripe does not send Supabase JWT headers, so
+  the platform must allow the request through to the function for signature verification.
 - **No anti-spam.** A future pass should add a honeypot or hCaptcha.

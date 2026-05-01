@@ -156,6 +156,20 @@ supabase functions deploy create-checkout-session
 supabase functions deploy stripe-webhook
 ```
 
+The repo ships `supabase/config.toml` with:
+
+```toml
+[functions.create-checkout-session]
+verify_jwt = false
+
+[functions.stripe-webhook]
+verify_jwt = false
+```
+
+That is expected. Checkout session creation and Stripe webhook delivery must be reachable without
+Supabase platform JWT enforcement, and the functions protect themselves with server-side secrets,
+server-side pricing, validation, and Stripe signature checks.
+
 In Stripe, point the webhook endpoint at the deployed `stripe-webhook` function URL and listen for:
 
 - `checkout.session.completed`
@@ -236,7 +250,8 @@ the target client id.
 - **"Backend is not connected" on `/checkout` or `/portal`:** env vars are missing. Add them to
   `.env.local` and restart `npm run dev`.
 - **Stripe Checkout or webhook failing:** confirm the Edge Function secrets are set with
-  `supabase secrets set` and that Stripe is pointing to the webhook endpoint documented below.
+  `supabase secrets set`, that `verify_jwt = false` is present for both functions, and that Stripe
+  is pointing to the webhook endpoint documented below.
 - **`new row violates row-level security` when inserting a client:** the `clients` insert path is
   expected to be done by the public `/checkout` flow. The anon user inserts those rows. If you
   added a stricter policy, also add a policy that lets `anon` insert into `clients` and
