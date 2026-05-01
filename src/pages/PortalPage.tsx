@@ -411,8 +411,8 @@ export function PortalPage() {
                 and client-visible updates.
               </p>
               <p className="mt-4 max-w-[62ch] text-sm leading-relaxed text-ink-muted">
-                If you just completed checkout, your portal access may need to be connected first.
-                Anvis will follow up with your login details.
+                Use the same email you used at checkout to log in. If you need a password link,
+                open the setup form below.
               </p>
             </div>
 
@@ -467,12 +467,6 @@ export function PortalPage() {
                       {portal.client.email ? ` · ${portal.client.email}` : ''}
                     </p>
                   </div>
-                  <button
-                    onClick={signOut}
-                    className="inline-flex items-center gap-2 border border-[var(--color-border-strong)] px-4 py-2 text-[0.7rem] font-medium uppercase tracking-[0.1em] text-ink-muted transition-colors hover:border-amber hover:text-amber"
-                  >
-                    Sign out
-                  </button>
                 </div>
 
                 <div className="grid gap-px bg-[var(--color-border)] sm:grid-cols-2 xl:grid-cols-4">
@@ -796,12 +790,12 @@ function AuthPanel({
           {clientConnected
             ? 'Your client data is connected and ready.'
               : portalState === 'loading'
-                ? 'Loading your client portal…'
-                : portalState === 'claiming'
+              ? 'Loading your client portal…'
+              : portalState === 'claiming'
                   ? 'Looking for your client profile...'
                   : portalState === 'missing'
-                    ? 'Your account is active, but no client profile is connected yet. If you recently completed checkout, make sure you are using the same email from checkout. If it still does not connect, contact brian@anvisco.com.'
-                    : 'Connection pending.'}
+                    ? 'Your account is active, but no client profile is connected yet. Make sure you are using the same email from checkout. If it still does not connect, contact brian@anvisco.com.'
+                    : 'Your account is active, but no client profile is connected yet. Make sure you are using the same email from checkout. If it still does not connect, contact brian@anvisco.com.'}
         </p>
         <button
           onClick={signOut}
@@ -826,6 +820,7 @@ function LoginCard({
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [sendingLink, setSendingLink] = useState(false)
+  const [showSetupForm, setShowSetupForm] = useState(false)
   const [setupSuccess, setSetupSuccess] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
 
@@ -854,8 +849,8 @@ function LoginCard({
   return (
     <Card title="Client portal login" eyebrow="Client access">
       <p className="mb-5 text-sm leading-relaxed text-ink-muted">
-        Use the email and password Brian connected to your client profile.
-        If you recently completed checkout, your access may still be getting connected.
+        Use the same email you used at checkout. If your password is ready, sign in below.
+        If you still need one, open the setup form.
       </p>
       <form onSubmit={handleSubmit} className="space-y-4">
         <Field label="Email" required>
@@ -888,24 +883,34 @@ function LoginCard({
           <span className="text-amber">→</span>
         </button>
         <div className="border-t border-[var(--color-border)] pt-4">
-          <p className="mb-2 text-[0.7rem] uppercase tracking-[0.08em] text-ink-subtle">
-            Create or reset your password
-          </p>
-          <p className="mb-3 text-sm leading-relaxed text-ink-muted">
-            Use the same email you used at checkout. We will send a secure link to set up or reset
-            your portal password.
-          </p>
           <button
             type="button"
-            onClick={() => void handleSendSetupLink()}
-            disabled={sendingLink || !email.trim()}
-            className="inline-flex items-center gap-2 border border-[var(--color-border-strong)] px-5 py-3 text-[0.7rem] font-medium uppercase tracking-[0.1em] text-ink-muted transition-all duration-200 hover:border-amber hover:text-amber disabled:opacity-60"
+            onClick={() => setShowSetupForm((value) => !value)}
+            className="inline-flex items-center gap-2 text-[0.7rem] font-medium uppercase tracking-[0.1em] text-ink-muted transition-colors hover:text-amber"
           >
-            {sendingLink ? 'Sending…' : 'Send password setup link'}
+            {showSetupForm ? 'Hide password setup form' : 'Create or reset your password'}
             <span className="text-amber">→</span>
           </button>
-          {setupSuccess && (
-            <p className="mt-3 text-sm text-amber">{setupSuccess}</p>
+          {showSetupForm && (
+            <div className="mt-4 space-y-3 border border-[var(--color-border)] bg-[var(--color-bg)] p-4">
+              <p className="text-sm leading-relaxed text-ink-muted">
+                Use the same email you used at checkout. We will send a secure link to set up or
+                reset your portal password.
+              </p>
+              <p className="text-xs text-ink-subtle">
+                The link will be sent to <span className="text-ink">{email || 'the email above'}</span>.
+              </p>
+              <button
+                type="button"
+                onClick={() => void handleSendSetupLink()}
+                disabled={sendingLink || !email.trim()}
+                className="inline-flex items-center gap-2 border border-[var(--color-border-strong)] px-5 py-3 text-[0.7rem] font-medium uppercase tracking-[0.1em] text-ink-muted transition-all duration-200 hover:border-amber hover:text-amber disabled:opacity-60"
+              >
+                {sendingLink ? 'Sending…' : 'Send password setup link'}
+                <span className="text-amber">→</span>
+              </button>
+              {setupSuccess && <p className="text-sm text-amber">{setupSuccess}</p>}
+            </div>
           )}
         </div>
       </form>
@@ -999,8 +1004,8 @@ function EmptyConnectionState() {
         Connection pending
       </p>
       <p className="mb-4 max-w-[62ch] text-sm leading-relaxed text-ink-muted">
-        Your account is active, but no client profile is connected yet. If you recently completed
-        checkout, make sure you are using the same email from checkout. If it still does not connect, contact brian@anvisco.com.
+        Your account is active, but no client profile is connected yet. Make sure you are using
+        the same email from checkout. If it still does not connect, contact brian@anvisco.com.
       </p>
       <a
         href="mailto:brian@anvisco.com"

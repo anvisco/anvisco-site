@@ -6,9 +6,10 @@ import {
   A_SELECT,
   A_BTN_PRIMARY,
   A_BTN_GHOST,
+  A_BTN_DANGER,
 } from '@/components/admin/AdminShell'
 import { StatusBadge, Field } from '@/lib/adminUtils'
-import { fmtDate } from '@/lib/adminFormatters'
+import { fmtDate, fmtCents } from '@/lib/adminFormatters'
 import { supabase } from '@/lib/supabase'
 import type { ClientStatus } from '@/types/backend'
 
@@ -41,6 +42,71 @@ interface DbPayment {
   status: string
   due_date: string | null
   amount_cents: number
+}
+
+interface CleanupClientRow {
+  id: string
+  name: string
+  business_name: string | null
+  email: string
+  status: string
+  created_at: string
+}
+
+interface CleanupPackageRow {
+  id: string
+  client_id: string
+  package_name: string
+  package_type: string
+  status: string
+  total_cents: number
+  recurring_amount_cents: number | null
+  created_at: string
+}
+
+interface CleanupPaymentRow {
+  id: string
+  client_id: string
+  package_id: string
+  label: string
+  amount_cents: number
+  status: string
+  due_date: string | null
+  created_at: string
+}
+
+interface CleanupUpdateRow {
+  id: string
+  client_id: string
+  package_id: string | null
+  stage: string
+  title: string
+  created_at: string
+}
+
+interface CleanupModuleSelectionRow {
+  id: string
+  package_id: string
+  module_name: string
+  quantity: number
+  total_cents: number
+}
+
+interface CleanupLinkRow {
+  id: string
+  client_id: string
+  user_id: string
+  created_at: string
+}
+
+interface CleanupPreview {
+  email: string
+  clients: CleanupClientRow[]
+  packages: CleanupPackageRow[]
+  payments: CleanupPaymentRow[]
+  updates: CleanupUpdateRow[]
+  moduleSelections: CleanupModuleSelectionRow[]
+  clientUsers: CleanupLinkRow[]
 }
 
 // ----- Derived summary -----
@@ -154,6 +220,7 @@ function Dashboard() {
       )}
 
       <SummaryCards summary={summary} loading={loading} />
+      <TestDataCleanupPanel onDeleted={refresh} />
 
       <div className="mt-10">
         <div className="mb-4 flex items-center justify-between gap-4">
@@ -226,6 +293,369 @@ function SummaryCards({ summary, loading }: { summary: Summary; loading: boolean
           </p>
         </div>
       ))}
+    </div>
+  )
+}
+
+function TestDataCleanupPanel({ onDeleted }: { onDeleted: () => void }) {
+  const [email, setEmail] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [deleting, setDeleting] = useState(false)
+  const [confirmDelete, setConfirmDelete] = useState(false)
+  const [preview, setPreview] = useState<CleanupPreview | null>(null)
+  const [error, setError] = useState<string | null>(null)
+  const [message, setMessage] = useState<string | null>(null)
+
+  async function handlePreview() {
+    if (!supabase) {
+      setError('Supabase is not configured.')
+      return
+    }
+
+    const normalizedEmail = email.trim().toLowerCase()
+    if (!normalizedEmail) {
+      setError('Enter a client email to preview cleanup records.')
+      return
+    }
+
+    setLoading(true)
+    setError(null)
+    setMessage(null)
+    setConfirmDelete(false)
+
+    try {
+      const { data: clientsData, error: clientsError } = await supabase
+        .from('clients')
+        .select('id, name, business_name, email, status, created_at')
+        .ilike('email', normalizedEmail)
+        .order('created_at', { ascending: false })
+
+      if (clientsError) throw clientsError
+
+      const clients = (clientsData as CleanupClientRow[]) ?? []
+      const clientIds = clients.map((client) => client.id)
+
+      const [packagesRes, paymentsRes, updatesRes, clientUsersRes] = await Promise.all([
+        clientIds.length
+          ? supabase
+              .from('client_packages')
+              .select('id, client_id, package_name, package_type, status, total_cents, recurring_amount_cents, created_at')
+              .in('client_id', clientIds)
+              .order('created_at', { ascending: false })
+          : Promise.resolve({ data: [], error: null }),
+        clientIds.length
+          ? supabase
+              .from('payment_schedules')
+              .select('id, client_id, package_id, label, amount_cents, status, due_date, created_at')
+              .in('client_id', clientIds)
+              .order('created_at', { ascending: false })
+          : Promise.resolve({ data: [], error: null }),
+        clientIds.length
+          ? supabase
+              .from('project_updates')
+              .select('id, client_id, package_id, stage, title, created_at')
+              .in('client_id', clientIds)
+              .order('created_at', { ascending: false })
+          : Promise.resolve({ data: [], error: null }),
+        clientIds.length
+          ? supabase
+              .from('client_users')
+              .select('id, client_id, user_id, created_at')
+              .in('client_id', clientIds)
+              .order('created_at', { ascending: false })
+          : Promise.resolve({ data: [], error: null }),
+      ])
+
+      if (packagesRes.error) throw packagesRes.error
+      if (paymentsRes.error) throw paymentsRes.error
+      if (updatesRes.error) throw updatesRes.error
+      if (clientUsersRes.error) throw clientUsersRes.error
+
+      const packages = (packagesRes.data as CleanupPackageRow[]) ?? []
+      const packageIds = packages.map((pkg) => pkg.id)
+
+      const moduleSelections = packageIds.length
+        ? (
+            (
+              await supabase
+                .from('client_module_selections')
+                .select('id, package_id, module_name, quantity, total_cents')
+                .in('package_id', packageIds)
+                .order('created_at', { ascending: false })
+            ).data as CleanupModuleSelectionRow[]
+          ) ?? []
+        : []
+
+      setPreview({
+        email: normalizedEmail,
+        clients,
+        packages,
+        payments: (paymentsRes.data as CleanupPaymentRow[]) ?? [],
+        updates: (updatesRes.data as CleanupUpdateRow[]) ?? [],
+        moduleSelections,
+        clientUsers: (clientUsersRes.data as CleanupLinkRow[]) ?? [],
+      })
+    } catch (thrownError) {
+      setPreview(null)
+      setError(thrownError instanceof Error ? thrownError.message : 'Could not preview cleanup records.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  async function handleDelete() {
+    if (!supabase || !preview) return
+    if (!confirmDelete) {
+      setError('Confirm the deletion checkbox before removing records.')
+      return
+    }
+
+    const clientIds = preview.clients.map((client) => client.id)
+    const packageIds = preview.packages.map((pkg) => pkg.id)
+
+    setDeleting(true)
+    setError(null)
+    setMessage(null)
+
+    try {
+      if (clientIds.length) {
+        const deleteSteps = [
+          supabase.from('project_updates').delete().in('client_id', clientIds),
+          supabase.from('payment_schedules').delete().in('client_id', clientIds),
+          packageIds.length
+            ? supabase.from('client_module_selections').delete().in('package_id', packageIds)
+            : Promise.resolve({ error: null }),
+          supabase.from('client_packages').delete().in('client_id', clientIds),
+          supabase.from('client_users').delete().in('client_id', clientIds),
+          supabase.from('clients').delete().in('id', clientIds),
+        ]
+
+        for (const step of deleteSteps) {
+          const result = await step
+          if (result.error) {
+            throw new Error(result.error.message)
+          }
+        }
+      }
+
+      setMessage(
+        preview.clients.length > 1
+          ? `Deleted ${preview.clients.length} client records and related test data.`
+          : 'Deleted the matching client record and related test data.',
+      )
+      setPreview(null)
+      setConfirmDelete(false)
+      setEmail('')
+      onDeleted()
+    } catch (thrownError) {
+      setError(thrownError instanceof Error ? thrownError.message : 'Could not delete cleanup records.')
+    } finally {
+      setDeleting(false)
+    }
+  }
+
+  const counts = preview
+    ? {
+        clients: preview.clients.length,
+        packages: preview.packages.length,
+        payments: preview.payments.length,
+        modules: preview.moduleSelections.length,
+        updates: preview.updates.length,
+        links: preview.clientUsers.length,
+      }
+    : null
+
+  return (
+    <section className="mt-8 border border-[var(--color-border)] bg-[var(--color-surface)] p-6">
+      <div className="mb-4 border-t border-[var(--color-border)] pt-5">
+        <p className="mb-2 text-[0.7rem] uppercase tracking-[0.08em] text-ink-subtle">
+          Admin utility
+        </p>
+        <h2 className="text-lg font-medium tracking-[-0.01em] text-ink">Test Data Cleanup</h2>
+      </div>
+
+      <p className="max-w-[68ch] text-sm leading-relaxed text-ink-muted">
+        Preview matching client records by email before deleting. This removes project updates,
+        payment schedules, module selections, packages, client-user links, and the client record
+        itself. Stripe test events and email logs are left untouched for audit history.
+      </p>
+
+      <div className="mt-5 grid gap-4 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
+        <Field label="Client email" required full>
+          <input
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className={A_INPUT}
+            placeholder="test@example.com"
+          />
+        </Field>
+        <div className="flex flex-wrap gap-3">
+          <button
+            type="button"
+            onClick={() => void handlePreview()}
+            disabled={loading}
+            className={A_BTN_PRIMARY}
+          >
+            {loading ? 'Previewing…' : 'Preview cleanup'}
+          </button>
+        </div>
+      </div>
+
+      {error && (
+        <p className="mt-4 border border-amber/60 bg-amber/5 px-3 py-2 text-sm text-amber">
+          {error}
+        </p>
+      )}
+      {message && (
+        <p className="mt-4 border border-amber/60 bg-amber/5 px-3 py-2 text-sm text-amber">
+          {message}
+        </p>
+      )}
+
+      {counts && (
+        <div className="mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-6">
+          <StatBox label="Clients" value={counts.clients} />
+          <StatBox label="Packages" value={counts.packages} />
+          <StatBox label="Payments" value={counts.payments} />
+          <StatBox label="Modules" value={counts.modules} />
+          <StatBox label="Updates" value={counts.updates} />
+          <StatBox label="Links" value={counts.links} />
+        </div>
+      )}
+
+      {preview && (
+        <div className="mt-6 space-y-4">
+          {preview.clients.length === 0 ? (
+            <div className="border border-[var(--color-border)] px-4 py-5 text-sm text-ink-muted">
+              No matching clients were found for <span className="text-ink">{preview.email}</span>.
+            </div>
+          ) : (
+            preview.clients.map((client) => {
+              const clientPackages = preview.packages.filter((pkg) => pkg.client_id === client.id)
+              const clientPayments = preview.payments.filter((payment) => payment.client_id === client.id)
+              const clientUpdates = preview.updates.filter((update) => update.client_id === client.id)
+              const clientLinks = preview.clientUsers.filter((link) => link.client_id === client.id)
+              const packageIds = clientPackages.map((pkg) => pkg.id)
+              const clientModules = preview.moduleSelections.filter((selection) =>
+                packageIds.includes(selection.package_id),
+              )
+
+              return (
+                <article key={client.id} className="border border-[var(--color-border)] p-4">
+                  <div className="flex flex-wrap items-start justify-between gap-4">
+                    <div>
+                      <p className="text-sm font-medium text-ink">
+                        {client.business_name || client.name}
+                      </p>
+                      <p className="mt-1 text-xs text-ink-subtle">{client.email}</p>
+                      <p className="mt-1 text-xs text-ink-muted">
+                        Status: <span className="text-ink">{client.status}</span> · Created{' '}
+                        <span className="text-ink">{fmtDate(client.created_at)}</span>
+                      </p>
+                    </div>
+                    <div className="text-xs text-ink-muted">
+                      {clientPackages.length} packages · {clientPayments.length} payments ·{' '}
+                      {clientUpdates.length} updates · {clientModules.length} module rows ·{' '}
+                      {clientLinks.length} auth links
+                    </div>
+                  </div>
+
+                  {clientPackages.length > 0 && (
+                    <div className="mt-4 grid gap-3 md:grid-cols-2">
+                      {clientPackages.map((pkg) => (
+                        <div key={pkg.id} className="border border-[var(--color-border)] p-3">
+                          <p className="text-sm text-ink">{pkg.package_name}</p>
+                          <p className="mt-1 text-xs text-ink-muted">
+                            {pkg.package_type} · {pkg.status}
+                          </p>
+                          <p className="mt-1 text-xs text-ink-muted">
+                            Total {fmtCents(pkg.total_cents)}
+                            {pkg.recurring_amount_cents !== null
+                              ? ` · Recurring ${fmtCents(pkg.recurring_amount_cents)}/mo`
+                              : ''}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  <div className="mt-4 grid gap-3 md:grid-cols-3">
+                    <PreviewList
+                      title="Payments"
+                      items={clientPayments.map(
+                        (payment) => `${payment.label} · ${payment.status} · ${fmtCents(payment.amount_cents)}`,
+                      )}
+                    />
+                    <PreviewList
+                      title="Updates"
+                      items={clientUpdates.map((update) => `${update.title} · ${update.stage}`)}
+                    />
+                    <PreviewList
+                      title="Module rows"
+                      items={clientModules.map(
+                        (selection) =>
+                          `${selection.module_name}${selection.quantity > 1 ? ` × ${selection.quantity}` : ''} · ${fmtCents(selection.total_cents)}`,
+                      )}
+                    />
+                  </div>
+                </article>
+              )
+            })
+          )}
+
+          {preview.clients.length > 0 && (
+            <div className="border border-amber/30 bg-amber/5 p-4">
+              <label className="flex items-start gap-3 text-sm text-ink-muted">
+                <input
+                  type="checkbox"
+                  checked={confirmDelete}
+                  onChange={(e) => setConfirmDelete(e.target.checked)}
+                  className="mt-1 h-4 w-4 accent-amber"
+                />
+                <span>I understand this deletes matching test records.</span>
+              </label>
+
+              <div className="mt-4 flex flex-wrap gap-3">
+                <button
+                  type="button"
+                  onClick={() => void handleDelete()}
+                  disabled={!confirmDelete || deleting}
+                  className={A_BTN_DANGER}
+                >
+                  {deleting ? 'Deleting…' : 'Delete matching records'}
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+    </section>
+  )
+}
+
+function StatBox({ label, value }: { label: string; value: number }) {
+  return (
+    <div className="border border-[var(--color-border)] bg-[var(--color-bg)] p-4">
+      <p className="mb-2 text-[0.65rem] uppercase tracking-[0.08em] text-ink-subtle">{label}</p>
+      <p className="text-xl font-medium text-ink tabular-nums">{value}</p>
+    </div>
+  )
+}
+
+function PreviewList({ title, items }: { title: string; items: string[] }) {
+  return (
+    <div className="border border-[var(--color-border)] p-3">
+      <p className="mb-2 text-[0.65rem] uppercase tracking-[0.08em] text-ink-subtle">{title}</p>
+      {items.length > 0 ? (
+        <ul className="space-y-1 text-xs leading-relaxed text-ink-muted">
+          {items.map((item, index) => (
+            <li key={`${title}-${index}`}>{item}</li>
+          ))}
+        </ul>
+      ) : (
+        <p className="text-xs text-ink-subtle">None</p>
+      )}
     </div>
   )
 }

@@ -96,6 +96,12 @@ setup page after email links:
 
 These URLs are required for the client password setup flow and the client portal login flow.
 
+## 2d. Supabase Auth email delivery notes
+
+Supabase's default Auth email sender is rate-limited and intended for testing. If you expect to
+send multiple portal password emails in production, configure a custom SMTP provider in Supabase
+so password setup links are not throttled during normal use.
+
 ## 3. Run the migration
 
 Pick one:
@@ -242,6 +248,7 @@ After that you can log in at `/admin` with the email/password you set for that u
 | Dashboard | Summary cards: total leads, active clients, overdue payments, due in 30 days, active builds |
 | Clients table | Lists all clients with business name, email, status, active package, next payment |
 | Add client | Modal form: name, business, email, phone, website URL, status, notes → inserts into `clients` |
+| Test Data Cleanup | Preview and delete matching test records by client email through the admin UI |
 | Client detail — Overview | View and edit all client fields; saves to Supabase |
 | Client detail — Package | View active package (subtotal, discount, total, recurring, modules); edit status, payment URL, next payment due |
 | Client detail — Payments | List payment schedules; add new; mark paid / overdue / reset; edit payment URL per payment |
@@ -259,6 +266,19 @@ After that you can log in at `/admin` with the email/password you set for that u
 All admin reads/writes go through Supabase RLS. The `is_admin()` helper in the schema gates all
 admin-scoped policies. If an operation returns an RLS error, the admin UI surfaces the error
 message clearly — check that the user's `profiles.role = 'admin'` row exists.
+
+### Safe cleanup workflow
+
+The admin cleanup tool is intentionally narrow:
+
+1. Enter the exact client email.
+2. Preview the matching records.
+3. Confirm the deletion checkbox.
+4. Delete only the records tied to that email.
+
+The cleanup flow deletes `project_updates`, `payment_schedules`, `client_module_selections`,
+`client_packages`, `client_users`, and then `clients`. Stripe test events are left alone unless a
+future maintenance pass adds a separate, audited cleanup path for them.
 
 ## 8. Client portal
 
@@ -280,9 +300,9 @@ message clearly — check that the user's `profiles.role = 'admin'` row exists.
 - If Supabase env vars are missing, the portal shows a setup message instead of crashing.
 - The portal never exposes other clients, email logs, or internal-only updates.
 
-To connect a user to a client, insert a row into `client_users` with the Supabase auth user id and
-the target client id. Admin still connects the client auth user to the client record through
-`client_users` for special cases, but normal portal signup should self-link by email match.
+Manual inserts into `client_users` are only needed for special cases, such as an email mismatch or
+an intentionally hand-managed client record. Normal portal signup should self-link by email match
+through `claim-client-profile`.
 
 ## 9. What still needs to be built
 

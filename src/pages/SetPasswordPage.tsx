@@ -33,7 +33,7 @@ export function SetPasswordPage() {
   const [confirmPassword, setConfirmPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [success, setSuccess] = useState(false)
-  const [successMessage, setSuccessMessage] = useState('Password created. Continue to your client portal.')
+  const [successMessage, setSuccessMessage] = useState('Password created.')
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
@@ -113,7 +113,7 @@ export function SetPasswordPage() {
     e.preventDefault()
     setError(null)
     setSuccess(false)
-    setSuccessMessage('Password created. Continue to your client portal.')
+    setSuccessMessage('Password created.')
 
     if (!canEditPassword) {
       setError('Open the secure password setup link from your email first.')

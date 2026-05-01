@@ -110,13 +110,19 @@ Once the mapping exists, the client signs into `/portal` to see:
 
 `/portal` is the official client login page, uses email/password authentication, and should be
 linked from the success page as the primary post-payment destination for returning clients.
-New clients use the password setup link on `/portal` to reach `/set-password` and create their
-password securely through Supabase email recovery. After login, the portal calls
-`claim-client-profile` to link the signed-in auth user to the matching `clients.email` value if it
-finds one.
+New clients open the password setup form on `/portal`, receive a secure email link, and finish
+password creation on `/set-password` through Supabase email recovery. After login, the portal
+calls `claim-client-profile` to link the signed-in auth user to the matching `clients.email`
+value if it finds one.
 
 That means the checkout email and the auth email must match exactly. If they do not match, the
 portal stays in the pending state until an admin connects the record manually.
+
+Supabase Auth email delivery is rate-limited by default, so repeated password setup tests can hit
+temporary limits. For production use, configure custom SMTP in Supabase.
+
+The admin cleanup tool can safely remove matching test clients and related checkout records by
+email after you have finished testing the flow.
 
 ## Manual fallback
 

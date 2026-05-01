@@ -49,6 +49,9 @@ Edge Function without Supabase platform JWT blocking the request first. The port
 also uses `verify_jwt = false`, then verifies the logged-in Supabase user token itself before
 creating any `client_users` link.
 
+Supabase Auth password emails are separate from Stripe. The default Supabase sender is rate-limited
+for testing, so production should use custom SMTP if clients will request password links often.
+
 Edge Functions do not automatically read frontend `.env.local` `VITE_` variables. If a function
 needs a base URL for `success_url` / `cancel_url`, set it as the `SITE_URL` Supabase secret.
 The `claim-client-profile` function also uses `ANVIS_SUPABASE_SECRET_KEY` server-side to look up

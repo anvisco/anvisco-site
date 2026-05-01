@@ -13,6 +13,24 @@ interface UseClientPortalReturn extends ClientPortalState {
   signOut: () => Promise<void>
 }
 
+export function normalizePasswordEmailError(message: string | null): string | null {
+  if (!message) return null
+
+  const normalized = message.toLowerCase()
+  if (
+    normalized.includes('rate limit') ||
+    normalized.includes('rate-limit') ||
+    normalized.includes('too many') ||
+    normalized.includes('over_email_send_rate_limit') ||
+    normalized.includes('email send rate limit') ||
+    normalized.includes('security')
+  ) {
+    return 'Supabase has temporarily rate-limited password emails. Try again later or contact brian@anvisco.com.'
+  }
+
+  return message
+}
+
 export function useClientPortal(): UseClientPortalReturn {
   const [state, setState] = useState<ClientPortalState>({
     loading: true,
@@ -49,7 +67,7 @@ export function useClientPortal(): UseClientPortalReturn {
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
       redirectTo: `${window.location.origin}/set-password`,
     })
-    return error?.message ?? null
+    return normalizePasswordEmailError(error?.message ?? null)
   }
 
   async function signOut(): Promise<void> {
