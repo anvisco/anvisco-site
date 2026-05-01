@@ -31,16 +31,16 @@ const items = [
   {
     question: 'Do I pay right away?',
     answer:
-      'No. The request flow starts the process first. Payment or setup is confirmed after the scope is reviewed.',
+      'It depends. If you already know what your business needs, you can move forward and pay. If not, we first go through the right path together so the scope is clear before payment is finalized.',
   },
 ]
 
-export function HomepageFaq() {
+export function WorkFaq() {
   return (
     <section id="faq" className="scroll-mt-16 py-20 md:py-28 bg-[var(--color-surface)]">
       <div className="max-w-screen-xl mx-auto px-6 lg:px-12">
         <div className="flex items-center gap-4 mb-14 border-t border-[var(--color-border)] pt-7">
-          <span className="text-[0.7rem] tabular-nums text-amber font-medium tracking-[0.08em]">07</span>
+          <span className="text-[0.7rem] tabular-nums text-amber font-medium tracking-[0.08em]">03</span>
           <motion.div
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}

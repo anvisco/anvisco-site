@@ -6,7 +6,6 @@ import { BracketLabel } from '@/components/ui/BracketLabel'
 import { ModuleCard } from '@/components/sections/ModuleCard'
 import { BuildTierCard } from '@/components/sections/BuildTierCard'
 import { PlanCard } from '@/components/sections/PlanCard'
-import { Accordion } from '@/components/ui/Accordion'
 import { modules } from '@/data/modules'
 
 const buildTiers = [
@@ -83,34 +82,6 @@ const plans = [
   },
 ]
 
-const faqs = [
-  {
-    question: 'How is this different from a Wix or Squarespace site?',
-    answer:
-      'Templates are built for speed of setup, not for how a specific business operates or how people now search. Anvis builds custom-coded sites structured around your actual flow and around how people find local businesses today.',
-  },
-  {
-    question: 'Do I need a full rebuild?',
-    answer:
-      'Probably not. Most businesses get more value from one or two modules than from a full rebuild. The audit is designed to tell you which path makes sense.',
-  },
-  {
-    question: 'What does "AI-ready" actually mean?',
-    answer:
-      'Content and structure that both people and search systems - Google, AI tools, Maps - can clearly understand. Service clarity, location signals, FAQs based on real questions, schema-ready content blocks, and provider entity clarity.',
-  },
-  {
-    question: 'How long does a build take?',
-    answer:
-      'Essentials: 7 to 10 days. Standard: 10 to 14 days. Premium: 14 to 21 days. Modules vary by scope.',
-  },
-  {
-    question: 'Are the founding rates real?',
-    answer:
-      'Yes. They apply to the first few dental and local service builds, then prices return to public rates.',
-  },
-]
-
 export function ServicesPage() {
   const navigate = useNavigate()
   const goToBuild = () => navigate('/checkout?path=build')
@@ -130,6 +101,13 @@ export function ServicesPage() {
             <p className="max-w-[30ch] break-words text-base leading-relaxed text-ink-muted sm:max-w-[62ch] sm:text-[1.125rem]">
               Anvis offers four ways to work together: an audit to start, modules to upgrade specific parts, a full custom build, and recurring plans to keep the site improving.
             </p>
+            <Link
+              to="/checkout"
+              className="group mt-8 inline-flex items-center gap-2.5 border border-ink px-6 py-3 text-sm font-medium text-ink transition-all duration-200 hover:border-amber hover:text-amber"
+            >
+              Build Your Plan
+              <span className="text-amber transition-transform duration-200 group-hover:translate-x-0.5">→</span>
+            </Link>
           </div>
         </section>
 
@@ -163,7 +141,7 @@ export function ServicesPage() {
                 title="Paid AI-Ready Website Audit - $250"
                 body="A deeper review with a ranked action plan covering visibility, trust, content, speed, and booking flow."
                 footnote="$250, credited toward any module or full build within 30 days."
-                cta="Request Checkout"
+                cta="Start Your Audit"
                 to="/checkout?path=audit"
               />
             </div>
@@ -184,7 +162,7 @@ export function ServicesPage() {
               ))}
             </div>
             <p className="mt-8 text-sm text-ink-muted">Any three modules - 15% off the combined price.</p>
-            <ContactLink label="Request Modules" to="/checkout?path=modules" />
+            <ContactLink label="Choose Your Upgrades" to="/checkout?path=modules" />
           </div>
         </section>
 
@@ -200,7 +178,7 @@ export function ServicesPage() {
                   key={tier.name}
                   {...tier}
                   index={i}
-                  ctaLabel="Request this build"
+                  ctaLabel="Plan Your Build"
                   onCta={goToBuild}
                 />
               ))}
@@ -224,12 +202,6 @@ export function ServicesPage() {
           </div>
         </section>
 
-        <section className="py-20 md:py-28 bg-[var(--color-bg)]">
-          <div className="max-w-screen-xl mx-auto px-6 lg:px-12">
-            <SectionHeader number="06" label="FAQ" title="FAQ" />
-            <Accordion items={faqs} />
-          </div>
-        </section>
       </main>
       <Footer />
     </>

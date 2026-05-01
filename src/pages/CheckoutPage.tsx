@@ -34,10 +34,10 @@ import {
 type Path = 'audit' | 'modules' | 'build' | 'recurring'
 
 const PATHS: { id: Path; label: string; blurb: string }[] = [
-  { id: 'audit', label: 'Audit', blurb: 'Start with a focused review at $250.' },
+  { id: 'audit', label: 'Audit', blurb: 'Start with a focused review or a free snapshot.' },
   { id: 'modules', label: 'Modules', blurb: 'Upgrade specific layers. 3+ modules save 15%.' },
   { id: 'build', label: 'Full Build', blurb: 'Custom-coded site, three tiers.' },
-  { id: 'recurring', label: 'Recurring Plan', blurb: 'Care or Growth, monthly.' },
+  { id: 'recurring', label: 'Care Plan', blurb: 'Care or Growth, monthly.' },
 ]
 
 interface ClientDetails {
@@ -80,9 +80,8 @@ export function CheckoutPage() {
   const [path, setPath] = useState<Path>(initialPath)
 
   // Per-path state
-  // Pass 1 only supports the paid Full Audit on /checkout; the free Snapshot
-  // stays on /audit. Keep auditId so the package payload reads cleanly when
-  // additional audit options are added.
+  // Keep auditId so the package payload reads cleanly when additional audit
+  // options are added.
   const [auditId] = useState<AuditId>('full-audit')
   const [moduleQty, setModuleQty] = useState<Record<string, number>>({})
   const [buildId, setBuildId] = useState<BuildId>('standard')
@@ -223,7 +222,7 @@ export function CheckoutPage() {
       navigate('/checkout/success', { replace: true })
     } catch (err) {
       const message =
-        err instanceof Error ? err.message : 'Could not save your request.'
+        err instanceof Error ? err.message : 'Could not save your plan.'
       setSubmit({ kind: 'error', message })
     }
   }
@@ -243,14 +242,13 @@ export function CheckoutPage() {
           <div className="mb-14 border-t border-[var(--color-border)] pt-7">
             <div className="mb-6 flex items-center gap-4">
               <span className="text-[0.7rem] tabular-nums text-amber font-medium tracking-[0.08em]">/</span>
-              <BracketLabel>Request checkout</BracketLabel>
+              <BracketLabel>Build your plan</BracketLabel>
             </div>
             <h1 className="mb-5 max-w-[14ch] text-[2.5rem] font-medium leading-[1.04] tracking-[-0.03em] text-ink md:text-[4rem]">
-              Build your website request.
+              Build your plan.
             </h1>
             <p className="max-w-[58ch] text-base leading-relaxed text-ink-muted md:text-[1.0625rem]">
-              Pick a path, configure scope, and send a request. This is not instant payment - Brian
-              follows up to confirm scope and send a hosted payment or invoice link.
+              Pick the path that fits, configure scope, and continue. This is not instant payment. Brian follows up to confirm scope and send the next step.
             </p>
           </div>
 
@@ -345,8 +343,6 @@ function PathPicker({ path, setPath }: { path: Path; setPath: (p: Path) => void 
 }
 
 function AuditSection() {
-  // Pass 1: only the paid Full Audit goes through /checkout. The Free Snapshot
-  // stays on /audit as a contact-driven request.
   const fullAudit = AUDIT_OFFERS.find((a) => a.id === 'full-audit')!
   return (
     <section>
@@ -371,7 +367,7 @@ function AuditSection() {
       <p className="mt-4 text-sm text-ink-muted">
         Want the free Snapshot instead?{' '}
         <Link to="/audit" className="text-amber hover:underline">
-          Request the Snapshot →
+          Get Free Audit →
         </Link>
       </p>
     </section>
@@ -798,14 +794,13 @@ function Summary(props: {
         disabled={submitDisabled}
         className="group flex min-h-[52px] w-full items-center justify-center gap-2.5 border border-amber px-6 py-3 text-[0.7rem] font-medium uppercase tracking-[0.1em] text-amber transition-all duration-200 hover:bg-amber/10 disabled:opacity-60"
       >
-        {submitDisabled ? 'Sending request...' : 'Request Checkout'}
+        {submitDisabled ? 'Sending plan...' : submitLabel(path)}
         <span className="transition-transform duration-200 group-hover:translate-x-0.5">→</span>
       </button>
 
-      <p className="mt-4 text-[0.7rem] leading-relaxed text-ink-subtle">
-        This is a request, not a payment. Brian will confirm scope and send a hosted payment or
-        invoice link.
-      </p>
+    <p className="mt-4 text-[0.7rem] leading-relaxed text-ink-subtle">
+      This is a plan flow, not instant payment. Brian will confirm scope and send the next step.
+    </p>
 
       {!isSupabaseConfigured && (
         <p className="mt-4 border border-[var(--color-border)] px-3 py-2 text-[0.7rem] leading-relaxed text-ink-muted">
@@ -814,6 +809,14 @@ function Summary(props: {
       )}
     </aside>
   )
+}
+
+function submitLabel(path: Path) {
+  if (path === 'audit') return 'Start Your Audit'
+  if (path === 'modules') return 'Choose Your Upgrades'
+  if (path === 'build') return 'Plan Your Build'
+  if (path === 'recurring') return 'Choose a Care Plan'
+  return 'Build Your Plan'
 }
 
 function Row({

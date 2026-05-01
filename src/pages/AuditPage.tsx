@@ -42,8 +42,8 @@ export function AuditPage() {
               A focused review of how your site performs on visibility, trust, conversion, and AI-search readiness, so you know exactly where to invest before spending on a rebuild.
             </p>
             <div className="flex flex-wrap gap-4">
-              <AuditCta label="Get the Free Snapshot" />
-              <AuditCta label="Get the Full Audit - $250" to="/checkout?path=audit" subtle />
+              <AuditCta label="Get Free Audit" />
+              <AuditCta label="Start Your Audit" to="/checkout?path=audit" subtle />
             </div>
           </div>
         </section>
@@ -56,13 +56,13 @@ export function AuditPage() {
                 title="Free AI-Ready Website Snapshot"
                 items={snapshotItems}
                 bestFor="Practices wanting a quick second opinion before committing to anything."
-                cta="Request the Snapshot"
+                cta="Get Free Audit"
               />
               <AuditOption
                 title="Paid AI-Ready Website Audit - $250"
                 items={fullAuditItems}
                 bestFor="Practices that want depth and a clear plan before deciding what to invest in."
-                cta="Request the Full Audit"
+                cta="Start Your Audit"
                 to="/checkout?path=audit"
               />
             </div>
@@ -109,8 +109,8 @@ export function AuditPage() {
               Most practices spend money on the wrong fix because they never had a clear picture of what was actually broken. The audit fixes that.
             </p>
             <div className="flex flex-wrap gap-4">
-              <AuditCta label="Get the Free Snapshot" />
-              <AuditCta label="Get the Full Audit - $250" to="/checkout?path=audit" subtle />
+              <AuditCta label="Get Free Audit" />
+              <AuditCta label="Start Your Audit" to="/checkout?path=audit" subtle />
             </div>
           </div>
         </section>

@@ -53,7 +53,7 @@ export function Modules() {
           to="/services"
           className="group mt-10 inline-flex items-center gap-2.5 border border-[var(--color-border-strong)] px-5 py-3 text-[0.7rem] font-medium uppercase tracking-[0.1em] text-ink transition-all duration-200 hover:border-amber hover:text-amber"
         >
-          View all modules
+          Choose Your Upgrades
           <span className="text-amber transition-transform duration-200 group-hover:translate-x-0.5">→</span>
         </Link>
 

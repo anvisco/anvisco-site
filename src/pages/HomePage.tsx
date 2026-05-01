@@ -7,7 +7,6 @@ import { ThreePaths } from '@/components/sections/ThreePaths'
 import { Modules } from '@/components/sections/Modules'
 import { CustomBuild } from '@/components/sections/CustomBuild'
 import { Process } from '@/components/sections/Process'
-import { HomepageFaq } from '@/components/sections/HomepageFaq'
 import { Contact } from '@/components/sections/Contact'
 
 export function HomePage() {
@@ -22,7 +21,6 @@ export function HomePage() {
         <Modules />
         <CustomBuild />
         <Process />
-        <HomepageFaq />
         <Contact />
       </main>
       <Footer />

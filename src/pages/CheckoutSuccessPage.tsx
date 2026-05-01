@@ -13,30 +13,29 @@ export function CheckoutSuccessPage() {
           <div className="max-w-2xl border-t border-[var(--color-border)] pt-7">
             <div className="mb-6 flex items-center gap-4">
               <span className="text-[0.7rem] tabular-nums text-amber font-medium tracking-[0.08em]">/</span>
-              <BracketLabel>Request received</BracketLabel>
+              <BracketLabel>Plan received</BracketLabel>
             </div>
 
             <h1 className="mb-5 text-[2.5rem] font-medium leading-[1.04] tracking-[-0.03em] text-ink md:text-[3.5rem]">
-              Got it. Brian will follow up.
+              Plan received.
             </h1>
 
             <p className="mb-10 max-w-[58ch] text-base leading-relaxed text-ink-muted md:text-[1.0625rem]">
-              Your request was logged. Brian will email within one business day to confirm scope
-              and send a hosted payment or invoice link. No card was charged.
+              Your plan has been received. Brian will follow up with the next step, payment link,
+              or setup details based on what you selected.
             </p>
 
             <div className="mb-10 grid gap-6 border-y border-[var(--color-border)] py-8">
               <Step n="01" title="Confirm scope">
-                Brian reviews the request and replies with a recap, any clarifying questions, and a
+                Brian reviews the plan and replies with a recap, any clarifying questions, and a
                 short timeline.
               </Step>
-              <Step n="02" title="Payment or invoice">
-                Audits and modules use a hosted Stripe Payment Link or invoice. Builds use a 50%
-                deposit. Recurring plans use a Stripe subscription.
+              <Step n="02" title="Payment or setup">
+                Audits and modules use a payment link or invoice. Builds use a 50% deposit.
+                Recurring plans use a monthly subscription.
               </Step>
               <Step n="03" title="Kickoff">
-                Once payment is in, work starts and progress flows into your client portal as it
-                opens.
+                Once payment or setup is confirmed, work starts.
               </Step>
             </div>
 
@@ -57,7 +56,7 @@ export function CheckoutSuccessPage() {
               </Link>
               <a
                 href={`mailto:${EMAIL}`}
-                className="inline-flex items-center gap-2.5 px-2 py-3 text-sm text-ink-muted transition-colors duration-150 hover:text-amber"
+                className="inline-flex items-center gap-2.5 px-2 py-3 font-sans text-sm text-ink-muted transition-colors duration-150 hover:text-amber"
               >
                 Questions? {EMAIL}
               </a>

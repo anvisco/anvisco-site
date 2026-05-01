@@ -12,14 +12,14 @@ export function Contact() {
 
         {/* Section header */}
         <div className="flex items-center gap-4 mb-14 border-t border-[var(--color-border)] pt-7">
-          <span className="text-[0.7rem] tabular-nums text-amber font-medium tracking-[0.08em]">08</span>
+          <span className="text-[0.7rem] tabular-nums text-amber font-medium tracking-[0.08em]">07</span>
           <motion.div
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
             viewport={{ once: true }}
             transition={{ duration: 0.4 }}
           >
-            <BracketLabel>Website request</BracketLabel>
+            <BracketLabel>Build your plan</BracketLabel>
           </motion.div>
         </div>
 
@@ -52,29 +52,31 @@ export function Contact() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5, ease: 'easeOut', delay: 0.18 }}
-            className="flex flex-col items-start gap-6 sm:flex-row sm:flex-wrap sm:items-center"
+            className="flex flex-col items-start gap-6"
           >
-            <Link
-              to="/checkout"
-              className="group inline-flex items-center gap-2.5 border-[1.5px] border-ink px-8 py-4 text-sm font-medium text-ink tracking-[-0.005em] transition-all duration-200 hover:border-amber hover:text-amber"
-            >
-              Start a Website Request
-              <span className="text-amber transition-transform duration-200 group-hover:translate-x-0.5">→</span>
-            </Link>
+            <div className="flex flex-col items-start gap-4 sm:flex-row sm:flex-wrap sm:items-center">
+              <Link
+                to="/checkout"
+                className="group inline-flex items-center gap-2.5 border-[1.5px] border-ink px-8 py-4 text-sm font-medium text-ink tracking-[-0.005em] transition-all duration-200 hover:border-amber hover:text-amber"
+              >
+                Build Your Plan
+                <span className="text-amber transition-transform duration-200 group-hover:translate-x-0.5">→</span>
+              </Link>
 
-            <Link
-              to="/services"
-              className="group relative text-sm text-ink-muted transition-colors duration-200 hover:text-ink"
-            >
-              Compare Services
-              <span
-                aria-hidden="true"
-                className="absolute -bottom-0.5 left-0 h-px w-0 bg-amber transition-all duration-200 group-hover:w-full"
-              />
-            </Link>
+              <Link
+                to="/services"
+                className="group relative text-sm text-ink-muted transition-colors duration-200 hover:text-ink"
+              >
+                Compare Services
+                <span
+                  aria-hidden="true"
+                  className="absolute -bottom-0.5 left-0 h-px w-0 bg-amber transition-all duration-200 group-hover:w-full"
+                />
+              </Link>
+            </div>
 
-            <p className="text-sm text-ink-muted">
-              Questions? <a href="mailto:brian@anvisco.com" className="text-amber transition-colors hover:text-ink">brian@anvisco.com</a>
+            <p className="mt-2 text-sm text-ink-muted">
+              Questions? <a href="mailto:brian@anvisco.com" className="font-sans text-amber transition-colors hover:text-ink">brian@anvisco.com</a>
             </p>
           </motion.div>
 

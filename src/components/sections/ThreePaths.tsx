@@ -6,19 +6,19 @@ const paths = [
   {
     name: 'Audit',
     description: 'Find out where your site is losing visibility, trust, or bookings.',
-    cta: 'Start with an Audit',
+    cta: 'Start Your Audit',
     to: '/audit',
   },
   {
     name: 'Improve',
     description: 'Upgrade specific parts of your existing website.',
-    cta: 'See Services',
+    cta: 'Choose Your Upgrades',
     to: '/services',
   },
   {
     name: 'Rebuild',
     description: 'A full custom-coded website built around your business.',
-    cta: 'See Custom Builds',
+    cta: 'Plan Your Build',
     to: '/services',
   },
 ]

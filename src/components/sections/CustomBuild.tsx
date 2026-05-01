@@ -61,7 +61,7 @@ export function CustomBuild() {
                 to="/services"
                 className="group inline-flex items-center gap-2.5 border-[1.5px] border-ink px-6 py-3 text-sm font-medium text-ink tracking-[-0.005em] transition-all duration-200 hover:border-amber hover:text-amber"
               >
-                See Build Tiers
+                Plan Your Build
                 <span className="text-amber transition-transform duration-200 group-hover:translate-x-0.5">→</span>
               </Link>
             </motion.div>
