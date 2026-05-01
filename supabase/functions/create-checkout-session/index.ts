@@ -30,14 +30,19 @@ type DbClient = { id: string }
 type DbPackage = { id: string; client_id: string }
 type DbPaymentSchedule = { id: string }
 
-const JSON_HEADERS = {
-  'content-type': 'application/json; charset=utf-8',
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
 }
 
 function json(status: number, body: Record<string, unknown>) {
   return new Response(JSON.stringify(body), {
     status,
-    headers: JSON_HEADERS,
+    headers: {
+      ...corsHeaders,
+      'Content-Type': 'application/json',
+    },
   })
 }
 
@@ -133,20 +138,24 @@ async function stripeApi(
 }
 
 const SUPABASE_URL = getRequiredEnv('SUPABASE_URL')
-const SUPABASE_SERVICE_ROLE_KEY = getRequiredEnv('SUPABASE_SERVICE_ROLE_KEY')
+const ANVIS_SUPABASE_SECRET_KEY = getRequiredEnv('ANVIS_SUPABASE_SECRET_KEY')
 const STRIPE_SECRET_KEY = getRequiredEnv('STRIPE_SECRET_KEY')
 const STRIPE_CURRENCY = (getRequiredEnv('STRIPE_CURRENCY') ?? 'usd').toLowerCase()
 
-if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
+if (!SUPABASE_URL || !ANVIS_SUPABASE_SECRET_KEY) {
   console.warn('Missing Supabase service credentials for Stripe checkout function.')
 }
 
 export default async function handler(request: Request): Promise<Response> {
+  if (request.method === 'OPTIONS') {
+    return new Response('ok', { headers: corsHeaders })
+  }
+
   if (request.method !== 'POST') {
     return json(405, { error: 'Method not allowed.' })
   }
 
-  if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
+  if (!SUPABASE_URL || !ANVIS_SUPABASE_SECRET_KEY) {
     return json(500, { error: 'Supabase service role secret is not configured.' })
   }
 
@@ -154,7 +163,7 @@ export default async function handler(request: Request): Promise<Response> {
     return json(500, { error: 'Stripe secret key is not configured.' })
   }
 
-  const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
+  const supabase = createClient(SUPABASE_URL, ANVIS_SUPABASE_SECRET_KEY, {
     auth: { persistSession: false, autoRefreshToken: false },
   })
 

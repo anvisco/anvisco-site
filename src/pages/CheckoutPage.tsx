@@ -64,6 +64,9 @@ type SubmitState =
 const INPUT_CLASS =
   'w-full border border-[var(--color-border-strong)] bg-transparent px-3 py-2 text-sm text-ink placeholder:text-ink-subtle focus:border-amber focus:outline-none'
 
+const CHECKOUT_ERROR_MESSAGE =
+  'Stripe checkout could not be created. Please try again or contact brian@anvisco.com.'
+
 export function CheckoutPage() {
   const [searchParams] = useSearchParams()
 
@@ -120,7 +123,6 @@ export function CheckoutPage() {
   // ---------- Submit ----------
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    setSubmit({ kind: 'submitting' })
 
     if (!details.name.trim() || !details.email.trim()) {
       setSubmit({ kind: 'error', message: 'Name and email are required.' })
@@ -137,6 +139,9 @@ export function CheckoutPage() {
       return
     }
 
+    setSubmit({ kind: 'submitting' })
+
+    let redirected = false
     try {
       const payload = {
         package_type: path,
@@ -162,18 +167,28 @@ export function CheckoutPage() {
 
       const { data, error } = await supabase.functions.invoke('create-checkout-session', {
         body: payload,
+        timeout: 20_000,
       })
 
-      if (error) throw new Error(error.message)
+      if (error) throw error
 
       const sessionUrl = typeof data?.url === 'string' ? data.url : null
-      if (!sessionUrl) throw new Error('Stripe Checkout URL was not returned.')
+      if (!sessionUrl) {
+        throw new Error('Stripe checkout URL was not returned.')
+      }
 
+      redirected = true
       window.location.assign(sessionUrl)
     } catch (err) {
-      const message =
-        err instanceof Error ? err.message : 'Could not create a Stripe checkout session.'
-      setSubmit({ kind: 'error', message })
+      console.error('Stripe checkout session creation failed', {
+        name: err instanceof Error ? err.name : 'UnknownError',
+        message: err instanceof Error ? err.message : String(err),
+      })
+      setSubmit({ kind: 'error', message: CHECKOUT_ERROR_MESSAGE })
+    } finally {
+      if (!redirected) {
+        setSubmit((current) => (current.kind === 'submitting' ? { kind: 'idle' } : current))
+      }
     }
   }
 
@@ -198,7 +213,7 @@ export function CheckoutPage() {
               Build your plan.
             </h1>
             <p className="max-w-[58ch] text-base leading-relaxed text-ink-muted md:text-[1.0625rem]">
-              Pick the path that fits, configure scope, and continue. This is not instant payment. Brian follows up to confirm scope and send the next step.
+              Choose your path and continue to secure checkout. Payment happens through Stripe.
             </p>
           </div>
 
@@ -746,7 +761,7 @@ function Summary(props: {
       </button>
 
       <p className="mt-4 text-[0.7rem] leading-relaxed text-ink-subtle">
-        This is a plan flow, not instant payment. Brian will confirm scope and send the next step.
+        Secure Stripe checkout. Build Your Plan and continue to payment through Stripe.
       </p>
 
       {!isSupabaseConfigured && (

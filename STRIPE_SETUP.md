@@ -14,7 +14,7 @@ Set these in Supabase, not in frontend env files:
 
 ```bash
 supabase secrets set \
-  SUPABASE_SERVICE_ROLE_KEY=... \
+  ANVIS_SUPABASE_SECRET_KEY=... \
   STRIPE_SECRET_KEY=... \
   STRIPE_WEBHOOK_SECRET=... \
   STRIPE_CURRENCY=usd

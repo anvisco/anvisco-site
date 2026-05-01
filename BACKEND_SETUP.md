@@ -54,7 +54,7 @@ cp .env.example .env.local
 VITE_SUPABASE_URL=https://xxxxx.supabase.co
 VITE_SUPABASE_ANON_KEY=eyJ...
 VITE_SITE_URL=http://localhost:5173
-SUPABASE_SERVICE_ROLE_KEY=
+ANVIS_SUPABASE_SECRET_KEY=
 STRIPE_SECRET_KEY=
 STRIPE_WEBHOOK_SECRET=
 STRIPE_CURRENCY=usd
@@ -69,7 +69,7 @@ shipped to the browser:
 
 ```bash
 supabase secrets set \
-  SUPABASE_SERVICE_ROLE_KEY=... \
+  ANVIS_SUPABASE_SECRET_KEY=... \
   STRIPE_SECRET_KEY=... \
   STRIPE_WEBHOOK_SECRET=... \
   STRIPE_CURRENCY=usd

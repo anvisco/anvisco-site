@@ -11,14 +11,24 @@ type StripeEvent = {
 type StripeObject = Record<string, unknown>
 
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')?.trim() ?? ''
-const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')?.trim() ?? ''
+const ANVIS_SUPABASE_SECRET_KEY = Deno.env.get('ANVIS_SUPABASE_SECRET_KEY')?.trim() ?? ''
 const STRIPE_SECRET_KEY = Deno.env.get('STRIPE_SECRET_KEY')?.trim() ?? ''
 const STRIPE_WEBHOOK_SECRET = Deno.env.get('STRIPE_WEBHOOK_SECRET')?.trim() ?? ''
 
-const JSON_HEADERS = { 'content-type': 'application/json; charset=utf-8' }
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, stripe-signature',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+}
 
 function json(status: number, body: Record<string, unknown>) {
-  return new Response(JSON.stringify(body), { status, headers: JSON_HEADERS })
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: {
+      ...corsHeaders,
+      'Content-Type': 'application/json',
+    },
+  })
 }
 
 function getString(value: unknown): string | null {
@@ -102,11 +112,15 @@ async function markEventProcessed(
 }
 
 export default async function handler(request: Request): Promise<Response> {
+  if (request.method === 'OPTIONS') {
+    return new Response('ok', { headers: corsHeaders })
+  }
+
   if (request.method !== 'POST') {
     return json(405, { error: 'Method not allowed.' })
   }
 
-  if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY || !STRIPE_SECRET_KEY || !STRIPE_WEBHOOK_SECRET) {
+  if (!SUPABASE_URL || !ANVIS_SUPABASE_SECRET_KEY || !STRIPE_SECRET_KEY || !STRIPE_WEBHOOK_SECRET) {
     return json(500, { error: 'Stripe webhook environment is not configured.' })
   }
 
@@ -128,7 +142,7 @@ export default async function handler(request: Request): Promise<Response> {
     return json(400, { error: 'Invalid Stripe event payload.' })
   }
 
-  const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
+  const supabase = createClient(SUPABASE_URL, ANVIS_SUPABASE_SECRET_KEY, {
     auth: { persistSession: false, autoRefreshToken: false },
   })
 
