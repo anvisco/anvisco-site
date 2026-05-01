@@ -21,8 +21,8 @@ export function CheckoutSuccessPage() {
             </h1>
 
             <p className="mb-10 max-w-[58ch] text-base leading-relaxed text-ink-muted md:text-[1.0625rem]">
-              Your plan has been received. Brian will follow up with the next step, payment link,
-              or setup details based on what you selected.
+              Your plan has been received. Brian will follow up with the next step, Stripe
+              payment status, or setup details based on what you selected.
             </p>
 
             <div className="mb-10 grid gap-6 border-y border-[var(--color-border)] py-8">
@@ -31,8 +31,8 @@ export function CheckoutSuccessPage() {
                 short timeline.
               </Step>
               <Step n="02" title="Payment or setup">
-                Audits and modules use a payment link or invoice. Builds use a 50% deposit.
-                Recurring plans use a monthly subscription.
+                Audits and modules use Stripe Checkout. Builds use a 50% deposit through Stripe
+                Checkout. Recurring plans use a monthly subscription.
               </Step>
               <Step n="03" title="Kickoff">
                 Once payment or setup is confirmed, work starts.

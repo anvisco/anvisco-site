@@ -61,7 +61,7 @@ const payments = [
   {
     question: 'What happens after I build my plan?',
     answer:
-      'Brian reviews the plan, confirms scope, and sends the next step. That may be a payment link, invoice, or setup details depending on the path you selected.',
+      'Brian reviews the plan, confirms scope, and sends the next step. That may be Stripe Checkout, an invoice, or setup details depending on the path you selected.',
   },
 ]
 

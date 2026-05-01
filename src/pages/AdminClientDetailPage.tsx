@@ -65,6 +65,9 @@ interface DbPayment {
   due_date: string | null
   status: string
   payment_url: string | null
+  stripe_session_id: string | null
+  stripe_payment_intent_id: string | null
+  stripe_invoice_id: string | null
   paid_at: string | null
   created_at: string
 }
@@ -453,7 +456,7 @@ function PackageTab({
                 onChange={(e) => setEditForm({ ...editForm, status: e.target.value as PackageStatus })}
                 className={A_SELECT}
               >
-                {(['requested', 'scoped', 'in_progress', 'complete', 'cancelled'] as PackageStatus[]).map(
+                {(['requested', 'scoped', 'in_progress', 'active', 'complete', 'cancelled'] as PackageStatus[]).map(
                   (s) => <option key={s} value={s}>{s.replace(/_/g, ' ')}</option>,
                 )}
               </select>
@@ -667,6 +670,12 @@ function PaymentsTab({
                   </p>
                 </div>
                 <StatusBadge status={p.status} />
+              </div>
+
+              <div className="mb-3 grid gap-2 text-xs text-ink-subtle sm:grid-cols-3">
+                <Meta label="Stripe session" value={p.stripe_session_id} />
+                <Meta label="Payment intent" value={p.stripe_payment_intent_id} />
+                <Meta label="Invoice" value={p.stripe_invoice_id} />
               </div>
 
               {/* Payment URL row */}
@@ -961,6 +970,15 @@ function Row({ label, children }: { label: string; children: React.ReactNode }) 
     <div className="flex gap-6 py-2.5 text-sm">
       <dt className="w-32 shrink-0 text-ink-subtle">{label}</dt>
       <dd className="text-ink-muted">{children}</dd>
+    </div>
+  )
+}
+
+function Meta({ label, value }: { label: string; value: string | null }) {
+  return (
+    <div className="border border-[var(--color-border)] px-3 py-2">
+      <p className="mb-1 text-[0.62rem] uppercase tracking-[0.06em] text-ink-subtle">{label}</p>
+      <p className="break-all text-ink-muted">{value ?? '—'}</p>
     </div>
   )
 }

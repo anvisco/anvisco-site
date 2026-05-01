@@ -1,8 +1,8 @@
-# Checkout / plan builder flow
+# Checkout / Stripe flow
 
-`/checkout` is a **plan builder**, not an instant payment page. It captures what a client wants,
-runs the bundle math, and saves the chosen path to Supabase. Brian then follows up with the next
-step, payment link, or setup details based on the selected path.
+`/checkout` is a **plan builder**, not a custom payment form. It captures what a client wants,
+runs the bundle math in the UI, and then hands the selected path to a Supabase Edge Function that
+creates a Stripe-hosted Checkout Session with trusted server-side pricing.
 
 ## Pricing source of truth
 
@@ -56,24 +56,22 @@ A 50% deposit row is created in `payment_schedules` automatically on full-build 
 
 ## Recurring (Care / Growth)
 
-Recurring is a request rather than a checkout. The submission saves a `client_package` with
-`package_type = 'recurring'` and `recurring_amount_cents` set. No `payment_schedule` row is
-created, since the subscription is set up by Brian via Stripe in a follow-up.
+Recurring uses Stripe Checkout in subscription mode. The submission still saves a
+`client_package` with `package_type = 'recurring'` and `recurring_amount_cents` set, and the
+Edge Function creates the hosted subscription session server-side.
 
-## How requests are saved
+## Stripe session flow
 
 On submit, `/checkout`:
 
-1. Inserts a row in `clients` with `status = 'lead'`.
-2. Inserts a row in `client_packages` with the chosen `package_type`, the calculated cents
-   amounts, and `status = 'requested'`.
-3. For modules: inserts one row per selection in `client_module_selections`.
-4. For audit / modules / build: inserts a `payment_schedules` row with
-   `status = 'not_started'`. Build deposit is 50%.
-5. Redirects to `/checkout/success`.
+1. Sends the selected path and client details to the `create-checkout-session` Edge Function.
+2. The function recalculates the final subtotal, bundle discount, and charge amount server-side.
+3. The function creates or updates the client, package, module selections, and payment schedule.
+4. The function creates a Stripe Checkout Session and returns the hosted `session.url`.
+5. The browser redirects the client to Stripe-hosted Checkout.
 
-If any insert fails (RLS, network, constraint), the page surfaces the error in the summary and
-keeps the form filled in.
+If Stripe or Supabase returns an error, the page surfaces the message in the summary and keeps
+the form filled in.
 
 ## Client portal handoff
 
@@ -87,6 +85,11 @@ Once the mapping exists, the client signs into `/portal` to see:
 - stage and visible updates
 - support contact details
 
+## Manual fallback
+
+Admin can still set a `payment_url` manually on a package or payment schedule when a hosted
+Stripe link or another payment path is needed.
+
 ## What happens if Supabase is not configured
 
 `isSupabaseConfigured` is `false` and `supabase` is `null` when env vars are missing. Submitting
@@ -97,13 +100,8 @@ a similar "setup required" panel.
 
 ## Limitations of v1
 
-- **No real payments** at submission time. Brian sends a hosted Stripe link or invoice manually.
+- **No card data** is ever stored on this site. Stripe-hosted Checkout handles payment capture.
 - **No emails** are sent. Email sending wires up in a later pass via Resend or Postmark.
-- **`anon` insert path** — `/checkout` writes as the unauthenticated user. RLS lets it through
-  for `clients`, `client_packages`, `client_module_selections`, and `payment_schedules`. If you
-  tighten policies, route submissions through a Supabase Edge Function instead.
-- **No idempotency.** Double-clicking the submit button can create duplicate requests. Pass 2
-  fix.
+- **Stripe webhooks** update payment status after Checkout completes. The frontend never marks a
+  payment paid on redirect.
 - **No anti-spam.** A future pass should add a honeypot or hCaptcha.
-- **Audit credit tracking** for the $250 → module/build credit is not yet enforced — Brian
-  applies it manually when issuing the next invoice.

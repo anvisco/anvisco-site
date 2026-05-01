@@ -256,7 +256,7 @@ You can move straight into the plan builder and choose the path that fits.
 It depends. If you already know what your business needs, you can move forward and pay. If not, we first go through the right path together so the scope is clear before payment is finalized.
 
 **What happens after I build my plan?**
-Brian follows up with the next step, payment link, or setup details based on what you selected.
+Brian follows up with the next step, Stripe Checkout, or setup details based on what you selected.
 
 ### Care
 
@@ -340,7 +340,7 @@ Success page label:
 - `Plan received`
 
 Success copy:
-Your plan has been received. Brian will follow up with the next step, payment link, or setup details based on what you selected.
+Your plan has been received. Brian will follow up with the next step, Stripe Checkout, or setup details based on what you selected.
 
 The page should make it clear this is a plan builder. Do not imply instant payment unless an actual payment integration is present.
 

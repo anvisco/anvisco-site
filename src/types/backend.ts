@@ -46,6 +46,7 @@ export type PackageStatus =
   | 'requested'
   | 'scoped'
   | 'in_progress'
+  | 'active'
   | 'complete'
   | 'cancelled'
 

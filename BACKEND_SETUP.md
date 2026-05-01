@@ -13,13 +13,14 @@ real authenticated `/portal` client view.
 - `/checkout/success` confirmation page
 - `/admin` and `/portal` routes
 - `/next-steps/{audit,scope,build,launch}` public stage pages
+- Supabase Edge Functions for Stripe Checkout Sessions and webhook processing
 - TypeScript types in `src/types/backend.ts`
 
 ## What is intentionally not included
 
 - Admin login, dashboard, and CRUD UI
 - Client portal login and live data binding
-- Real Stripe integration (Payment Links / subscriptions / webhooks)
+- Real Stripe integration (Checkout Sessions / subscriptions / webhooks)
 - Real email sending (Resend/Postmark wiring)
 - Server functions / Edge Functions
 - Audit / module credit tracking
@@ -53,9 +54,28 @@ cp .env.example .env.local
 VITE_SUPABASE_URL=https://xxxxx.supabase.co
 VITE_SUPABASE_ANON_KEY=eyJ...
 VITE_SITE_URL=http://localhost:5173
+SUPABASE_SERVICE_ROLE_KEY=
+STRIPE_SECRET_KEY=
+STRIPE_WEBHOOK_SECRET=
+STRIPE_CURRENCY=usd
 ```
 
 `.env.local` is gitignored. Never commit it.
+
+## 2b. Configure Supabase secrets for Edge Functions
+
+Store server-only values with the Supabase CLI so they are available to Edge Functions but never
+shipped to the browser:
+
+```bash
+supabase secrets set \
+  SUPABASE_SERVICE_ROLE_KEY=... \
+  STRIPE_SECRET_KEY=... \
+  STRIPE_WEBHOOK_SECRET=... \
+  STRIPE_CURRENCY=usd
+```
+
+Never prefix these with `VITE_`.
 
 ## 3. Run the migration
 
@@ -115,19 +135,37 @@ npm run dev
 - With env vars filled in, submitting creates rows in `clients`, `client_packages`, optional
   `client_module_selections`, and a `payment_schedules` row, then redirects to `/checkout/success`.
 
-## 6. Payments in v1
+## 6. Payments
 
-Payments are **manual / Stripe-hosted**:
+Stripe Checkout Sessions are created server-side by the `create-checkout-session` Edge Function.
+The frontend only sends the selected path and client details; the function recalculates pricing
+from trusted data before it talks to Stripe.
 
-- Brian receives the request, confirms scope, and creates a Stripe Payment Link or invoice
-  (or sends an e-transfer detail) by email.
-- The hosted link's URL gets pasted into `client_packages.payment_url` and/or
-  `payment_schedules.payment_url` from the admin UI (Pass 2) or directly in Supabase.
-- **No card data is ever stored on this site.** Only Stripe customer/subscription IDs are
-  stored, for reference.
+- Audits, module bundles, build deposits, and recurring plans all use Stripe-hosted Checkout.
+- No card data is stored on this site.
+- Stripe secret keys stay in Edge Function secrets and are never exposed to the browser.
+- Manual `payment_url` fallback is still supported in the admin portal when needed.
+- Stripe webhook processing updates payment and package status after Checkout completes.
 
-The optional `VITE_STRIPE_PAYMENT_LINK_*` env vars exist for a future pass that links
-straight from `/checkout` to a hosted Payment Link for canned offers (audit, three build tiers).
+## 6b. Deploy Stripe Edge Functions
+
+Deploy both functions after setting secrets:
+
+```bash
+supabase functions deploy create-checkout-session
+supabase functions deploy stripe-webhook
+```
+
+In Stripe, point the webhook endpoint at the deployed `stripe-webhook` function URL and listen for:
+
+- `checkout.session.completed`
+- `invoice.paid`
+- `invoice.payment_failed`
+- `customer.subscription.created`
+- `customer.subscription.updated`
+- `customer.subscription.deleted`
+
+Use Stripe test mode while verifying the flow.
 
 ## 7. Admin portal
 
@@ -163,10 +201,8 @@ After that you can log in at `/admin` with the email/password you set for that u
 ### What is still manual or not yet built
 
 - **Email sending:** The email compose form saves a draft to `email_logs` only. No emails are
-  actually sent. Real sending wires up in Pass 3 (Resend / Postmark).
-- **Payment processing:** Payment URLs are Stripe-hosted links pasted manually by admin. No
-  Stripe webhook processing yet. Pass 3.
-- **Audit credit tracking:** Not yet built.
+  actually sent yet.
+- **Audit credit tracking:** Not yet enforced automatically.
 
 ### RLS notes
 
@@ -190,14 +226,17 @@ the target client id.
 
 ## 9. What still needs to be built
 
-- **Pass 3:** real email sending (Resend/Postmark), Stripe webhooks → `payment_schedules.status`,
-  audit-credit tracking, file delivery for audits.
-- **Pass 4:** subscription billing, churn/lifecycle automations, analytics on `package_type` mix.
+- Real email sending (Resend/Postmark)
+- Audit credit tracking automation
+- File delivery for audits
+- Subscription lifecycle automations and analytics
 
 ## Troubleshooting
 
 - **"Backend is not connected" on `/checkout` or `/portal`:** env vars are missing. Add them to
   `.env.local` and restart `npm run dev`.
+- **Stripe Checkout or webhook failing:** confirm the Edge Function secrets are set with
+  `supabase secrets set` and that Stripe is pointing to the webhook endpoint documented below.
 - **`new row violates row-level security` when inserting a client:** the `clients` insert path is
   expected to be done by the public `/checkout` flow. The anon user inserts those rows. If you
   added a stricter policy, also add a policy that lets `anon` insert into `clients` and

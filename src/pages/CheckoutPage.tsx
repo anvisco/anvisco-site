@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { Link, useNavigate, useSearchParams } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import { Nav } from '@/components/layout/Nav'
 import { Footer } from '@/components/layout/Footer'
 import { BracketLabel } from '@/components/ui/BracketLabel'
@@ -16,13 +16,11 @@ import {
 } from '@/data/offers'
 import {
   calculateBundleDiscount,
-  calculateModuleLineTotal,
   calculateModuleSubtotal,
   calculateModuleTotal,
   formatCurrency,
   hasBundleDiscount,
   normalizeModuleQuantity,
-  toCents,
   type SelectedModule,
 } from '@/lib/pricing'
 import {
@@ -67,7 +65,6 @@ const INPUT_CLASS =
   'w-full border border-[var(--color-border-strong)] bg-transparent px-3 py-2 text-sm text-ink placeholder:text-ink-subtle focus:border-amber focus:outline-none'
 
 export function CheckoutPage() {
-  const navigate = useNavigate()
   const [searchParams] = useSearchParams()
 
   // Path selection (deep-linkable: /checkout?path=modules)
@@ -141,88 +138,41 @@ export function CheckoutPage() {
     }
 
     try {
-      const { data: client, error: clientErr } = await supabase
-        .from('clients')
-        .insert({
-          name: details.name.trim(),
-          business_name: details.businessName.trim() || null,
-          email: details.email.trim().toLowerCase(),
-          phone: details.phone.trim() || null,
-          website_url: details.websiteUrl.trim() || null,
-          status: 'lead',
-          notes: details.notes.trim() || null,
-        })
-        .select('id')
-        .single()
-      if (clientErr || !client) throw clientErr ?? new Error('client_insert_failed')
+      const payload = {
+        package_type: path,
+        selected_audit: path === 'audit' ? 'full-audit' : undefined,
+        selected_modules:
+          path === 'modules'
+            ? selectedModules.map((module) => ({
+                module_id: module.id,
+                quantity: module.quantity,
+              }))
+            : undefined,
+        selected_build: path === 'build' ? buildId : undefined,
+        selected_plan: path === 'recurring' ? recurringId : undefined,
+        name: details.name.trim(),
+        business_name: details.businessName.trim() || undefined,
+        email: details.email.trim().toLowerCase(),
+        phone: details.phone.trim() || undefined,
+        website_url: details.websiteUrl.trim() || undefined,
+        notes: details.notes.trim() || undefined,
+        success_url: new URL('/checkout/success', window.location.origin).toString(),
+        cancel_url: new URL('/checkout', window.location.origin).toString(),
+      }
 
-      const packagePayload = buildPackagePayload({
-        clientId: client.id,
-        path,
-        auditId,
-        buildId,
-        recurringId,
-        selectedModules,
-        moduleSubtotal,
-        bundleDiscount,
-        moduleTotal,
+      const { data, error } = await supabase.functions.invoke('create-checkout-session', {
+        body: payload,
       })
 
-      const { data: pkg, error: pkgErr } = await supabase
-        .from('client_packages')
-        .insert(packagePayload)
-        .select('id')
-        .single()
-      if (pkgErr || !pkg) throw pkgErr ?? new Error('package_insert_failed')
+      if (error) throw new Error(error.message)
 
-      if (path === 'modules' && selectedModules.length > 0) {
-        const rows = selectedModules.map((m) => {
-          const offer = MODULE_OFFERS.find((o) => o.id === m.id)!
-          const lineTotal = calculateModuleLineTotal(m.id, m.quantity)
-          return {
-            package_id: pkg.id,
-            module_id: m.id,
-            module_name: offer.name,
-            quantity: normalizeModuleQuantity(m.id, m.quantity),
-            unit_price_cents: toCents(offer.price),
-            total_cents: toCents(lineTotal),
-          }
-        })
-        const { error: selErr } = await supabase
-          .from('client_module_selections')
-          .insert(rows)
-        if (selErr) throw selErr
-      }
+      const sessionUrl = typeof data?.url === 'string' ? data.url : null
+      if (!sessionUrl) throw new Error('Stripe Checkout URL was not returned.')
 
-      if (path === 'audit' || path === 'modules' || path === 'build') {
-        const amount =
-          path === 'audit'
-            ? AUDIT_OFFERS.find((a) => a.id === auditId)!.price
-            : path === 'modules'
-              ? moduleTotal
-              : BUILD_OFFERS.find((b) => b.id === buildId)!.foundingPrice
-        if (amount > 0) {
-          const { error: payErr } = await supabase.from('payment_schedules').insert({
-            client_id: client.id,
-            package_id: pkg.id,
-            label:
-              path === 'build'
-                ? 'Deposit (50%)'
-                : path === 'audit'
-                  ? 'Audit fee'
-                  : 'Module bundle',
-            amount_cents:
-              path === 'build' ? toCents(Math.round(amount * 0.5)) : toCents(amount),
-            status: 'not_started',
-          })
-          if (payErr) throw payErr
-        }
-      }
-
-      navigate('/checkout/success', { replace: true })
+      window.location.assign(sessionUrl)
     } catch (err) {
       const message =
-        err instanceof Error ? err.message : 'Could not save your plan.'
+        err instanceof Error ? err.message : 'Could not create a Stripe checkout session.'
       setSubmit({ kind: 'error', message })
     }
   }
@@ -733,11 +683,11 @@ function Summary(props: {
       }
     }
     const r = RECURRING_OFFERS.find((x) => x.id === recurringId)!
-    return {
-      headline: r.name,
-      primary: { label: 'Per month', value: `${formatCurrency(r.monthlyPrice)}/mo` },
-      secondary: 'Brian will set up the subscription after a quick call.',
-    }
+      return {
+        headline: r.name,
+        primary: { label: 'Per month', value: `${formatCurrency(r.monthlyPrice)}/mo` },
+        secondary: 'Stripe Checkout starts the recurring subscription.',
+      }
   }, [path, auditId, moduleTotal, bundleActive, bundleDiscount, selectedModulesCount, buildId, recurringId])
 
   const submitDisabled = submit.kind === 'submitting'
@@ -791,13 +741,13 @@ function Summary(props: {
         disabled={submitDisabled}
         className="group flex min-h-[52px] w-full items-center justify-center gap-2.5 border border-amber px-6 py-3 text-[0.7rem] font-medium uppercase tracking-[0.1em] text-amber transition-all duration-200 hover:bg-amber/10 disabled:opacity-60"
       >
-        {submitDisabled ? 'Sending plan...' : submitLabel(path)}
+        {submitDisabled ? 'Creating Stripe Checkout...' : submitLabel(path)}
         <span className="transition-transform duration-200 group-hover:translate-x-0.5">→</span>
       </button>
 
-    <p className="mt-4 text-[0.7rem] leading-relaxed text-ink-subtle">
-      This is a plan flow, not instant payment. Brian will confirm scope and send the next step.
-    </p>
+      <p className="mt-4 text-[0.7rem] leading-relaxed text-ink-subtle">
+        This is a plan flow, not instant payment. Brian will confirm scope and send the next step.
+      </p>
 
       {!isSupabaseConfigured && (
         <p className="mt-4 border border-[var(--color-border)] px-3 py-2 text-[0.7rem] leading-relaxed text-ink-muted">
@@ -835,84 +785,4 @@ function Row({
       </span>
     </div>
   )
-}
-
-// =============================================================
-// Submission helpers
-// =============================================================
-
-function buildPackagePayload(args: {
-  clientId: string
-  path: Path
-  auditId: AuditId
-  buildId: BuildId
-  recurringId: RecurringId
-  selectedModules: SelectedModule[]
-  moduleSubtotal: number
-  bundleDiscount: number
-  moduleTotal: number
-}) {
-  const {
-    clientId,
-    path,
-    auditId,
-    buildId,
-    recurringId,
-    moduleSubtotal,
-    bundleDiscount,
-    moduleTotal,
-  } = args
-
-  if (path === 'audit') {
-    const a = AUDIT_OFFERS.find((x) => x.id === auditId)!
-    return {
-      client_id: clientId,
-      package_type: 'audit' as const,
-      package_name: a.name,
-      status: 'requested' as const,
-      subtotal_cents: toCents(a.price),
-      discount_cents: 0,
-      total_cents: toCents(a.price),
-      recurring_amount_cents: null,
-    }
-  }
-
-  if (path === 'modules') {
-    return {
-      client_id: clientId,
-      package_type: 'modules' as const,
-      package_name: 'Module bundle',
-      status: 'requested' as const,
-      subtotal_cents: toCents(moduleSubtotal),
-      discount_cents: toCents(bundleDiscount),
-      total_cents: toCents(moduleTotal),
-      recurring_amount_cents: null,
-    }
-  }
-
-  if (path === 'build') {
-    const b = BUILD_OFFERS.find((x) => x.id === buildId)!
-    return {
-      client_id: clientId,
-      package_type: 'build' as const,
-      package_name: `${b.name} build`,
-      status: 'requested' as const,
-      subtotal_cents: toCents(b.foundingPrice),
-      discount_cents: 0,
-      total_cents: toCents(b.foundingPrice),
-      recurring_amount_cents: null,
-    }
-  }
-
-  const r = RECURRING_OFFERS.find((x) => x.id === recurringId)!
-  return {
-    client_id: clientId,
-    package_type: 'recurring' as const,
-    package_name: r.name,
-    status: 'requested' as const,
-    subtotal_cents: 0,
-    discount_cents: 0,
-    total_cents: 0,
-    recurring_amount_cents: toCents(r.monthlyPrice),
-  }
 }

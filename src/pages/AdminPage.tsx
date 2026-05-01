@@ -69,7 +69,7 @@ function computeSummary(clients: DbClient[], payments: DbPayment[]): Summary {
     }).length,
     activeBuilds: clients.filter((c) =>
       c.client_packages.some(
-        (p) => p.status === 'in_progress' && p.package_type === 'build',
+        (p) => (p.status === 'in_progress' || p.status === 'active') && p.package_type === 'build',
       ),
     ).length,
   }
@@ -465,4 +465,3 @@ function AddClientModal({
     </div>
   )
 }
-

@@ -13,7 +13,7 @@ import {
 import { useClientPortal } from '@/hooks/useClientPortal'
 
 type ProjectStage = 'audit' | 'scope' | 'build' | 'launch' | 'support' | 'complete'
-type PackageStatus = 'requested' | 'scoped' | 'in_progress' | 'complete' | 'cancelled'
+type PackageStatus = 'requested' | 'scoped' | 'in_progress' | 'active' | 'complete' | 'cancelled'
 type PaymentStatus = 'not_started' | 'pending' | 'paid' | 'overdue' | 'cancelled'
 type PackageType = 'audit' | 'modules' | 'build' | 'recurring'
 
@@ -114,7 +114,7 @@ const STAGE_LABELS: Record<ProjectStage, string> = {
 const INPUT_CLASS =
   'w-full border border-[var(--color-border-strong)] bg-transparent px-3 py-2 text-sm text-ink placeholder:text-ink-subtle focus:border-amber focus:outline-none'
 
-const STATUS_PRIORITY: PackageStatus[] = ['in_progress', 'scoped', 'requested']
+const STATUS_PRIORITY: PackageStatus[] = ['active', 'in_progress', 'scoped', 'requested']
 const PAYMENT_STATUSES: PaymentStatus[] = ['not_started', 'pending', 'overdue']
 
 export function PortalPage() {
@@ -286,6 +286,24 @@ export function PortalPage() {
     [activePackage?.id, portal.packages],
   )
   const nextPayment = useMemo(() => selectNextPayment(portal.payments), [portal.payments])
+  const packageNextPayment = useMemo(() => {
+    if (!activePackage || !activePackage.next_payment_due_at || activePackage.recurring_amount_cents === null) {
+      return null
+    }
+    return {
+      id: `${activePackage.id}-recurring`,
+      client_id: activePackage.client_id,
+      package_id: activePackage.id,
+      label: activePackage.package_name,
+      amount_cents: activePackage.recurring_amount_cents,
+      due_date: activePackage.next_payment_due_at,
+      status: 'pending' as PaymentStatus,
+      payment_url: activePackage.payment_url,
+      paid_at: null,
+      created_at: activePackage.updated_at,
+    }
+  }, [activePackage])
+  const displayedNextPayment = nextPayment ?? packageNextPayment
   const currentStage = useMemo(
     () => deriveStage(portal.updates, activePackage),
     [activePackage, portal.updates],
@@ -468,32 +486,32 @@ export function PortalPage() {
                 </Card>
 
                 <Card title="Next payment" eyebrow="Payments">
-                  {nextPayment ? (
+                  {displayedNextPayment ? (
                     <div className="space-y-4">
                       <div className="flex flex-wrap items-start justify-between gap-4">
                         <div>
                           <h3 className="text-lg font-medium tracking-[-0.01em] text-ink">
-                            {nextPayment.label}
+                            {displayedNextPayment.label}
                           </h3>
                           <p className="mt-1 text-sm text-ink-muted">
-                            Due {nextPayment.due_date ? fmtDate(nextPayment.due_date) : 'when ready'}
+                            Due {displayedNextPayment.due_date ? fmtDate(displayedNextPayment.due_date) : 'when ready'}
                           </p>
                         </div>
                         <p className="text-xl font-medium tracking-[-0.02em] text-amber tabular-nums">
-                          {fmtCents(nextPayment.amount_cents)}
+                          {fmtCents(displayedNextPayment.amount_cents)}
                         </p>
                       </div>
 
                       <div className="flex flex-wrap items-center gap-3">
-                        <StatusBadge status={nextPayment.status} />
-                        {nextPayment.status === 'overdue' && (
+                        <StatusBadge status={displayedNextPayment.status} />
+                        {displayedNextPayment.status === 'overdue' && (
                           <span className="text-sm text-amber">This payment is past due.</span>
                         )}
                       </div>
 
-                      {nextPayment.payment_url ? (
+                      {displayedNextPayment.payment_url ? (
                         <a
-                          href={nextPayment.payment_url}
+                          href={displayedNextPayment.payment_url}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="inline-flex items-center gap-2 border border-amber px-5 py-3 text-[0.7rem] font-medium uppercase tracking-[0.1em] text-amber transition-all duration-200 hover:bg-amber/10"
