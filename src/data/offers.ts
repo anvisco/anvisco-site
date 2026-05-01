@@ -29,15 +29,14 @@ export const AUDIT_OFFERS: AuditOffer[] = [
     price: 0,
     description:
       'Three to five priority findings. A quick first look at where the site may be losing visibility, trust, or bookings.',
-    note: 'No cost. Best for a quick second opinion.',
   },
   {
     id: 'full-audit',
-    name: 'Paid AI-Ready Website Audit',
+    name: 'Full Website Audit',
     price: 250,
     description:
-      'A deeper review with a ranked action plan covering visibility, trust, content, speed, and booking flow.',
-    note: 'Credited toward any module or full build within 30 days.',
+      'A deeper review with a ranked action plan across visibility, trust, content, speed, and booking flow.',
+    note: 'If you move forward with a module or build within 30 days, the audit fee is applied to that project.',
   },
 ]
 

@@ -41,12 +41,12 @@ export function Hero() {
                   to="/audit"
                   className="group inline-flex items-center gap-2.5 border-[1.5px] border-ink px-6 py-3 text-sm font-medium text-ink tracking-[-0.005em] transition-all duration-200 hover:border-amber hover:text-amber"
                 >
-                  Get a Website Audit
+                  Get Free Audit
                   <span className="text-amber transition-transform duration-200 group-hover:translate-x-0.5">→</span>
                 </Link>
 
                 <Link
-                  to="/portfolio"
+                  to="/work"
                   className="group relative text-sm text-ink-muted transition-colors duration-200 hover:text-ink"
                 >
                   See Selected Work

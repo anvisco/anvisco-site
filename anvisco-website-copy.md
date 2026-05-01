@@ -1,6 +1,6 @@
 # Anvis Website Copy - Public Site Cleanup
 
-Scope: homepage, services page, audit landing page, portfolio/work page, checkout plan builder, footer, and CTA language.
+Scope: homepage, work page, services page, audit page, FAQ page, checkout plan builder, footer, and CTA language.
 
 Public brand name: Anvis. Keep `anvisco.com` and `brian@anvisco.com` unchanged where they refer to the domain or email address.
 
@@ -8,9 +8,9 @@ Typography rule: the serif/script treatment is reserved for the hero accent line
 
 Public navigation:
 - Home -> `/`
-- Work -> `/portfolio`
+- Work -> `/work`
 - Services -> `/services`
-- FAQ -> `/portfolio#faq`
+- FAQ -> `/faq`
 - Get Free Audit -> `/audit`
 
 Footer is minimal and does not repeat navigation links. Keep the wordmark, email, and copyright only.
@@ -24,7 +24,7 @@ CTA routing:
 - Recurring plans -> `Choose a Care Plan`
 - Final homepage CTA -> `Build Your Plan`
 - Secondary homepage CTA -> `Compare Services`
-- Route changes scroll to the top by default; hash links use fixed-nav scroll margin when used.
+- Route changes scroll to the top by default.
 
 ---
 
@@ -155,9 +155,9 @@ Three tiers: Essentials, Standard, Premium. Public rates start at $2,200, with f
 ### 1.7 Process
 
 1. Audit
-2. Scope & recommend
+2. Scope and recommend
 3. Build or upgrade
-4. Launch + handover
+4. Launch and handover
 
 ---
 
@@ -177,7 +177,11 @@ Questions? brian@anvisco.com
 
 ---
 
-## 2. Portfolio / Work Page
+## 2. Work Page
+
+Public route: `/work`
+
+Fallback route: `/portfolio` still renders the same page.
 
 ### Structure
 
@@ -185,7 +189,7 @@ Questions? brian@anvisco.com
 2. About Anvis
 3. Selected work/projects
 4. Supporting context
-5. FAQ
+5. Light link to FAQ
 
 ### About Anvis
 
@@ -195,12 +199,37 @@ About Anvis
 **Copy:**
 Anvis builds custom websites for local service businesses that need more than a visual refresh. The work focuses on structure, clarity, trust, conversion, and modern discovery, so the website supports how the business actually runs.
 
-The portfolio is curated to show relevant systems and outcomes, not every project.
+The work is curated to show relevant systems and outcomes, not every project.
 
-### FAQ
+Light link: `Read the FAQ -> /faq`
+
+---
+
+## 3. FAQ Page
+
+Public route: `/faq`
+
+### Structure
+
+1. Page intro/header
+2. Getting started
+3. AI and discovery
+4. Services and pricing
+5. Payments
+6. Care
+
+### Getting started
 
 **Do I need a full rebuild?**
 Not always. Some businesses should start with an audit or a targeted module before they commit to a rebuild.
+
+**What happens after the audit?**
+The next step is usually a module, a bundle, or a full build depending on what the site actually needs.
+
+**Can you improve my existing site?**
+Yes. Modules are built for existing sites that need a stronger layer without starting over.
+
+### AI and discovery
 
 **What makes a website AI-ready?**
 Clear structure for people, Google, AI tools, Maps, and local recommendations. The site should explain the business clearly and consistently.
@@ -208,20 +237,33 @@ Clear structure for people, Google, AI tools, Maps, and local recommendations. T
 **Is this replacing SEO?**
 No. It adds a modern discovery layer on top of SEO, not instead of it.
 
-**Can you improve my existing site?**
-Yes. Modules are built for existing sites that need a stronger layer without starting over.
+### Services and pricing
 
-**What happens after the audit?**
-The next step is usually a module, a bundle, or a full build depending on what the site actually needs.
+**What are website improvement modules?**
+Targeted upgrades for the parts of the site that are holding back visibility, trust, booking flow, or performance.
+
+**Can I bundle modules?**
+Yes. Three or more modules unlock the bundle discount.
+
+**What if I already know what I need?**
+You can move straight into the plan builder and choose the path that fits.
+
+### Payments
 
 **Do I pay right away?**
 It depends. If you already know what your business needs, you can move forward and pay. If not, we first go through the right path together so the scope is clear before payment is finalized.
 
-FAQ section id: `faq`
+**What happens after I build my plan?**
+Brian follows up with the next step, payment link, or setup details based on what you selected.
+
+### Care
+
+**What is the difference between the Care Plan and Growth Plan?**
+Care covers maintenance and small updates. Growth includes more monthly content work, more strategic review, and more active improvement.
 
 ---
 
-## 3. Services Page
+## 4. Services Page
 
 Services is the full detail page.
 
@@ -233,29 +275,40 @@ Keep:
 - full build tiers
 - recurring plans
 
-Remove the FAQ block from Services so FAQ lives on Work only.
+Remove the FAQ block from Services so FAQ lives on the dedicated FAQ page.
+
+Large section headings do not repeat the numeric eyebrow labels.
 
 CTA language:
 - Hero/supporting CTA -> `Build Your Plan`
 - Free snapshot -> `Get Free Audit`
-- Paid audit -> `Start Your Audit`
+- Full audit -> `Start Your Audit`
 - Modules -> `Choose Your Upgrades`
 - Full build -> `Plan Your Build`
 - Recurring -> `Choose a Care Plan`
 
 ---
 
-## 4. Audit Page
+## 5. Audit Page
 
 Audit landing page language:
 - Free Snapshot CTA -> `Get Free Audit`
-- Paid/full audit CTA -> `Start Your Audit`
+- Full audit CTA -> `Start Your Audit`
 
-Keep routing consistent with the current implementation. Free snapshot can remain on the existing contact-driven flow if needed.
+Public cards do not show the $250 price or the audit credit language.
+
+Public card copy:
+
+**Free AI-Ready Website Snapshot**
+- Three to five priority findings.
+- A quick first look at where the site may be losing visibility, trust, or bookings.
+
+**Full Website Audit**
+- A deeper review with a ranked action plan across visibility, trust, content, speed, and booking flow.
 
 ---
 
-## 5. Checkout Page
+## 6. Checkout Page
 
 `/checkout` is a plan builder, not a payment page.
 
@@ -277,23 +330,28 @@ Path-specific submit labels:
 - recurring selected: `Choose a Care Plan`
 - fallback: `Build Your Plan`
 
+When the full audit is selected:
+- Title: `Full Website Audit — $250`
+- Support copy: `If you move forward with a module or build within 30 days, the audit fee is applied to that project.`
+
 Success page label:
 - `Plan received`
 
 Success copy:
 Your plan has been received. Brian will follow up with the next step, payment link, or setup details based on what you selected.
 
-The page should make it clear this is a request flow. Do not imply instant payment unless an actual payment integration is present.
+The page should make it clear this is a plan builder. Do not imply instant payment unless an actual payment integration is present.
 
 ---
 
-## 6. Implementation Notes
+## 7. Implementation Notes
 
 - Public-facing company name is Anvis. Domain/email references remain anvisco.com and brian@anvisco.com.
 - Serif/script styling stays only in the hero accent line.
 - Footer nav links are removed.
-- Homepage no longer has FAQ or About as main sections.
-- Work page now carries About at the top and FAQ at the bottom.
+- Homepage no longer has FAQ.
+- Work page carries About at the top and a light FAQ link only.
+- FAQ lives on its own `/faq` page.
 - Services page no longer repeats FAQ.
 - Final homepage CTA routes to `/checkout` and reads `Build Your Plan`.
 - The public site should read plainly and stay conversion-focused.

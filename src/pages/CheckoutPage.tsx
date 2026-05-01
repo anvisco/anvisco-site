@@ -352,16 +352,13 @@ function AuditSection() {
       <div className="border border-amber/70 bg-[var(--color-surface)] p-6">
         <div className="mb-3 flex items-baseline justify-between gap-4">
           <h2 className="text-lg font-medium tracking-[-0.01em] text-ink">
-            {fullAudit.name}
+            {fullAudit.name} — {formatCurrency(fullAudit.price)}
           </h2>
-          <span className="text-xl font-medium tracking-[-0.02em] text-amber tabular-nums">
-            {formatCurrency(fullAudit.price)}
-          </span>
         </div>
         <p className="mb-4 text-sm leading-relaxed text-ink-muted">{fullAudit.description}</p>
         <p className="text-sm leading-relaxed text-ink-muted">
-          <span className="text-ink">Credit:</span> the $250 is credited toward any module or
-          full build if you move forward within 30 days.
+          <span className="text-ink">Credit:</span> if you move forward with a module or build
+          within 30 days, the audit fee is applied to that project.
         </p>
       </div>
       <p className="mt-4 text-sm text-ink-muted">

@@ -4,9 +4,9 @@ import { Menu, X } from 'lucide-react'
 
 const links = [
   { label: 'Home', href: '/' },
-  { label: 'Work', href: '/portfolio' },
+  { label: 'Work', href: '/work' },
   { label: 'Services', href: '/services' },
-  { label: 'FAQ', href: '/portfolio#faq' },
+  { label: 'FAQ', href: '/faq' },
 ]
 
 export function Nav() {
@@ -59,9 +59,12 @@ export function Nav() {
             const hashIndex = link.href.indexOf('#')
             const hash = hashIndex >= 0 ? link.href.slice(hashIndex) : ''
             const path = hashIndex >= 0 ? link.href.slice(0, hashIndex) : link.href
+            const isWorkLink = path === '/work'
             const active = hash
               ? location.pathname === (path || '/') && activeHash === hash
-              : location.pathname === path && (!hash || !activeHash)
+              : isWorkLink
+                ? location.pathname === '/work' || location.pathname === '/portfolio'
+                : location.pathname === path && (!hash || !activeHash)
 
             return (
               <Link

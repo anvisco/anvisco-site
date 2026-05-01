@@ -2,9 +2,9 @@ import { Nav } from '@/components/layout/Nav'
 import { Footer } from '@/components/layout/Footer'
 import { BracketLabel } from '@/components/ui/BracketLabel'
 import { About } from '@/components/sections/About'
-import { WorkFaq } from '@/components/sections/HomepageFaq'
 import { ProjectCard } from '@/components/sections/ProjectCard'
 import { projects, otherProjects } from '@/data/projects'
+import { Link } from 'react-router-dom'
 
 export function PortfolioPage() {
   return (
@@ -13,7 +13,7 @@ export function PortfolioPage() {
       <main className="pt-16">
         <section className="py-24 md:py-32 bg-[var(--color-bg)]">
           <div className="max-w-screen-xl mx-auto px-6 lg:px-12">
-            <BracketLabel>Portfolio</BracketLabel>
+            <BracketLabel>Work</BracketLabel>
             <h1 className="mt-10 mb-8 max-w-4xl text-[2.75rem] sm:text-[3.5rem] md:text-[5rem] font-medium leading-[1.02] md:leading-[0.98] tracking-[-0.03em] md:tracking-[-0.04em] text-ink">
               Selected work.
             </h1>
@@ -48,10 +48,14 @@ export function PortfolioPage() {
                 </article>
               ))}
             </div>
+            <p className="mt-8 text-sm text-ink-muted">
+              Still deciding?{' '}
+              <Link to="/faq" className="text-amber hover:underline">
+                Read the FAQ →
+              </Link>
+            </p>
           </div>
         </section>
-
-        <WorkFaq />
       </main>
       <Footer />
     </>

@@ -128,19 +128,17 @@ export function ServicesPage() {
 
         <section id="audit" className="scroll-mt-16 py-20 md:py-28 bg-[var(--color-bg)]">
           <div className="max-w-screen-xl mx-auto px-6 lg:px-12">
-            <SectionHeader number="02" label="Audit" title="1. Audit" />
+            <SectionHeader number="02" label="Audit" title="Audit" />
             <div className="grid gap-px bg-[var(--color-border)] md:grid-cols-2">
               <OptionCard
                 title="Free AI-Ready Website Snapshot"
                 body="Three to five priority findings. A quick first look at where the site may be losing visibility, trust, or bookings."
-                footnote="No cost."
                 cta="Get Free Audit"
                 to="/audit"
               />
               <OptionCard
-                title="Paid AI-Ready Website Audit - $250"
-                body="A deeper review with a ranked action plan covering visibility, trust, content, speed, and booking flow."
-                footnote="$250, credited toward any module or full build within 30 days."
+                title="Full Website Audit"
+                body="A deeper review with a ranked action plan across visibility, trust, content, speed, and booking flow."
                 cta="Start Your Audit"
                 to="/checkout?path=audit"
               />
@@ -150,7 +148,7 @@ export function ServicesPage() {
 
         <section id="modules" className="scroll-mt-16 py-20 md:py-28 bg-[var(--color-surface)]">
           <div className="max-w-screen-xl mx-auto px-6 lg:px-12">
-            <SectionHeader number="03" label="Modules" title="2. Improvement Modules" />
+            <SectionHeader number="03" label="Modules" title="Improvement Modules" />
             <p className="mb-12 max-w-[62ch] text-[1.0625rem] leading-relaxed text-ink-muted">
               For businesses that do not need a full rebuild yet. Six modules covering content, visuals, booking, motion, service pages, and mobile performance.
             </p>
@@ -168,7 +166,7 @@ export function ServicesPage() {
 
         <section id="build" className="scroll-mt-16 py-20 md:py-28 bg-[var(--color-bg)]">
           <div className="max-w-screen-xl mx-auto px-6 lg:px-12">
-            <SectionHeader number="04" label="Full custom build" title="3. Full Custom Build" />
+            <SectionHeader number="04" label="Full custom build" title="Full Custom Build" />
             <p className="mb-12 max-w-[62ch] text-[1.0625rem] leading-relaxed text-ink-muted">
               A custom-coded website designed for visibility, trust, speed, and bookings. Three tiers depending on scope.
             </p>
@@ -190,7 +188,7 @@ export function ServicesPage() {
 
         <section id="recurring" className="scroll-mt-16 py-20 md:py-28 bg-[var(--color-surface)]">
           <div className="max-w-screen-xl mx-auto px-6 lg:px-12">
-            <SectionHeader number="05" label="Recurring plans" title="4. Recurring Plans" />
+            <SectionHeader number="05" label="Recurring plans" title="Recurring Plans" />
             <p className="mb-12 max-w-[62ch] text-[1.0625rem] leading-relaxed text-ink-muted">
               Two plans depending on whether the goal is ongoing care or active growth.
             </p>

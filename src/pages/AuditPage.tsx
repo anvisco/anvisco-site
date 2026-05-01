@@ -17,14 +17,11 @@ const reviewAreas = [
 
 const snapshotItems = [
   'Three to five priority findings.',
-  'A quick first look at lost visibility, trust, or bookings.',
-  'No cost.',
+  'A quick first look at where the site may be losing visibility, trust, or bookings.',
 ]
 
 const fullAuditItems = [
-  'A deeper review with a ranked action plan.',
-  'Visibility, trust, content, speed, and booking flow.',
-  '$250, credited toward any module or build within 30 days.',
+  'A deeper review with a ranked action plan across visibility, trust, content, speed, and booking flow.',
 ]
 
 export function AuditPage() {
@@ -59,7 +56,7 @@ export function AuditPage() {
                 cta="Get Free Audit"
               />
               <AuditOption
-                title="Paid AI-Ready Website Audit - $250"
+                title="Full Website Audit"
                 items={fullAuditItems}
                 bestFor="Practices that want depth and a clear plan before deciding what to invest in."
                 cta="Start Your Audit"

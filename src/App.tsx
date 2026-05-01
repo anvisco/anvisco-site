@@ -3,6 +3,7 @@ import { Routes, Route, useLocation } from 'react-router-dom'
 import { HomePage } from '@/pages/HomePage'
 import { ServicesPage } from '@/pages/ServicesPage'
 import { AuditPage } from '@/pages/AuditPage'
+import { FaqPage } from '@/pages/FaqPage'
 import { PortfolioPage } from '@/pages/PortfolioPage'
 import { CheckoutPage } from '@/pages/CheckoutPage'
 import { CheckoutSuccessPage } from '@/pages/CheckoutSuccessPage'
@@ -33,9 +34,11 @@ function App() {
     <div className="dark min-h-screen bg-[var(--color-bg)] text-ink">
       <Routes>
         <Route path="/" element={<HomePage />} />
+        <Route path="/work" element={<PortfolioPage />} />
+        <Route path="/portfolio" element={<PortfolioPage />} />
         <Route path="/services" element={<ServicesPage />} />
         <Route path="/audit" element={<AuditPage />} />
-        <Route path="/portfolio" element={<PortfolioPage />} />
+        <Route path="/faq" element={<FaqPage />} />
         <Route path="/checkout" element={<CheckoutPage />} />
         <Route path="/checkout/success" element={<CheckoutSuccessPage />} />
         <Route path="/thank-you" element={<ThankYouPage />} />
