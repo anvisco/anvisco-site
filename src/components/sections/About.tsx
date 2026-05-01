@@ -28,10 +28,10 @@ export function About() {
             Built for sites that have to do real work.
           </h2>
           <p className="text-[1.0625rem] leading-relaxed text-ink-muted">
-            Anvis builds custom websites for local service businesses that need more than a visual refresh. The work focuses on structure, clarity, trust, conversion, and modern discovery, so the website supports how the business actually runs.
+            Anvis builds custom websites for local service businesses that need <span className="text-ink">more than a visual refresh</span>. The work focuses on structure, clarity, trust, conversion, and modern discovery, so the website <span className="text-ink">supports how the business actually runs</span>.
           </p>
           <p className="text-[1.0625rem] leading-relaxed text-ink-muted">
-            The portfolio is curated to show relevant systems and outcomes, not every project.
+            This portfolio is <span className="text-ink">curated intentionally</span>. It shows the systems, outcomes, and direction most relevant to the businesses Anvis is built to serve, not every project that has ever been touched.
           </p>
         </motion.div>
       </div>

@@ -199,7 +199,7 @@ About Anvis
 **Copy:**
 Anvis builds custom websites for local service businesses that need more than a visual refresh. The work focuses on structure, clarity, trust, conversion, and modern discovery, so the website supports how the business actually runs.
 
-The work is curated to show relevant systems and outcomes, not every project.
+This portfolio is curated intentionally. It shows the systems, outcomes, and direction most relevant to the businesses Anvis is built to serve, not every project that has ever been touched.
 
 Light link: `Read the FAQ -> /faq`
 
@@ -217,6 +217,8 @@ Public route: `/faq`
 4. Services and pricing
 5. Payments
 6. Care
+
+Layout note: use a wider editorial container and a two-column group layout on desktop so the category label and accordion read as one connected page instead of isolated blocks.
 
 ### Getting started
 
@@ -352,6 +354,8 @@ The page should make it clear this is a plan builder. Do not imply instant payme
 - Homepage no longer has FAQ.
 - Work page carries About at the top and a light FAQ link only.
 - FAQ lives on its own `/faq` page.
+- Work project cards do not show visible numbering.
+- FAQ groups use a wider, tighter, two-column layout.
 - Services page no longer repeats FAQ.
 - Final homepage CTA routes to `/checkout` and reads `Build Your Plan`.
 - The public site should read plainly and stay conversion-focused.

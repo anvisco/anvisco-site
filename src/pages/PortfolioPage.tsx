@@ -24,8 +24,8 @@ export function PortfolioPage() {
 
         <section className="pb-20 md:pb-28 bg-[var(--color-bg)]">
           <div className="max-w-screen-xl mx-auto px-6 lg:px-12">
-            {projects.map((project, i) => (
-              <ProjectCard key={project.id} project={project} index={i} />
+            {projects.map((project) => (
+              <ProjectCard key={project.id} project={project} />
             ))}
           </div>
         </section>

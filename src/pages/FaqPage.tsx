@@ -12,12 +12,12 @@ const gettingStarted = [
   {
     question: 'What happens after the audit?',
     answer:
-      'Brian reviews the findings, confirms the best path, and points you toward a module, a build, or ongoing care.',
+      'Brian reviews the findings, confirms the best path, and points you toward a module, a build, or ongoing care. You leave with a clear next step, not a vague recommendation.',
   },
   {
     question: 'Can you improve my existing site?',
     answer:
-      'Yes. Modules are built for existing sites that need a stronger layer without starting over.',
+      'Yes. Modules are built for existing sites that need a stronger layer without starting over. They can improve content, booking flow, speed, or visuals one step at a time.',
   },
 ]
 
@@ -25,7 +25,7 @@ const aiAndDiscovery = [
   {
     question: 'What makes a website AI-ready?',
     answer:
-      'Clear structure for people, Google, AI tools, Maps, and local recommendations. The site should explain the business clearly and consistently.',
+      'Clear structure for people, Google, AI tools, Maps, and local recommendations. The site should explain the business clearly and consistently so those systems can understand what the business does and where it should show up.',
   },
   {
     question: 'Is this replacing SEO?',
@@ -43,12 +43,12 @@ const servicesAndPricing = [
   {
     question: 'Can I bundle modules?',
     answer:
-      'Yes. Three or more modules unlock the bundle discount automatically inside the plan builder.',
+      'Yes. Three or more modules unlock the bundle discount automatically inside the plan builder. That usually makes it easier to improve several weak points without committing to a full rebuild.',
   },
   {
     question: 'What if I already know what I need?',
     answer:
-      'You can skip around. If the path is clear, build your plan directly and choose the offer that fits.',
+      'You can move straight into the plan builder and choose the offer that fits. If the scope is already clear, that is usually the fastest path.',
   },
 ]
 
@@ -61,7 +61,7 @@ const payments = [
   {
     question: 'What happens after I build my plan?',
     answer:
-      'Brian reviews the plan, confirms scope, and sends the next step, which may be a payment link, invoice, or setup details.',
+      'Brian reviews the plan, confirms scope, and sends the next step. That may be a payment link, invoice, or setup details depending on the path you selected.',
   },
 ]
 
@@ -69,7 +69,7 @@ const care = [
   {
     question: 'What is the difference between the Care Plan and Growth Plan?',
     answer:
-      'Care Plan keeps the site running with small updates, monitoring, and support. Growth Plan adds more monthly page work, monthly visibility checks, and quarterly improvements.',
+      'Care Plan keeps the site running with small updates, monitoring, and support. Growth Plan adds more monthly page work, monthly visibility checks, and quarterly improvements for sites that need steady ongoing progress.',
   },
 ]
 
@@ -78,13 +78,13 @@ export function FaqPage() {
     <>
       <Nav />
       <main className="pt-16 bg-[var(--color-bg)]">
-        <section className="py-24 md:py-32">
-          <div className="mx-auto max-w-screen-xl px-6 lg:px-12">
+        <section className="py-24 md:py-28">
+          <div className="mx-auto max-w-screen-2xl px-6 lg:px-12 xl:px-16">
             <BracketLabel>FAQ</BracketLabel>
             <h1 className="mt-10 mb-6 max-w-4xl text-[2.75rem] sm:text-[3.5rem] md:text-[5rem] font-medium leading-[1.02] md:leading-[0.98] tracking-[-0.03em] md:tracking-[-0.04em] text-ink">
               Common questions.
             </h1>
-            <p className="max-w-[62ch] text-base leading-relaxed text-ink-muted sm:text-[1.125rem]">
+            <p className="max-w-[70ch] text-base leading-relaxed text-ink-muted sm:text-[1.125rem]">
               Clear answers about audits, modules, builds, payments, and how the process works.
             </p>
           </div>
@@ -113,14 +113,16 @@ function FaqGroup({
   tone?: 'bg' | 'surface'
 }) {
   return (
-    <section className={tone === 'surface' ? 'bg-[var(--color-surface)] py-20 md:py-28' : 'bg-[var(--color-bg)] py-20 md:py-28'}>
-      <div className="mx-auto max-w-screen-xl px-6 lg:px-12">
-        <div className="mb-12 flex items-center gap-4 border-t border-[var(--color-border)] pt-7">
-          <span className="text-[0.7rem] tabular-nums text-amber font-medium tracking-[0.08em]">{number}</span>
-          <BracketLabel>{label}</BracketLabel>
-        </div>
-        <div className="max-w-[72ch]">
-          <Accordion items={items} />
+    <section className={tone === 'surface' ? 'bg-[var(--color-surface)] py-12 md:py-16' : 'bg-[var(--color-bg)] py-12 md:py-16'}>
+      <div className="mx-auto max-w-screen-2xl px-6 lg:px-12 xl:px-16">
+        <div className="grid gap-6 lg:grid-cols-[240px_minmax(0,1fr)] lg:items-start">
+          <div className="border-t border-[var(--color-border)] pt-6">
+            <span className="mb-3 block text-[0.7rem] tabular-nums text-amber font-medium tracking-[0.08em]">{number}</span>
+            <BracketLabel>{label}</BracketLabel>
+          </div>
+          <div className="max-w-[78ch]">
+            <Accordion items={items} />
+          </div>
         </div>
       </div>
     </section>
