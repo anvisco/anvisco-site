@@ -10,11 +10,6 @@ type StripeEvent = {
 
 type StripeObject = Record<string, unknown>
 
-const SUPABASE_URL = Deno.env.get('SUPABASE_URL')?.trim() ?? ''
-const ANVIS_SUPABASE_SECRET_KEY = Deno.env.get('ANVIS_SUPABASE_SECRET_KEY')?.trim() ?? ''
-const STRIPE_SECRET_KEY = Deno.env.get('STRIPE_SECRET_KEY')?.trim() ?? ''
-const STRIPE_WEBHOOK_SECRET = Deno.env.get('STRIPE_WEBHOOK_SECRET')?.trim() ?? ''
-
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, stripe-signature',
@@ -89,9 +84,9 @@ async function verifyStripeSignature(rawBody: string, signatureHeader: string, s
   return signatures.some((sig) => timingSafeEqualHex(sig, expected))
 }
 
-async function stripeGet(path: string) {
+async function stripeGet(path: string, secretKey: string) {
   const response = await fetch(`https://api.stripe.com/v1${path}`, {
-    headers: { authorization: `Bearer ${STRIPE_SECRET_KEY}` },
+    headers: { authorization: `Bearer ${secretKey}` },
   })
   if (!response.ok) {
     throw new Error(`Stripe GET ${path} failed with status ${response.status}`)
@@ -112,7 +107,7 @@ async function markEventProcessed(
   throw error
 }
 
-export default async function handler(request: Request): Promise<Response> {
+Deno.serve(async (request) => {
   if (request.method === 'OPTIONS') {
     return new Response(null, {
       status: 204,
@@ -128,75 +123,87 @@ export default async function handler(request: Request): Promise<Response> {
     })
   }
 
-  if (request.method !== 'POST') {
-    return json(405, { error: 'Method not allowed.' })
-  }
-
-  if (!SUPABASE_URL || !ANVIS_SUPABASE_SECRET_KEY || !STRIPE_SECRET_KEY || !STRIPE_WEBHOOK_SECRET) {
-    return json(500, { error: 'Stripe webhook environment is not configured.' })
-  }
-
-  const rawBody = await request.text()
-  const signature = request.headers.get('stripe-signature')
-  if (!signature) {
-    return json(400, { error: 'Missing Stripe signature header.' })
-  }
-
-  const verified = await verifyStripeSignature(rawBody, signature, STRIPE_WEBHOOK_SECRET)
-  if (!verified) {
-    return json(400, { error: 'Invalid Stripe signature.' })
-  }
-
-  let event: StripeEvent
   try {
-    event = JSON.parse(rawBody) as StripeEvent
-  } catch {
-    return json(400, { error: 'Invalid Stripe event payload.' })
-  }
-
-  const supabase = createClient(SUPABASE_URL, ANVIS_SUPABASE_SECRET_KEY, {
-    auth: { persistSession: false, autoRefreshToken: false },
-  })
-
-  const shouldProcess = await markEventProcessed(supabase, event)
-  if (!shouldProcess) {
-    return json(200, { received: true, duplicate: true })
-  }
-
-  try {
-    switch (event.type) {
-      case 'checkout.session.completed':
-        await handleCheckoutSessionCompleted(supabase, event.data.object)
-        break
-      case 'invoice.paid':
-        await handleInvoicePaid(supabase, event.data.object)
-        break
-      case 'invoice.payment_failed':
-        await handleInvoicePaymentFailed(supabase, event.data.object)
-        break
-      case 'customer.subscription.created':
-      case 'customer.subscription.updated':
-        await handleSubscriptionUpdated(supabase, event.data.object)
-        break
-      case 'customer.subscription.deleted':
-        await handleSubscriptionDeleted(supabase, event.data.object)
-        break
-      default:
-        break
+    if (request.method !== 'POST') {
+      return json(405, { error: 'Method not allowed.' })
     }
+
+    const SUPABASE_URL = Deno.env.get('SUPABASE_URL')?.trim() ?? ''
+    const ANVIS_SUPABASE_SECRET_KEY = Deno.env.get('ANVIS_SUPABASE_SECRET_KEY')?.trim() ?? ''
+    const STRIPE_SECRET_KEY = Deno.env.get('STRIPE_SECRET_KEY')?.trim() ?? ''
+    const STRIPE_WEBHOOK_SECRET = Deno.env.get('STRIPE_WEBHOOK_SECRET')?.trim() ?? ''
+    if (!SUPABASE_URL || !ANVIS_SUPABASE_SECRET_KEY || !STRIPE_SECRET_KEY || !STRIPE_WEBHOOK_SECRET) {
+      return json(500, { error: 'Stripe webhook environment is not configured.' })
+    }
+
+    const rawBody = await request.text()
+    const signature = request.headers.get('stripe-signature')
+    if (!signature) {
+      return json(400, { error: 'Missing Stripe signature header.' })
+    }
+
+    const verified = await verifyStripeSignature(rawBody, signature, STRIPE_WEBHOOK_SECRET)
+    if (!verified) {
+      return json(400, { error: 'Invalid Stripe signature.' })
+    }
+
+    let event: StripeEvent
+    try {
+      event = JSON.parse(rawBody) as StripeEvent
+    } catch {
+      return json(400, { error: 'Invalid Stripe event payload.' })
+    }
+
+    const supabase = createClient(SUPABASE_URL, ANVIS_SUPABASE_SECRET_KEY, {
+      auth: { persistSession: false, autoRefreshToken: false },
+    })
+
+    const shouldProcess = await markEventProcessed(supabase, event)
+    if (!shouldProcess) {
+      return json(200, { received: true, duplicate: true })
+    }
+
+    try {
+      switch (event.type) {
+        case 'checkout.session.completed':
+          await handleCheckoutSessionCompleted(supabase, event.data.object, STRIPE_SECRET_KEY)
+          break
+        case 'invoice.paid':
+          await handleInvoicePaid(supabase, event.data.object, STRIPE_SECRET_KEY)
+          break
+        case 'invoice.payment_failed':
+          await handleInvoicePaymentFailed(supabase, event.data.object)
+          break
+        case 'customer.subscription.created':
+        case 'customer.subscription.updated':
+          await handleSubscriptionUpdated(supabase, event.data.object)
+          break
+        case 'customer.subscription.deleted':
+          await handleSubscriptionDeleted(supabase, event.data.object)
+          break
+        default:
+          break
+      }
+    } catch (error) {
+      console.error('Stripe webhook handler failed', error)
+      return json(500, {
+        error: error instanceof Error ? error.message : 'Webhook handler failed.',
+      })
+    }
+
+    return json(200, { received: true })
   } catch (error) {
-    console.error('Stripe webhook handler failed', error)
+    console.error('stripe-webhook error', error)
     return json(500, {
-      error: error instanceof Error ? error.message : 'Webhook handler failed.',
+      error: error instanceof Error ? error.message : 'Unknown webhook error',
     })
   }
-
-  return json(200, { received: true })
-}
+})
 
 async function handleCheckoutSessionCompleted(
   supabase: ReturnType<typeof createClient>,
   session: StripeObject,
+  stripeSecretKey: string,
 ) {
   const metadata = getMetadata(session)
   const packageId = getString(metadata.package_id)
@@ -207,7 +214,7 @@ async function handleCheckoutSessionCompleted(
   const sessionCustomer = getString(session.customer)
   const sessionSubscription = getString(session.subscription)
   const sessionPaymentIntent = getString(session.payment_intent)
-  const subscription = sessionSubscription ? await stripeGet(`/subscriptions/${sessionSubscription}`) : null
+  const subscription = sessionSubscription ? await stripeGet(`/subscriptions/${sessionSubscription}`, stripeSecretKey) : null
   const subscriptionPeriodEnd = subscription ? toDateStringFromUnix(subscription.current_period_end) : null
 
   const schedule = paymentScheduleId
@@ -240,6 +247,7 @@ async function handleCheckoutSessionCompleted(
 async function handleInvoicePaid(
   supabase: ReturnType<typeof createClient>,
   invoice: StripeObject,
+  stripeSecretKey: string,
 ) {
   const subscriptionId = getString(invoice.subscription)
   const invoiceId = getString(invoice.id)
@@ -248,7 +256,7 @@ async function handleInvoicePaid(
   const packageRow = await findPackageBySubscription(supabase, subscriptionId)
   if (!packageRow) return
 
-  const subscription = await stripeGet(`/subscriptions/${subscriptionId}`)
+  const subscription = await stripeGet(`/subscriptions/${subscriptionId}`, stripeSecretKey)
   const nextDueDate = toDateStringFromUnix(subscription.current_period_end)
 
   const schedule = await findLatestPaymentSchedule(supabase, packageRow.id)

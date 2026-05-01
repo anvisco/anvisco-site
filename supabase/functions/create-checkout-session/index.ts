@@ -138,7 +138,7 @@ async function stripeApi(
   }
 }
 
-export default async function handler(request: Request): Promise<Response> {
+Deno.serve(async (request) => {
   if (request.method === 'OPTIONS') {
     return new Response(null, {
       status: 204,
@@ -381,7 +381,7 @@ export default async function handler(request: Request): Promise<Response> {
       error: error instanceof Error ? error.message : 'Unknown checkout error',
     }, 500)
   }
-}
+})
 
 async function createClientRow(supabase: ReturnType<typeof createClient>, payload: CheckoutPayload): Promise<string> {
   const name = payload.name?.trim()
