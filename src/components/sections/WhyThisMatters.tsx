@@ -67,7 +67,7 @@ export function WhyThisMatters() {
           The four projects below each show a different side of this:
         </motion.p>
 
-        {/* Four-column grid — no side-stripe, use amber number instead */}
+        {/* Four-column grid with amber number treatment */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 border-t border-[var(--color-border)]">
           {sides.map((side, i) => (
             <motion.div

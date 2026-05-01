@@ -1,10 +1,12 @@
-const EMAIL = 'brian@anvisco.com'
+import { EMAIL } from '@/data/contact'
 
 const links = [
-  { label: 'work', href: '#work' },
-  { label: 'services', href: '#services' },
-  { label: 'process', href: '#process' },
-  { label: 'about', href: '#about' },
+  { label: 'home', href: '/' },
+  { label: 'work', href: '/portfolio' },
+  { label: 'services', href: '/services' },
+  { label: 'audit', href: '/audit' },
+  { label: 'process', href: '/#process' },
+  { label: 'about', href: '/#about' },
 ]
 
 export function Footer() {
@@ -17,7 +19,7 @@ export function Footer() {
           <p className="text-sm font-medium tracking-tight mb-1 text-ink">anvisco</p>
           <a
             href={`mailto:${EMAIL}`}
-            className="text-base text-ink-muted transition-colors duration-150 hover:text-ink"
+            className="text-base text-[var(--color-amber-soft)] transition-colors duration-150 hover:text-ink"
             style={{
               fontFamily: '"Instrument Serif", Georgia, serif',
               fontStyle: 'italic',
@@ -27,13 +29,13 @@ export function Footer() {
           </a>
         </div>
 
-        {/* Navigation links — bracket style */}
+        {/* Navigation links: bracket style */}
         <nav className="flex flex-wrap gap-6">
           {links.map((link) => (
             <a
               key={link.href}
               href={link.href}
-              className="text-ink-muted transition-colors duration-150 hover:text-ink"
+              className="text-ink-muted transition-colors duration-150 hover:text-amber"
             >
               <span className="font-sans text-[0.7rem] font-medium uppercase tracking-[0.12em]">
                 [ {link.label} ]

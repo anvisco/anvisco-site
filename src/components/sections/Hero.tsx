@@ -1,112 +1,69 @@
 import { motion, useReducedMotion } from 'motion/react'
+import { Link } from 'react-router-dom'
 import { BracketLabel } from '@/components/ui/BracketLabel'
 
-const CALENDLY = 'https://calendly.com/nducanhnguyenn/15-minute-discovery-call'
-
-const fadeUp = {
-  hidden: { opacity: 0, y: 12 },
-  visible: { opacity: 1, y: 0 },
-}
-
-const fadeIn = {
-  hidden: { opacity: 0 },
-  visible: { opacity: 1 },
-}
-
 export function Hero() {
-  const reduceMotion = useReducedMotion()
-  const variants = reduceMotion
-    ? { hidden: {}, visible: {} }
-    : undefined
-
   return (
     <section className="relative min-h-[92vh] flex flex-col justify-end bg-[var(--color-bg)] overflow-hidden pt-16">
 
-      {/* MAKEDO-style thin grid wireframe */}
       <HeroGrid />
 
       <div className="max-w-screen-xl mx-auto px-6 lg:px-12 w-full pb-16 lg:pb-20 relative z-10">
 
         <div className="grid lg:grid-cols-[1fr_300px] lg:gap-16 items-end">
 
-          {/* Left column — headline block */}
           <div>
+            <div>
+              <div className="mb-10">
+                <BracketLabel>Local service websites</BracketLabel>
+              </div>
 
-            <motion.div
-              initial="hidden"
-              animate="visible"
-              variants={variants ?? { visible: { transition: { staggerChildren: 0.08 } } }}
-            >
-              {/* Bracket tag */}
-              <motion.div
-                variants={reduceMotion ? undefined : fadeIn}
-                transition={{ duration: 0.45, ease: 'easeOut' }}
-                className="mb-10"
-              >
-                <BracketLabel>Business Systems + Website</BracketLabel>
-              </motion.div>
-
-              {/* Display headline */}
-              <motion.h1
-                variants={reduceMotion ? undefined : fadeUp}
-                transition={{ duration: 0.55, ease: 'easeOut' }}
-                className="mb-8 font-sans font-medium leading-[0.95] tracking-[-0.04em] text-ink"
-                style={{ fontSize: 'clamp(3.5rem, 8vw, 7rem)' }}
-              >
-                <span className="block">Websites that</span>
-                <em
-                  className="font-serif italic text-amber"
+              <h1 className="mb-8 max-w-[11ch] text-[clamp(3rem,8vw,7rem)] font-medium leading-[0.98] tracking-[-0.035em] text-ink sm:max-w-[14ch] lg:max-w-[13ch]">
+                <span className="block font-sans text-[0.74em] tracking-[-0.025em]">Websites built to</span>
+                <span
+                  className="mt-2 block font-serif italic leading-[0.9] text-amber"
                   style={{ fontFamily: '"Instrument Serif", Georgia, serif' }}
                 >
-                  run
-                </em>
-                <span className="block">optimize</span>
-                <span className="block">and grow</span>
-                <span className="block">your business.</span>
-              </motion.h1>
+                  run, grow,
+                </span>
+                <span
+                  className="block font-serif italic leading-[0.9] text-amber"
+                  style={{ fontFamily: '"Instrument Serif", Georgia, serif' }}
+                >
+                  and get discovered.
+                </span>
+              </h1>
 
-              {/* Subtext */}
-              <motion.p
-                variants={reduceMotion ? undefined : fadeUp}
-                transition={{ duration: 0.5, ease: 'easeOut' }}
-                className="mb-10 max-w-[52ch] text-[1.125rem] leading-relaxed text-ink-muted tracking-[-0.005em]"
+              <p
+                className="mb-10 max-w-[31ch] text-[1.125rem] leading-relaxed text-ink-muted tracking-[-0.005em] sm:max-w-[52ch]"
               >
-                I help local businesses turn complex offers and operations into
-                clear, fast websites that convert.
-              </motion.p>
+                I build custom websites for local service businesses that improve operations, trust, and conversion. Now structured for how people search through Google, AI tools, Maps, and local recommendations.
+              </p>
 
-              {/* CTAs */}
-              <motion.div
-                variants={reduceMotion ? undefined : fadeUp}
-                transition={{ duration: 0.5, ease: 'easeOut' }}
-                className="flex flex-wrap items-center gap-6"
-              >
-                <a
-                  href={CALENDLY}
-                  target="_blank"
-                  rel="noopener noreferrer"
+              <div className="flex flex-col items-start gap-5 sm:flex-row sm:flex-wrap sm:items-center sm:gap-6">
+                <Link
+                  to="/audit"
                   className="group inline-flex items-center gap-2.5 border-[1.5px] border-ink px-6 py-3 text-sm font-medium text-ink tracking-[-0.005em] transition-all duration-200 hover:border-amber hover:text-amber"
                 >
-                  Book a 15-minute call
+                  Get a Website Audit
                   <span className="text-amber transition-transform duration-200 group-hover:translate-x-0.5">→</span>
-                </a>
+                </Link>
 
                 <a
-                  href="#work"
+                  href="/portfolio"
                   className="group relative text-sm text-ink-muted transition-colors duration-200 hover:text-ink"
                 >
-                  See the work
+                  See Selected Work
                   <span
                     aria-hidden="true"
                     className="absolute -bottom-0.5 left-0 h-px w-0 bg-amber transition-all duration-200 group-hover:w-full"
                   />
                 </a>
-              </motion.div>
+              </div>
 
-            </motion.div>
+            </div>
           </div>
 
-          {/* Right column — floating bracket labels, desktop only */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -122,7 +79,6 @@ export function Hero() {
         </div>
       </div>
 
-      {/* Full-viewport structural rule at base of hero */}
       <div aria-hidden="true" className="absolute bottom-0 inset-x-0 h-px bg-[var(--color-border)]" />
     </section>
   )
@@ -134,7 +90,7 @@ function HeroGrid() {
   return (
     <div
       aria-hidden="true"
-      className="pointer-events-none absolute right-0 top-16 z-0 hidden h-[calc(100%-4rem)] w-[55%] lg:block"
+      className="pointer-events-none absolute right-0 top-16 z-0 hidden h-[calc(100%-4rem)] w-[55%] opacity-60 lg:block"
     >
       <svg
         className="absolute inset-0 h-full w-full"
@@ -142,28 +98,24 @@ function HeroGrid() {
         fill="none"
         preserveAspectRatio="xMidYMid slice"
       >
-        {/* Vertical grid lines */}
         {[0, 140, 280, 420, 560].map((x) => (
           <line key={`v-${x}`} x1={x} y1="0" x2={x} y2="800"
-            stroke="var(--color-border-strong)" strokeWidth="0.75" opacity="0.55" />
+            stroke="var(--color-border-strong)" strokeWidth="0.75" opacity="0.34" />
         ))}
-        {/* Horizontal grid lines */}
         {[0, 160, 320, 480, 640, 800].map((y) => (
           <line key={`h-${y}`} x1="0" y1={y} x2="560" y2={y}
-            stroke="var(--color-border-strong)" strokeWidth="0.75" opacity="0.55" />
+            stroke="var(--color-border-strong)" strokeWidth="0.75" opacity="0.34" />
         ))}
 
-        {/* Bracket annotations inside grid cells */}
         <text x="16" y="178" fontSize="7" fill="var(--color-ink-subtle)"
-          letterSpacing="1.5" fontFamily="Inter, sans-serif" opacity="0.55">[ SCOPE ]</text>
+          letterSpacing="1.5" fontFamily="Inter, sans-serif" opacity="0.34">[ SCOPE ]</text>
         <text x="156" y="338" fontSize="7" fill="var(--color-ink-subtle)"
-          letterSpacing="1.5" fontFamily="Inter, sans-serif" opacity="0.55">[ STRUCTURE ]</text>
+          letterSpacing="1.5" fontFamily="Inter, sans-serif" opacity="0.34">[ STRUCTURE ]</text>
         <text x="436" y="498" fontSize="7" fill="var(--color-ink-subtle)"
-          letterSpacing="1.5" fontFamily="Inter, sans-serif" opacity="0.55">[ LAUNCH ]</text>
+          letterSpacing="1.5" fontFamily="Inter, sans-serif" opacity="0.34">[ LAUNCH ]</text>
         <text x="16" y="498" fontSize="7" fill="var(--color-ink-subtle)"
-          letterSpacing="1.5" fontFamily="Inter, sans-serif" opacity="0.55">[ CONVERT ]</text>
+          letterSpacing="1.5" fontFamily="Inter, sans-serif" opacity="0.34">[ CONVERT ]</text>
 
-        {/* Amber crosshair accent */}
         <motion.g
           initial={false}
           animate={reduceMotion ? { opacity: 0.4 } : { opacity: [0.3, 0.6, 0.3] }}
@@ -173,7 +125,6 @@ function HeroGrid() {
           <line x1="285" y1="315" x2="275" y2="325" stroke="var(--color-amber)" strokeWidth="0.8" />
         </motion.g>
 
-        {/* Amber dot */}
         <motion.circle
           cx="420" cy="320" r="2" fill="var(--color-amber)"
           initial={false}

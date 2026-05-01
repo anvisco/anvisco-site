@@ -4,31 +4,31 @@ import { BracketLabel } from '@/components/ui/BracketLabel'
 const steps = [
   {
     number: '01',
-    title: 'Discovery call',
-    duration: '30 min',
+    title: 'Audit',
+    duration: '1 to 2 days',
     description:
-      'Clarify your business, current site, goals, and what the website needs to do.',
+      'Review visibility, trust, content, speed, and booking flow before recommending what to fix.',
   },
   {
     number: '02',
-    title: 'Audit + proposal',
-    duration: '24 hrs',
+    title: 'Scope & recommend',
+    duration: 'Clear next step',
     description:
-      'Get a concise breakdown of what to fix, why it matters, and what comes first.',
+      'Decide whether the site needs a module, a bundle, or a full custom build.',
   },
   {
     number: '03',
-    title: 'Build',
-    duration: '5–14 days depending on scope',
+    title: 'Build or upgrade',
+    duration: 'Timeline depends on scope',
     description:
-      'Build in focused cycles with daily updates and a mid-build review.',
+      'Improve the selected layer, from content and booking flow to a full custom-coded rebuild.',
   },
   {
     number: '04',
     title: 'Launch + handover',
-    duration: '',
+    duration: '30 days of support',
     description:
-      'Launch with a full walkthrough and 30 days of support.',
+      'Launch with a walkthrough, QA pass, and post-launch support so the site is ready to use.',
   },
 ]
 
@@ -40,7 +40,7 @@ export function Process() {
 
         {/* Section header */}
         <div className="flex items-center gap-4 mb-16 border-t border-[var(--color-border)] pt-7">
-          <span className="text-[0.7rem] tabular-nums text-amber font-medium tracking-[0.08em]">04</span>
+          <span className="text-[0.7rem] tabular-nums text-amber font-medium tracking-[0.08em]">06</span>
           <motion.div
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
@@ -51,8 +51,7 @@ export function Process() {
           </motion.div>
         </div>
 
-        {/* Four-column grid on desktop, stacked on mobile */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-0">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {steps.map((step, i) => (
             <motion.div
               key={step.number}
@@ -60,31 +59,21 @@ export function Process() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.45, ease: 'easeOut', delay: i * 0.08 }}
-              className={`relative pt-7 pb-8 pr-8 ${
-                i < steps.length - 1
-                  ? 'border-b border-[var(--color-border)] lg:border-b-0 lg:border-r lg:border-[var(--color-border)]'
-                  : ''
-              } ${i > 0 ? 'lg:pl-8' : ''}`}
+              className="relative flex min-h-[250px] flex-col border border-[var(--color-border)] bg-[var(--color-surface)] p-7"
             >
-              {/* Amber index */}
               <p className="text-[0.7rem] tabular-nums font-medium tracking-[0.08em] text-amber mb-6">
                 {step.number}
               </p>
 
-              {/* Step title */}
               <p className="text-base font-medium text-ink mb-1 tracking-[-0.01em]">
                 {step.title}
               </p>
 
-              {/* Duration */}
-              {step.duration && (
-                <p className="text-[0.7rem] tracking-[0.08em] uppercase text-ink-subtle mb-4">
-                  {step.duration}
-                </p>
-              )}
+              <p className="text-[0.7rem] tracking-[0.08em] uppercase text-amber mb-5">
+                {step.duration}
+              </p>
 
-              {/* Description */}
-              <p className="text-sm text-ink-muted leading-relaxed">
+              <p className="mt-auto text-sm text-ink-muted leading-relaxed">
                 {step.description}
               </p>
             </motion.div>

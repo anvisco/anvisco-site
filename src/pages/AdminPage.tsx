@@ -5,17 +5,31 @@ import {
   isSupabaseConfigured,
   SUPABASE_NOT_CONFIGURED_MESSAGE,
 } from '@/lib/supabase'
-import { EMAIL } from '@/data/contact'
 
 const SECTIONS = [
-  { title: 'Active package', body: 'Your current audit, module bundle, build, or plan.' },
-  { title: 'Current stage', body: 'Where the project is: audit, scope, build, launch, or support.' },
-  { title: 'Next payment due', body: 'Hosted Stripe payment links. No card data stored on this site.' },
-  { title: 'Updates', body: 'Notes Brian flags as visible to you appear here.' },
-  { title: 'Support', body: 'Email or book a 15-minute call any time.' },
+  {
+    title: 'Clients',
+    body: 'Lead, active, paused, completed, or archived. Linked to auth users via client_users.',
+  },
+  {
+    title: 'Packages',
+    body: 'Audit, modules, build, or recurring. Status flows requested → scoped → in_progress → complete.',
+  },
+  {
+    title: 'Payments',
+    body: 'Schedules with hosted Stripe Payment Links. Status flows pending → paid. No card data stored.',
+  },
+  {
+    title: 'Project stages',
+    body: 'Audit, scope, build, launch, support, complete. Updates can be flagged visible to clients.',
+  },
+  {
+    title: 'Emails',
+    body: 'Logs and templates. Admin only. Sending wires up in a later pass.',
+  },
 ]
 
-export function PortalPage() {
+export function AdminPage() {
   return (
     <>
       <Nav />
@@ -23,15 +37,15 @@ export function PortalPage() {
         <div className="mx-auto max-w-screen-xl px-6 py-20 lg:px-12 lg:py-24">
           <div className="mb-12 border-t border-[var(--color-border)] pt-7">
             <div className="mb-6 flex items-center gap-4">
-              <span className="text-[0.7rem] tabular-nums text-amber font-medium tracking-[0.08em]">/portal</span>
-              <BracketLabel>Client portal</BracketLabel>
+              <span className="text-[0.7rem] tabular-nums text-amber font-medium tracking-[0.08em]">/admin</span>
+              <BracketLabel>Internal</BracketLabel>
             </div>
-            <h1 className="mb-5 max-w-[20ch] text-[2.5rem] font-medium leading-[1.04] tracking-[-0.03em] text-ink md:text-[3.5rem]">
-              Your project portal.
+            <h1 className="mb-5 max-w-[18ch] text-[2.5rem] font-medium leading-[1.04] tracking-[-0.03em] text-ink md:text-[3.5rem]">
+              Anvisco admin.
             </h1>
             <p className="max-w-[58ch] text-base leading-relaxed text-ink-muted">
-              Track your active package, current stage, payments, and updates from Brian. Login and
-              live data wire up in a later pass.
+              Internal control panel for clients, packages, payments, project stages, and emails.
+              Login and full management land in a later pass.
             </p>
           </div>
 
@@ -43,7 +57,7 @@ export function PortalPage() {
 
           <section className="mt-12">
             <p className="mb-5 text-[0.7rem] uppercase tracking-[0.1em] text-ink-subtle">
-              What will live here
+              Planned sections
             </p>
             <div className="grid gap-px bg-[var(--color-border)] sm:grid-cols-2 lg:grid-cols-3">
               {SECTIONS.map((s) => (
@@ -66,7 +80,8 @@ function NotConfigured() {
     <div className="border border-amber/60 bg-amber/5 p-6">
       <p className="mb-2 text-[0.7rem] uppercase tracking-[0.1em] text-amber">Setup required</p>
       <p className="max-w-[62ch] text-sm leading-relaxed text-ink-muted">
-        {SUPABASE_NOT_CONFIGURED_MESSAGE}
+        {SUPABASE_NOT_CONFIGURED_MESSAGE} See <code className="text-ink">BACKEND_SETUP.md</code> for
+        the full setup walkthrough.
       </p>
     </div>
   )
@@ -78,15 +93,10 @@ function NoSession() {
       <p className="mb-2 text-[0.7rem] uppercase tracking-[0.1em] text-ink-subtle">
         Login coming next pass
       </p>
-      <p className="mb-4 max-w-[62ch] text-sm leading-relaxed text-ink-muted">
-        Until login is wired up, Brian sends progress and payment links by email.
+      <p className="max-w-[62ch] text-sm leading-relaxed text-ink-muted">
+        Supabase is configured. Admin auth and dashboard wire up in Pass 2. For now, run admin
+        actions in the Supabase SQL editor or table view.
       </p>
-      <a
-        href={`mailto:${EMAIL}`}
-        className="inline-flex items-center gap-2 text-sm text-amber transition-colors duration-150 hover:underline"
-      >
-        Email Brian → {EMAIL}
-      </a>
     </div>
   )
 }

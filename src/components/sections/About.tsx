@@ -9,7 +9,7 @@ export function About() {
 
         {/* Section header */}
         <div className="flex items-center gap-4 mb-14 border-t border-[var(--color-border)] pt-7">
-          <span className="text-[0.7rem] tabular-nums text-amber font-medium tracking-[0.08em]">06</span>
+          <span className="text-[0.7rem] tabular-nums text-amber font-medium tracking-[0.08em]">07</span>
           <motion.div
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
@@ -22,7 +22,7 @@ export function About() {
 
         <div className="grid lg:grid-cols-[280px_1fr] gap-16 lg:gap-24">
 
-          {/* Spacer column — intentional on desktop for alignment */}
+          {/* Spacer column for desktop alignment */}
           <div />
 
           <div>

@@ -95,7 +95,7 @@ export function Pricing() {
                 index === 0 ? 'lg:pl-0' : ''
               }`}
             >
-              {/* Recommended label — top right, amber bracket style */}
+              {/* Recommended label: top right, amber bracket style */}
               {tier.recommended && (
                 <div className="absolute top-8 right-0 lg:right-8">
                   <BracketLabel>recommended</BracketLabel>
@@ -132,7 +132,7 @@ export function Pricing() {
                 ))}
               </ul>
 
-              {/* CTA — outlined style matching hero */}
+              {/* CTA: outlined style matching hero */}
               <Link
                 to={`/checkout?plan=${tier.slug}`}
                 className="group mt-auto inline-flex items-center gap-2.5 border border-[var(--color-border-strong)] px-5 py-3 text-[0.7rem] tracking-[0.1em] uppercase text-ink font-medium transition-all duration-200 hover:border-amber hover:text-amber w-fit"
@@ -152,7 +152,7 @@ export function Pricing() {
           transition={{ duration: 0.45, ease: 'easeOut', delay: 0.12 }}
           className="mt-12 pl-5 border-l border-[var(--color-border)]"
         >
-          <p className="mb-3 text-sm font-medium text-ink">Care Plan — $149/month</p>
+          <p className="mb-3 text-sm font-medium text-ink">Care Plan: $149/month</p>
           <p className="text-sm leading-relaxed text-ink-muted max-w-2xl">
             Hosting, monthly content updates (up to 2 hours), security monitoring,
             weekly backups, priority response.

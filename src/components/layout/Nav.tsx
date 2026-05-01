@@ -1,15 +1,18 @@
 import { useState, useEffect } from 'react'
+import { useLocation } from 'react-router-dom'
 import { Menu, X } from 'lucide-react'
 
 const links = [
-  { label: 'work', href: '/#work' },
-  { label: 'services', href: '/#services' },
+  { label: 'home', href: '/' },
+  { label: 'work', href: '/portfolio' },
+  { label: 'services', href: '/services' },
+  { label: 'audit', href: '/audit' },
   { label: 'process', href: '/#process' },
-  { label: 'pricing', href: '/#pricing' },
   { label: 'about', href: '/#about' },
 ]
 
 export function Nav() {
+  const location = useLocation()
   const [open, setOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
   const [activeHash, setActiveHash] = useState('')
@@ -52,17 +55,21 @@ export function Nav() {
           anvisco
         </a>
 
-        {/* Desktop nav — bracket style */}
-        <nav className="hidden md:flex items-center gap-7">
+        {/* Desktop nav: bracket style */}
+        <nav className="hidden md:flex items-center gap-6 lg:gap-7">
           {links.map((link) => {
-            const hash = link.href.slice(link.href.indexOf('#'))
-            const active = activeHash === hash
+            const hashIndex = link.href.indexOf('#')
+            const hash = hashIndex >= 0 ? link.href.slice(hashIndex) : ''
+            const path = hashIndex >= 0 ? link.href.slice(0, hashIndex) : link.href
+            const active = hash
+              ? location.pathname === (path || '/') && activeHash === hash
+              : location.pathname === path && (!hash || !activeHash)
 
             return (
               <a
                 key={link.href}
                 href={link.href}
-                className={`group relative text-[0.7rem] tracking-[0.12em] uppercase transition-colors duration-200 hover:text-ink ${
+                className={`group relative text-[0.68rem] font-medium tracking-[0.12em] uppercase transition-colors duration-200 hover:text-ink ${
                   active ? 'text-amber' : 'text-ink-muted'
                 }`}
               >
@@ -76,12 +83,12 @@ export function Nav() {
           })}
         </nav>
 
-        {/* Contact CTA — outlined */}
+        {/* Contact CTA: outlined */}
         <a
-          href="/#contact"
-          className="hidden md:inline-flex items-center gap-2 border-[1.5px] border-ink px-4 py-2 text-[0.7rem] tracking-[0.1em] uppercase text-ink transition-all duration-200 hover:border-amber hover:text-amber group"
+          href="/audit"
+          className="hidden md:inline-flex items-center gap-2 border border-[var(--color-border-strong)] px-4 py-2 text-[0.68rem] font-medium tracking-[0.1em] uppercase text-ink transition-all duration-200 hover:border-amber hover:text-amber group"
         >
-          <span>[ contact ]</span>
+          <span>[ audit ]</span>
           <span className="text-amber transition-transform duration-200 group-hover:translate-x-0.5">→</span>
         </a>
 
@@ -103,17 +110,17 @@ export function Nav() {
               key={link.href}
               href={link.href}
               onClick={() => setOpen(false)}
-              className="text-[0.7rem] tracking-[0.14em] uppercase text-ink-muted transition-colors duration-150 hover:text-ink"
+              className="text-[0.7rem] font-medium tracking-[0.14em] uppercase text-ink-muted transition-colors duration-150 hover:text-ink"
             >
               {`[ ${link.label} ]`}
             </a>
           ))}
           <a
-            href="/#contact"
+            href="/audit"
             onClick={() => setOpen(false)}
-            className="mt-2 inline-flex items-center gap-2 border-[1.5px] border-ink px-4 py-3 text-[0.7rem] tracking-[0.1em] uppercase text-ink transition-all duration-150 hover:border-amber hover:text-amber w-fit"
+            className="mt-2 inline-flex items-center gap-2 border border-[var(--color-border-strong)] px-4 py-3 text-[0.7rem] font-medium tracking-[0.1em] uppercase text-ink transition-all duration-150 hover:border-amber hover:text-amber w-fit"
           >
-            [ contact ] <span className="text-amber">→</span>
+            [ audit ] <span className="text-amber">→</span>
           </a>
         </div>
       )}

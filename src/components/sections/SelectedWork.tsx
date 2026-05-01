@@ -1,6 +1,6 @@
 import { motion } from 'motion/react'
-import { ProjectCard } from './ProjectCard'
 import { BracketLabel } from '@/components/ui/BracketLabel'
+import { ProjectCard } from './ProjectCard'
 import { projects } from '@/data/projects'
 
 export function SelectedWork() {
@@ -9,10 +9,9 @@ export function SelectedWork() {
 
       <div className="max-w-screen-xl mx-auto px-6 lg:px-12">
 
-        {/* Section header */}
         <div className="mb-20 flex items-baseline justify-between border-t border-[var(--color-border)] pt-7 md:mb-24">
           <div className="flex items-center gap-4">
-            <span className="text-[0.7rem] tabular-nums text-amber font-medium tracking-[0.08em]">02</span>
+            <span className="text-[0.7rem] tabular-nums text-amber font-medium tracking-[0.08em]">06</span>
             <motion.div
               initial={{ opacity: 0 }}
               whileInView={{ opacity: 1 }}
@@ -29,11 +28,10 @@ export function SelectedWork() {
             transition={{ duration: 0.4, delay: 0.1 }}
             className="text-[0.7rem] text-ink-subtle tabular-nums"
           >
-            4 projects
+            {projects.length} projects
           </motion.span>
         </div>
 
-        {/* Editorial project list — single column */}
         <div>
           {projects.map((project, i) => (
             <ProjectCard key={project.id} project={project} index={i} />

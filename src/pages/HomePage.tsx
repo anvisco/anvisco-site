@@ -1,11 +1,12 @@
 import { Nav } from '@/components/layout/Nav'
 import { Footer } from '@/components/layout/Footer'
 import { Hero } from '@/components/sections/Hero'
-import { WhyThisMatters } from '@/components/sections/WhyThisMatters'
-import { SelectedWork } from '@/components/sections/SelectedWork'
-import { WhatIHandle } from '@/components/sections/WhatIHandle'
+import { OriginalEdge } from '@/components/sections/OriginalEdge'
+import { DiscoveryLayer } from '@/components/sections/DiscoveryLayer'
+import { ThreePaths } from '@/components/sections/ThreePaths'
+import { Modules } from '@/components/sections/Modules'
+import { CustomBuild } from '@/components/sections/CustomBuild'
 import { Process } from '@/components/sections/Process'
-import { Pricing } from '@/components/sections/Pricing'
 import { About } from '@/components/sections/About'
 import { Contact } from '@/components/sections/Contact'
 
@@ -15,11 +16,12 @@ export function HomePage() {
       <Nav />
       <main>
         <Hero />
-        <WhyThisMatters />
-        <SelectedWork />
-        <WhatIHandle />
+        <OriginalEdge />
+        <DiscoveryLayer />
+        <ThreePaths />
+        <Modules />
+        <CustomBuild />
         <Process />
-        <Pricing />
         <About />
         <Contact />
       </main>

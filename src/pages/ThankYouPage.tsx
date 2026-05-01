@@ -8,9 +8,9 @@ type PaymentMethod = 'stripe' | 'paypal' | 'etransfer'
 const PLAN_ORDER: PlanKey[] = ['essentials', 'standard', 'premium']
 
 const PLANS: Record<PlanKey, { name: string; deposit: string; remaining: string }> = {
-  essentials: { name: 'Essentials', deposit: '$600 CAD', remaining: '$600 CAD' },
-  standard: { name: 'Standard', deposit: '$1,100 CAD', remaining: '$1,100 CAD' },
-  premium: { name: 'Premium', deposit: '$1,900 CAD', remaining: '$1,900 CAD' },
+  essentials: { name: 'Essentials', deposit: '$750 CAD', remaining: '$750 CAD' },
+  standard: { name: 'Standard', deposit: '$1,300 CAD', remaining: '$1,300 CAD' },
+  premium: { name: 'Premium', deposit: '$2,250 CAD', remaining: '$2,250 CAD' },
 }
 
 const METHOD_MESSAGES: Record<PaymentMethod, string> = {
@@ -28,18 +28,18 @@ const METHOD_LABELS: Record<PaymentMethod, string> = {
 const NEXT_STEPS = [
   {
     n: '01',
-    title: 'Manual review',
-    body: 'I check the deposit details and match them to your selected plan.',
+    title: 'Audit',
+    body: 'I confirm the current site, goals, and the highest-priority issues before work starts.',
   },
   {
     n: '02',
-    title: 'Project page',
-    body: 'I send your project page and onboarding details within 24 hours.',
+    title: 'Scope & recommend',
+    body: 'I confirm whether the next move is a module, a bundle, or the full build you selected.',
   },
   {
     n: '03',
-    title: 'Build starts',
-    body: 'Once onboarding is complete, your site build starts and updates stay tied to your portal.',
+    title: 'Build or upgrade',
+    body: 'Once scope is confirmed, the selected work starts and updates stay tied to your portal.',
   },
 ]
 
@@ -140,7 +140,7 @@ export function ThankYouPage() {
                   Email brian@anvisco.com
                 </a>
                 <Link
-                  to="/#pricing"
+                  to="/services#build"
                   className="text-sm text-muted-foreground transition-colors duration-150 hover:text-white"
                 >
                   {'<- Back to pricing'}
