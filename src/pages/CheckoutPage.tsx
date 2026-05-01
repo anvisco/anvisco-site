@@ -379,6 +379,9 @@ function AuditSection() {
           <span className="text-ink">Credit:</span> if you move forward with a module or build
           within 30 days, the audit fee is applied to that project.
         </p>
+        <p className="mt-3 text-sm leading-relaxed text-ink-muted">
+          Free Snapshot does not require payment.
+        </p>
       </div>
       <p className="mt-4 text-sm text-ink-muted">
         Want the free Snapshot instead?{' '}
@@ -815,7 +818,7 @@ function Summary(props: {
       </button>
 
       <p className="mt-4 text-[0.7rem] leading-relaxed text-ink-subtle">
-        Secure Stripe checkout. Build Your Plan and continue to payment through Stripe.
+        Secure Stripe checkout. Build Your Plan and continue through Stripe.
       </p>
 
       {!isSupabaseConfigured && (

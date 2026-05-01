@@ -68,7 +68,8 @@ On submit, `/checkout`:
 2. The function recalculates the final subtotal, bundle discount, and charge amount server-side.
 3. The function creates or updates the client, package, module selections, and payment schedule.
 4. The function creates a Stripe Checkout Session and returns the hosted `session.url`.
-5. The browser redirects the client to Stripe-hosted Checkout.
+5. Stripe returns the browser to `/checkout/success?session_id={CHECKOUT_SESSION_ID}`.
+6. The browser shows package-specific confirmation details after it loads the summary function.
 
 `create-checkout-session` must be deployed with `verify_jwt = false` so the browser preflight can
 reach the Edge Function without Supabase platform auth blocking it first.
@@ -76,6 +77,9 @@ reach the Edge Function without Supabase platform auth blocking it first.
 The function also expects a server-side `SITE_URL` secret for Stripe `success_url` and
 `cancel_url`. Frontend `VITE_` env vars are not read inside Edge Functions unless they are passed
 through as Supabase secrets.
+
+`/checkout/success` calls the `checkout-session-summary` Edge Function with the Stripe
+`session_id` query param. That function returns only safe confirmation data for the success page.
 
 If Stripe or Supabase returns an error, the page surfaces the message in the summary and keeps
 the form filled in.
@@ -91,6 +95,9 @@ Once the mapping exists, the client signs into `/portal` to see:
 - next payment
 - stage and visible updates
 - support contact details
+
+`/portal` is the official client login page and should be linked from the success page as the
+primary post-payment destination for returning clients.
 
 ## Manual fallback
 

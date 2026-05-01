@@ -253,7 +253,7 @@ You can move straight into the plan builder and choose the path that fits.
 ### Payments
 
 **Do I pay right away?**
-It depends. If you already know what your business needs, you can move forward and pay. If not, we first go through the right path together so the scope is clear before payment is finalized.
+It depends. If you already know what your business needs, you can move forward and pay through Stripe. If not, we first go through the right path together so the scope is clear before payment is finalized.
 
 **What happens after I build my plan?**
 Brian follows up with the next step, Stripe Checkout, or setup details based on what you selected.
@@ -337,12 +337,24 @@ When the full audit is selected:
 - Support copy: `If you move forward with a module or build within 30 days, the audit fee is applied to that project.`
 
 Success page label:
-- `Plan received`
+- `Payment received`
 
 Success copy:
-Your plan has been received. Brian will follow up with the next step, Stripe Checkout, or setup details based on what you selected.
+The success page should read the Stripe `session_id` query param and show package-specific confirmation:
 
-The page should make it clear this is a plan builder. Do not imply instant payment unless an actual payment integration is present.
+- Full Website Audit -> `Audit payment received.`
+- Website Improvement Modules -> `Upgrade plan received.`
+- Full Build tier -> `Website build confirmed.`
+- Care/Growth recurring plan -> `Care plan activated.`
+
+Show the package name, payment status, amount paid if available, and a `Client portal` CTA.
+
+Portal CTA:
+- Title: `Client portal`
+- Body: `Your client portal is where project stages, payment status, next due dates, and updates will live. If your login is not active yet, Anvis will connect it after setup.`
+- Button: `Go to Client Portal -> /portal`
+
+The page should make it clear the payment has been received and the client is moving into the next stage. Do not fall back to a generic plan received message.
 
 ---
 
@@ -358,5 +370,7 @@ The page should make it clear this is a plan builder. Do not imply instant payme
 - FAQ groups use a wider, tighter, two-column layout.
 - Services page no longer repeats FAQ.
 - Final homepage CTA routes to `/checkout` and reads `Build Your Plan`.
+- `/checkout/success` is session-aware and shows package-specific confirmation plus the portal CTA.
+- `/portal` is the official client login directory and login entry point.
 - The public site should read plainly and stay conversion-focused.
 - Avoid quote boxes, request-checkout wording, and generic filler language.

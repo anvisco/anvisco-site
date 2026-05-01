@@ -25,11 +25,12 @@ For production later, set `SITE_URL=https://anvisco.com`.
 
 ## 3. Deploy the Edge Functions
 
-Deploy both functions:
+Deploy the Edge Functions:
 
 ```bash
 npx supabase functions deploy create-checkout-session --project-ref evvozwtspivyumboqcnu
 npx supabase functions deploy stripe-webhook --project-ref evvozwtspivyumboqcnu
+npx supabase functions deploy checkout-session-summary --project-ref evvozwtspivyumboqcnu
 ```
 
 If Supabase still reports `UNAUTHORIZED_NO_AUTH_HEADER`, force the deploy without JWT verification:
@@ -37,6 +38,7 @@ If Supabase still reports `UNAUTHORIZED_NO_AUTH_HEADER`, force the deploy withou
 ```bash
 npx supabase functions deploy create-checkout-session --no-verify-jwt --project-ref evvozwtspivyumboqcnu
 npx supabase functions deploy stripe-webhook --no-verify-jwt --project-ref evvozwtspivyumboqcnu
+npx supabase functions deploy checkout-session-summary --no-verify-jwt --project-ref evvozwtspivyumboqcnu
 ```
 
 These functions are intentionally configured with `verify_jwt = false` in `supabase/config.toml`.
@@ -45,6 +47,12 @@ Edge Function without Supabase platform JWT blocking the request first.
 
 Edge Functions do not automatically read frontend `.env.local` `VITE_` variables. If a function
 needs a base URL for `success_url` / `cancel_url`, set it as the `SITE_URL` Supabase secret.
+
+The checkout function now returns Stripe to:
+
+`/checkout/success?session_id={CHECKOUT_SESSION_ID}`
+
+That session id is required so the success page can show package-specific confirmation.
 
 ## 4. Configure the Stripe webhook endpoint
 
@@ -65,6 +73,9 @@ Listen for these events:
 2. Pick a paid path.
 3. Submit the plan.
 4. Confirm the browser redirects to Stripe Checkout.
+
+5. Confirm `/checkout/success` loads package details using the new `checkout-session-summary`
+   Edge Function.
 
 ## Debugging the deployed function
 

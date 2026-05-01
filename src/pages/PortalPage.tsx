@@ -323,14 +323,18 @@ export function PortalPage() {
                 <span className="text-[0.7rem] tabular-nums text-amber font-medium tracking-[0.08em]">
                   /portal
                 </span>
-                <BracketLabel>Client portal</BracketLabel>
+                <BracketLabel>CLIENT PORTAL</BracketLabel>
               </div>
               <h1 className="mb-5 max-w-[16ch] text-[2.5rem] font-medium leading-[1.04] tracking-[-0.03em] text-ink md:text-[4rem]">
-                Your private client portal.
+                Client portal login.
               </h1>
               <p className="max-w-[62ch] text-base leading-relaxed text-ink-muted md:text-[1.0625rem]">
-                Track your package, stage, payments, and visible project updates in one place.
-                Only your own client data shows here.
+                Log in to view your active package, project stage, payment status, next due date,
+                and client-visible updates.
+              </p>
+              <p className="mt-4 max-w-[62ch] text-sm leading-relaxed text-ink-muted">
+                If you just completed checkout, your portal access may need to be connected first.
+                Anvis will follow up with your login details.
               </p>
             </div>
 
@@ -637,7 +641,7 @@ export function PortalPage() {
 
           {!session && !authLoading && isSupabaseConfigured && (
             <section className="mt-10 grid gap-6 xl:grid-cols-2">
-              <Card title="What the portal shows" eyebrow="Private access" wide>
+              <Card title="Client portal directory" eyebrow="Client portal directory" wide>
                 <div className="grid gap-4 sm:grid-cols-2">
                   <PortalPreview label="Active package" value="Package, type, selected modules, total, and recurring amount." />
                   <PortalPreview label="Next payment" value="Due date, amount due, status, and payment link if ready." />
@@ -645,7 +649,7 @@ export function PortalPage() {
                   <PortalPreview label="Updates" value="Only notes marked visible to the client." />
                 </div>
               </Card>
-              <Card title="Need access?" eyebrow="Private data">
+              <Card title="Connect your login" eyebrow="Private data">
                 <p className="max-w-[54ch] text-sm leading-relaxed text-ink-muted">
                   Sign in with the email and password that Brian connected to your client profile.
                   If your login has not been mapped yet, Brian will connect it on the admin side.
@@ -728,9 +732,10 @@ function LoginCard({ signIn }: { signIn: (email: string, password: string) => Pr
   }
 
   return (
-    <Card title="Sign in" eyebrow="Client access">
+    <Card title="Client portal login" eyebrow="Client access">
       <p className="mb-5 text-sm leading-relaxed text-ink-muted">
         Use the email and password Brian connected to your client profile.
+        If you recently completed checkout, your access may still be getting connected.
       </p>
       <form onSubmit={handleSubmit} className="space-y-4">
         <Field label="Email" required>
@@ -854,6 +859,10 @@ function EmptyConnectionState({ onSignOut }: { onSignOut: () => Promise<void> })
       </p>
       <p className="mb-4 max-w-[62ch] text-sm leading-relaxed text-ink-muted">
         No client profile is connected to this login yet.
+      </p>
+      <p className="mb-4 max-w-[62ch] text-sm leading-relaxed text-ink-muted">
+        If you recently completed checkout, your profile may still be getting connected. Contact
+        brian@anvisco.com.
       </p>
       <button
         onClick={() => void onSignOut()}

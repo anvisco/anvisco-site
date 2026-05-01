@@ -134,16 +134,6 @@ function getRequiredEnv(name: string): string | null {
   return value && value.trim() ? value.trim() : null
 }
 
-function safeUrl(value: unknown): string | null {
-  if (typeof value !== 'string' || !value.trim()) return null
-  try {
-    const parsed = new URL(value)
-    return parsed.protocol === 'http:' || parsed.protocol === 'https:' ? parsed.toString() : null
-  } catch {
-    return null
-  }
-}
-
 function safeCents(value: number | null | undefined): number {
   const n = typeof value === 'number' ? value : NaN
   return Number.isFinite(n) ? Math.round(n) : 0
@@ -315,11 +305,8 @@ Deno.serve(async (request) => {
     }
     logStep('validated package type', { package_type: payload.package_type })
 
-    const successUrl = safeUrl(payload.success_url) ?? new URL('/checkout/success', SITE_URL).toString()
-    const cancelUrl = safeUrl(payload.cancel_url) ?? new URL('/checkout', SITE_URL).toString()
-    if (!successUrl || !cancelUrl) {
-      return errorResponse(400, 'Invalid checkout selection.', 'invalid_payload')
-    }
+    const successUrl = `${SITE_URL}/checkout/success?session_id={CHECKOUT_SESSION_ID}`
+    const cancelUrl = `${SITE_URL}/checkout`
 
     const pricing = buildCheckoutPricing({
       package_type: payload.package_type,

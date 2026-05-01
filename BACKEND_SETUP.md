@@ -14,6 +14,7 @@ real authenticated `/portal` client view.
 - `/admin` and `/portal` routes
 - `/next-steps/{audit,scope,build,launch}` public stage pages
 - Supabase Edge Functions for Stripe Checkout Sessions and webhook processing
+- `checkout-session-summary` Edge Function for the post-payment confirmation page
 - TypeScript types in `src/types/backend.ts`
 
 ## What is intentionally not included
@@ -152,6 +153,8 @@ from trusted data before it talks to Stripe.
 - Stripe secret keys stay in Edge Function secrets and are never exposed to the browser.
 - Manual `payment_url` fallback is still supported in the admin portal when needed.
 - Stripe webhook processing updates payment and package status after Checkout completes.
+- `/checkout/success` loads `session_id` and uses the summary function to show package-specific
+  confirmation details.
 
 ## 6b. Deploy Stripe Edge Functions
 
@@ -160,6 +163,7 @@ Deploy both functions after setting secrets:
 ```bash
 npx supabase functions deploy create-checkout-session --project-ref evvozwtspivyumboqcnu
 npx supabase functions deploy stripe-webhook --project-ref evvozwtspivyumboqcnu
+npx supabase functions deploy checkout-session-summary --project-ref evvozwtspivyumboqcnu
 ```
 
 If JWT verification is still blocking the requests, force the deploy without it:
@@ -167,6 +171,7 @@ If JWT verification is still blocking the requests, force the deploy without it:
 ```bash
 npx supabase functions deploy create-checkout-session --no-verify-jwt --project-ref evvozwtspivyumboqcnu
 npx supabase functions deploy stripe-webhook --no-verify-jwt --project-ref evvozwtspivyumboqcnu
+npx supabase functions deploy checkout-session-summary --no-verify-jwt --project-ref evvozwtspivyumboqcnu
 ```
 
 The repo ships `supabase/config.toml` with:
@@ -177,11 +182,17 @@ verify_jwt = false
 
 [functions.stripe-webhook]
 verify_jwt = false
+
+[functions.checkout-session-summary]
+verify_jwt = false
 ```
 
 That is expected. Checkout session creation and Stripe webhook delivery must be reachable without
 Supabase platform JWT enforcement, and the functions protect themselves with server-side secrets,
 server-side pricing, validation, and Stripe signature checks.
+
+The success-page summary function must also stay public because the browser calls it after Stripe
+redirects back with the `session_id` query param.
 
 In Stripe, point the webhook endpoint at the deployed `stripe-webhook` function URL and listen for:
 
@@ -240,6 +251,7 @@ message clearly — check that the user's `profiles.role = 'admin'` row exists.
 ## 8. Client portal
 
 - `/portal` is authenticated with Supabase Auth.
+- `/portal` is the official client login directory and login entry point.
 - The portal looks up the signed-in user in `client_users` using `auth.uid()`.
 - That mapping resolves the related client record, then loads only that client’s packages,
   module selections, payment schedules, and client-visible project updates.
