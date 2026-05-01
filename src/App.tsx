@@ -9,6 +9,7 @@ import { CheckoutPage } from '@/pages/CheckoutPage'
 import { CheckoutSuccessPage } from '@/pages/CheckoutSuccessPage'
 import { ThankYouPage } from '@/pages/ThankYouPage'
 import { PortalPage } from '@/pages/PortalPage'
+import { SetPasswordPage } from '@/pages/SetPasswordPage'
 import { AdminPage } from '@/pages/AdminPage'
 import { AdminClientDetailPage } from '@/pages/AdminClientDetailPage'
 import { NextStepsPage } from '@/pages/NextStepsPage'
@@ -43,6 +44,7 @@ function App() {
         <Route path="/checkout/success" element={<CheckoutSuccessPage />} />
         <Route path="/thank-you" element={<ThankYouPage />} />
         <Route path="/portal" element={<PortalPage />} />
+        <Route path="/set-password" element={<SetPasswordPage />} />
         <Route path="/admin" element={<AdminPage />} />
         <Route path="/admin/clients/:id" element={<AdminClientDetailPage />} />
         <Route path="/next-steps/audit" element={<NextStepsPage stage="audit" />} />

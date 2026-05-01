@@ -9,6 +9,7 @@ interface ClientPortalState {
 
 interface UseClientPortalReturn extends ClientPortalState {
   signIn: (email: string, password: string) => Promise<string | null>
+  sendPasswordSetupLink: (email: string) => Promise<string | null>
   signOut: () => Promise<void>
 }
 
@@ -43,10 +44,18 @@ export function useClientPortal(): UseClientPortalReturn {
     return error?.message ?? null
   }
 
+  async function sendPasswordSetupLink(email: string): Promise<string | null> {
+    if (!supabase) return 'Supabase not configured.'
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/set-password`,
+    })
+    return error?.message ?? null
+  }
+
   async function signOut(): Promise<void> {
     if (supabase) await supabase.auth.signOut()
     setState({ loading: false, session: null })
   }
 
-  return { ...state, signIn, signOut }
+  return { ...state, signIn, sendPasswordSetupLink, signOut }
 }

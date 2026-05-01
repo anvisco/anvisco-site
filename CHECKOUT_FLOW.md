@@ -78,6 +78,18 @@ The function also expects a server-side `SITE_URL` secret for Stripe `success_ur
 `cancel_url`. Frontend `VITE_` env vars are not read inside Edge Functions unless they are passed
 through as Supabase secrets.
 
+## Supabase Auth redirects
+
+Supabase Auth must allow password setup and portal login redirects to these URLs:
+
+- `http://localhost:5173/set-password`
+- `https://anvisco.com/set-password`
+- `http://localhost:5173/portal`
+- `https://anvisco.com/portal`
+
+Those redirects are required for the client password setup flow and the client portal login
+flow.
+
 `/checkout/success` calls the `checkout-session-summary` Edge Function with the Stripe
 `session_id` query param. That function returns only safe confirmation data for the success page.
 
@@ -96,8 +108,15 @@ Once the mapping exists, the client signs into `/portal` to see:
 - stage and visible updates
 - support contact details
 
-`/portal` is the official client login page and should be linked from the success page as the
-primary post-payment destination for returning clients.
+`/portal` is the official client login page, uses email/password authentication, and should be
+linked from the success page as the primary post-payment destination for returning clients.
+New clients use the password setup link on `/portal` to reach `/set-password` and create their
+password securely through Supabase email recovery. After login, the portal calls
+`claim-client-profile` to link the signed-in auth user to the matching `clients.email` value if it
+finds one.
+
+That means the checkout email and the auth email must match exactly. If they do not match, the
+portal stays in the pending state until an admin connects the record manually.
 
 ## Manual fallback
 

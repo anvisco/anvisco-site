@@ -194,25 +194,30 @@ export function CheckoutSuccessPage() {
                 </ul>
               </Step>
               <Step n="03" title="Portal access">
-                Your portal is the official place for project stages, payment status, next due dates,
-                and client-visible updates.
+                Use the same email you used at checkout to create your portal password. Once you
+                log in, Anvis will automatically connect your portal if the email matches your
+                checkout record.
               </Step>
             </div>
 
             <section className="mb-10 border border-[var(--color-border)] bg-[var(--color-surface)] p-6">
               <div className="mb-4 flex items-center gap-3">
-                <BracketLabel>Client portal</BracketLabel>
+                <BracketLabel>Client portal access</BracketLabel>
               </div>
               <p className="max-w-[62ch] text-sm leading-relaxed text-ink-muted">
-                Your client portal is where project stages, payment status, next due dates, and
-                updates will live. If your login is not active yet, Anvis will connect it after setup.
+                Use the same email you used at checkout to create your portal password. Once you log
+                in, Anvis will automatically connect your portal if the email matches your checkout
+                record.
+              </p>
+              <p className="mt-3 max-w-[62ch] text-sm leading-relaxed text-ink-muted">
+                If your portal profile is not connected yet, Anvis will connect it after setup.
               </p>
               <div className="mt-5 flex flex-wrap gap-3">
                 <Link
-                  to={summary?.portal_url ?? '/portal'}
+                  to="/portal"
                   className="inline-flex items-center gap-2.5 border border-amber px-5 py-3 text-[0.7rem] font-medium uppercase tracking-[0.1em] text-amber transition-all duration-200 hover:bg-amber/10"
                 >
-                  Go to Client Portal
+                  Create Portal Password
                   <span className="text-amber">→</span>
                 </Link>
                 <a

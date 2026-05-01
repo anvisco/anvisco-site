@@ -15,12 +15,12 @@ real authenticated `/portal` client view.
 - `/next-steps/{audit,scope,build,launch}` public stage pages
 - Supabase Edge Functions for Stripe Checkout Sessions and webhook processing
 - `checkout-session-summary` Edge Function for the post-payment confirmation page
+- `claim-client-profile` Edge Function for secure email-based portal linking
 - TypeScript types in `src/types/backend.ts`
 
 ## What is intentionally not included
 
 - Admin login, dashboard, and CRUD UI
-- Client portal login and live data binding
 - Real Stripe integration (Checkout Sessions / subscriptions / webhooks)
 - Real email sending (Resend/Postmark wiring)
 - Server functions / Edge Functions
@@ -83,6 +83,18 @@ Never prefix these with `VITE_`.
 `SITE_URL` is the server-side base URL used by the checkout Edge Function for Stripe
 `success_url` and `cancel_url`. Frontend `VITE_` variables are not available inside Edge Functions
 unless you pass them explicitly as Supabase secrets.
+
+## 2c. Configure Supabase Auth redirect URLs
+
+Supabase Auth must allow the browser to return to both the portal login page and the password
+setup page after email links:
+
+- `http://localhost:5173/set-password`
+- `https://anvisco.com/set-password`
+- `http://localhost:5173/portal`
+- `https://anvisco.com/portal`
+
+These URLs are required for the client password setup flow and the client portal login flow.
 
 ## 3. Run the migration
 
@@ -250,8 +262,16 @@ message clearly — check that the user's `profiles.role = 'admin'` row exists.
 
 ## 8. Client portal
 
-- `/portal` is authenticated with Supabase Auth.
+- `/portal` is authenticated with Supabase Auth using email and password.
 - `/portal` is the official client login directory and login entry point.
+- Clients who do not have a password yet use the password setup link on `/portal` to reach
+  `/set-password`.
+- `/set-password` requires the Supabase recovery session from the email link and updates the
+  authenticated user's password with `supabase.auth.updateUser({ password })`.
+- After login, the portal can automatically link the signed-in auth user to a `clients` row when
+  the authenticated email matches `clients.email`.
+- That claim flow runs through the `claim-client-profile` Edge Function and inserts into
+  `client_users` server-side with the service secret.
 - The portal looks up the signed-in user in `client_users` using `auth.uid()`.
 - That mapping resolves the related client record, then loads only that client’s packages,
   module selections, payment schedules, and client-visible project updates.
@@ -261,7 +281,8 @@ message clearly — check that the user's `profiles.role = 'admin'` row exists.
 - The portal never exposes other clients, email logs, or internal-only updates.
 
 To connect a user to a client, insert a row into `client_users` with the Supabase auth user id and
-the target client id.
+the target client id. Admin still connects the client auth user to the client record through
+`client_users` for special cases, but normal portal signup should self-link by email match.
 
 ## 9. What still needs to be built
 
@@ -278,6 +299,8 @@ the target client id.
   `supabase secrets set`, that `verify_jwt = false` is present for both functions, and that Stripe
   is pointing to the webhook endpoint documented below. Also confirm `SITE_URL` is set as a
   Supabase secret; Edge Functions do not read `VITE_SITE_URL` from the browser env.
+- **Portal stays on Connection pending:** confirm the user used the same email as checkout, and
+  deploy the `claim-client-profile` Edge Function so the portal can auto-link by email.
 - **`new row violates row-level security` when inserting a client:** the `clients` insert path is
   expected to be done by the public `/checkout` flow. The anon user inserts those rows. If you
   added a stricter policy, also add a policy that lets `anon` insert into `clients` and

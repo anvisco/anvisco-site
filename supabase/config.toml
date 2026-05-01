@@ -6,3 +6,6 @@ verify_jwt = false
 
 [functions.checkout-session-summary]
 verify_jwt = false
+
+[functions.claim-client-profile]
+verify_jwt = false

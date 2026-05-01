@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { FunctionsFetchError, FunctionsHttpError } from '@supabase/supabase-js'
 import { Nav } from '@/components/layout/Nav'
 import { Footer } from '@/components/layout/Footer'
 import { BracketLabel } from '@/components/ui/BracketLabel'
@@ -94,7 +94,10 @@ interface PortalData {
   error: string | null
 }
 
-type PortalMappingState = 'idle' | 'loading' | 'ready' | 'missing' | 'error'
+type PortalMappingState = 'idle' | 'loading' | 'claiming' | 'ready' | 'missing' | 'error'
+type ClaimClientProfileResponse =
+  | { linked: true; client_id: string; alreadyLinked?: boolean }
+  | { linked: false; reason: 'no_matching_client' }
 
 const STAGES: { key: ProjectStage; title: string; hint: string }[] = [
   { key: 'audit', title: 'Audit', hint: 'What needs attention' },
@@ -121,8 +124,7 @@ const STATUS_PRIORITY: PackageStatus[] = ['active', 'in_progress', 'scoped', 're
 const PAYMENT_STATUSES: PaymentStatus[] = ['not_started', 'pending', 'overdue']
 
 export function PortalPage() {
-  const { loading: authLoading, session, signIn, signOut } = useClientPortal()
-  const [searchParams] = useSearchParams()
+  const { loading: authLoading, session, signIn, sendPasswordSetupLink, signOut } = useClientPortal()
   const [portal, setPortal] = useState<PortalData>({
     client: null,
     packages: [],
@@ -133,33 +135,60 @@ export function PortalPage() {
     error: null,
   })
   const [portalState, setPortalState] = useState<PortalMappingState>('idle')
-  const checkoutComplete = searchParams.get('status') === 'checkout-complete'
 
   useEffect(() => {
     if (!isSupabaseConfigured || !supabase) return
 
     const client = supabase
 
-    if (!session) {
-      void Promise.resolve().then(() => {
-        setPortal({
-          client: null,
-          packages: [],
-          moduleSelections: [],
-          payments: [],
-          updates: [],
-          loading: false,
-          error: null,
-        })
-        setPortalState('idle')
+  if (!session) {
+    void Promise.resolve().then(() => {
+      setPortal({
+        client: null,
+        packages: [],
+        moduleSelections: [],
+        payments: [],
+        updates: [],
+        loading: false,
+        error: null,
       })
-      return
-    }
+      setPortalState('idle')
+    })
+    return
+  }
 
     const currentSession = session
     let alive = true
 
-    async function loadPortal() {
+    async function claimClientProfile() {
+      const { data, error } = await client.functions.invoke<ClaimClientProfileResponse>(
+        'claim-client-profile',
+        { method: 'POST' },
+      )
+
+      if (error) {
+        if (error instanceof FunctionsFetchError) {
+          throw new Error('We could not reach the client profile claim service.')
+        }
+
+        if (error instanceof FunctionsHttpError) {
+          try {
+            const body = await error.context.json()
+            if (body && typeof body === 'object' && typeof (body as { error?: unknown }).error === 'string') {
+              throw new Error((body as { error: string }).error)
+            }
+          } catch {
+            // fall through to default message
+          }
+        }
+
+        throw new Error(error.message || 'We could not connect your client profile.')
+      }
+
+      return data ?? null
+    }
+
+    async function loadPortal({ allowAutoClaim }: { allowAutoClaim: boolean }) {
       setPortal((prev) => ({ ...prev, loading: true, error: null }))
       setPortalState('loading')
 
@@ -188,6 +217,46 @@ export function PortalPage() {
       }
 
       if (!linkRow?.client_id) {
+        if (allowAutoClaim) {
+          setPortal((prev) => ({ ...prev, loading: false, error: null }))
+          setPortalState('claiming')
+
+          try {
+            const claimResult = await claimClientProfile()
+            if (!alive) return
+
+            if (claimResult?.linked) {
+              await loadPortal({ allowAutoClaim: false })
+              return
+            }
+
+            setPortal({
+              client: null,
+              packages: [],
+              moduleSelections: [],
+              payments: [],
+              updates: [],
+              loading: false,
+              error: null,
+            })
+            setPortalState('missing')
+            return
+          } catch (claimError) {
+            if (!alive) return
+            setPortal({
+              client: null,
+              packages: [],
+              moduleSelections: [],
+              payments: [],
+              updates: [],
+              loading: false,
+              error: claimError instanceof Error ? claimError.message : 'Could not connect your client profile.',
+            })
+            setPortalState('error')
+            return
+          }
+        }
+
         setPortal({
           client: null,
           packages: [],
@@ -267,7 +336,7 @@ export function PortalPage() {
       setPortalState('ready')
     }
 
-    void loadPortal().catch((error) => {
+    void loadPortal({ allowAutoClaim: true }).catch((error) => {
       if (!alive) return
       setPortal({
         client: null,
@@ -317,7 +386,8 @@ export function PortalPage() {
   const currentStageLabel = currentStage ? STAGE_LABELS[currentStage] : 'Not started yet'
   const currentStageIndex = currentStage ? STAGES.findIndex((stage) => stage.key === currentStage) : -1
   const progress = currentStageIndex >= 0 ? Math.round(((currentStageIndex + 1) / STAGES.length) * 100) : 0
-  const portalLoading = Boolean(session) && portalState !== 'ready' && portalState !== 'missing' && !portal.error
+  const portalLoading = Boolean(session) && portalState === 'loading'
+  const portalClaiming = Boolean(session) && portalState === 'claiming'
   const portalMissing = Boolean(session) && portalState === 'missing'
 
   return (
@@ -350,17 +420,29 @@ export function PortalPage() {
               authLoading={authLoading}
               session={session}
               signIn={signIn}
+              sendPasswordSetupLink={sendPasswordSetupLink}
               signOut={signOut}
               portalState={portalState}
               clientConnected={Boolean(portal.client)}
-              checkoutComplete={checkoutComplete}
             />
           </section>
 
-          {session && portalLoading ? <PortalLoadingState /> : null}
+          {session && portalLoading ? (
+            <PortalLoadingState
+              title="Checking your login..."
+              body="We are checking your signed-in account and loading your client portal."
+            />
+          ) : null}
+
+          {session && portalClaiming ? (
+            <PortalLoadingState
+              title="Looking for your client profile..."
+              body="We are matching your portal account to the email used at checkout."
+            />
+          ) : null}
 
           {portalMissing ? (
-            <EmptyConnectionState checkoutComplete={checkoutComplete} />
+            <EmptyConnectionState />
           ) : null}
 
           {portal.error && (
@@ -679,18 +761,18 @@ function AuthPanel({
   authLoading,
   session,
   signIn,
+  sendPasswordSetupLink,
   signOut,
   portalState,
   clientConnected,
-  checkoutComplete,
 }: {
   authLoading: boolean
   session: { user: { email?: string | null } } | null
   signIn: (email: string, password: string) => Promise<string | null>
+  sendPasswordSetupLink: (email: string) => Promise<string | null>
   signOut: () => Promise<void>
   portalState: PortalMappingState
   clientConnected: boolean
-  checkoutComplete: boolean
 }) {
   if (!isSupabaseConfigured) {
     return <NotConfigured />
@@ -701,7 +783,7 @@ function AuthPanel({
   }
 
   if (!session) {
-    return <LoginCard signIn={signIn} />
+    return <LoginCard signIn={signIn} sendPasswordSetupLink={sendPasswordSetupLink} />
   }
 
   return (
@@ -713,13 +795,13 @@ function AuthPanel({
         <p className="text-sm text-ink-muted">
           {clientConnected
             ? 'Your client data is connected and ready.'
-            : portalState === 'loading'
-              ? 'Loading your client portal…'
-              : portalState === 'missing'
-                ? checkoutComplete
-                  ? 'Checkout complete. Your portal access is being connected.'
-                  : 'Connection pending.'
-                : 'Connection pending.'}
+              : portalState === 'loading'
+                ? 'Loading your client portal…'
+                : portalState === 'claiming'
+                  ? 'Looking for your client profile...'
+                  : portalState === 'missing'
+                    ? 'Your account is active, but no client profile is connected yet. If you recently completed checkout, make sure you are using the same email from checkout. If it still does not connect, contact brian@anvisco.com.'
+                    : 'Connection pending.'}
         </p>
         <button
           onClick={signOut}
@@ -733,10 +815,18 @@ function AuthPanel({
   )
 }
 
-function LoginCard({ signIn }: { signIn: (email: string, password: string) => Promise<string | null> }) {
+function LoginCard({
+  signIn,
+  sendPasswordSetupLink,
+}: {
+  signIn: (email: string, password: string) => Promise<string | null>
+  sendPasswordSetupLink: (email: string) => Promise<string | null>
+}) {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
+  const [sendingLink, setSendingLink] = useState(false)
+  const [setupSuccess, setSetupSuccess] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
 
   async function handleSubmit(e: React.FormEvent) {
@@ -746,6 +836,19 @@ function LoginCard({ signIn }: { signIn: (email: string, password: string) => Pr
     const err = await signIn(email, password)
     setLoading(false)
     if (err) setError(err)
+  }
+
+  async function handleSendSetupLink() {
+    setError(null)
+    setSetupSuccess(null)
+    setSendingLink(true)
+    const err = await sendPasswordSetupLink(email)
+    setSendingLink(false)
+    if (err) {
+      setError(err)
+      return
+    }
+    setSetupSuccess('Check your email for a secure password setup link.')
   }
 
   return (
@@ -784,6 +887,27 @@ function LoginCard({ signIn }: { signIn: (email: string, password: string) => Pr
           {loading ? 'Signing in…' : 'Sign in'}
           <span className="text-amber">→</span>
         </button>
+        <div className="border-t border-[var(--color-border)] pt-4">
+          <p className="mb-2 text-[0.7rem] uppercase tracking-[0.08em] text-ink-subtle">
+            Create or reset your password
+          </p>
+          <p className="mb-3 text-sm leading-relaxed text-ink-muted">
+            Use the same email you used at checkout. We will send a secure link to set up or reset
+            your portal password.
+          </p>
+          <button
+            type="button"
+            onClick={() => void handleSendSetupLink()}
+            disabled={sendingLink || !email.trim()}
+            className="inline-flex items-center gap-2 border border-[var(--color-border-strong)] px-5 py-3 text-[0.7rem] font-medium uppercase tracking-[0.1em] text-ink-muted transition-all duration-200 hover:border-amber hover:text-amber disabled:opacity-60"
+          >
+            {sendingLink ? 'Sending…' : 'Send password setup link'}
+            <span className="text-amber">→</span>
+          </button>
+          {setupSuccess && (
+            <p className="mt-3 text-sm text-amber">{setupSuccess}</p>
+          )}
+        </div>
       </form>
     </Card>
   )
@@ -868,19 +992,15 @@ function NotConfigured() {
   )
 }
 
-function EmptyConnectionState({ checkoutComplete }: { checkoutComplete: boolean }) {
+function EmptyConnectionState() {
   return (
     <section className="mt-8 border border-[var(--color-border)] bg-[var(--color-surface)] p-6">
       <p className="mb-2 text-[0.7rem] uppercase tracking-[0.1em] text-ink-subtle">
         Connection pending
       </p>
       <p className="mb-4 max-w-[62ch] text-sm leading-relaxed text-ink-muted">
-        Your account is signed in, but no client profile is connected yet.
-      </p>
-      <p className="mb-4 max-w-[62ch] text-sm leading-relaxed text-ink-muted">
-        {checkoutComplete
-          ? 'Checkout complete. Your portal access is being connected.'
-          : 'If you recently completed checkout, Anvis may still be connecting your payment and project profile. If this does not update soon, contact brian@anvisco.com.'}
+        Your account is active, but no client profile is connected yet. If you recently completed
+        checkout, make sure you are using the same email from checkout. If it still does not connect, contact brian@anvisco.com.
       </p>
       <a
         href="mailto:brian@anvisco.com"
@@ -893,15 +1013,21 @@ function EmptyConnectionState({ checkoutComplete }: { checkoutComplete: boolean 
   )
 }
 
-function PortalLoadingState() {
+function PortalLoadingState({
+  title,
+  body,
+}: {
+  title: string
+  body: string
+}) {
   return (
     <section className="mt-8 border border-[var(--color-border)] bg-[var(--color-surface)] p-6">
       <p className="mb-2 text-[0.7rem] uppercase tracking-[0.1em] text-ink-subtle">
         Client portal
       </p>
-      <h2 className="text-xl font-medium tracking-[-0.01em] text-ink">Loading your client portal…</h2>
+      <h2 className="text-xl font-medium tracking-[-0.01em] text-ink">{title}</h2>
       <p className="mt-3 max-w-[62ch] text-sm leading-relaxed text-ink-muted">
-        We are checking your signed-in account and matching it to your client profile.
+        {body}
       </p>
     </section>
   )
