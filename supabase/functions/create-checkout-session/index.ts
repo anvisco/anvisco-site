@@ -34,9 +34,10 @@ const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
+  'Access-Control-Max-Age': '86400',
 }
 
-function json(status: number, body: Record<string, unknown>) {
+function jsonResponse(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), {
     status,
     headers: {
@@ -137,103 +138,122 @@ async function stripeApi(
   }
 }
 
-const SUPABASE_URL = getRequiredEnv('SUPABASE_URL')
-const ANVIS_SUPABASE_SECRET_KEY = getRequiredEnv('ANVIS_SUPABASE_SECRET_KEY')
-const STRIPE_SECRET_KEY = getRequiredEnv('STRIPE_SECRET_KEY')
-const STRIPE_CURRENCY = (getRequiredEnv('STRIPE_CURRENCY') ?? 'usd').toLowerCase()
-
-if (!SUPABASE_URL || !ANVIS_SUPABASE_SECRET_KEY) {
-  console.warn('Missing Supabase service credentials for Stripe checkout function.')
-}
-
 export default async function handler(request: Request): Promise<Response> {
   if (request.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders })
+    return new Response(null, {
+      status: 204,
+      headers: corsHeaders,
+    })
+  }
+
+  if (request.method === 'GET') {
+    return jsonResponse({
+      ok: true,
+      function: 'create-checkout-session',
+      cors: true,
+    })
   }
 
   if (request.method !== 'POST') {
-    return json(405, { error: 'Method not allowed.' })
+    return jsonResponse({ error: 'Method not allowed.' }, 405)
   }
 
-  if (!SUPABASE_URL || !ANVIS_SUPABASE_SECRET_KEY) {
-    return json(500, { error: 'Supabase service role secret is not configured.' })
-  }
-
-  if (!STRIPE_SECRET_KEY) {
-    return json(500, { error: 'Stripe secret key is not configured.' })
-  }
-
-  const supabase = createClient(SUPABASE_URL, ANVIS_SUPABASE_SECRET_KEY, {
-    auth: { persistSession: false, autoRefreshToken: false },
-  })
-
-  let payload: CheckoutPayload
-  try {
-    payload = (await request.json()) as CheckoutPayload
-  } catch {
-    return json(400, { error: 'Invalid JSON body.' })
-  }
-
-  if (!isPackageType(payload?.package_type)) {
-    return json(400, { error: 'package_type is required.' })
-  }
-
-  const successUrl = safeUrl(payload.success_url)
-  const cancelUrl = safeUrl(payload.cancel_url)
-  if (!successUrl || !cancelUrl) {
-    return json(400, { error: 'success_url and cancel_url must be valid http(s) URLs.' })
-  }
-
-  const pricing = buildCheckoutPricing({
-    package_type: payload.package_type,
-    selected_audit: payload.selected_audit,
-    selected_modules: payload.selected_modules,
-    selected_build: payload.selected_build,
-    selected_plan: payload.selected_plan,
-    currency: STRIPE_CURRENCY,
-  })
-
-  if (payload.package_type === 'audit' && payload.selected_audit && payload.selected_audit !== 'full-audit') {
-    return json(400, { error: 'Only the full audit can be sent to Stripe.' })
-  }
-
-  if (payload.package_type === 'build' && payload.selected_build && !isBuildSelection(payload.selected_build)) {
-    return json(400, { error: 'selected_build is invalid.' })
-  }
-
-  if (payload.package_type === 'recurring' && payload.selected_plan && !isRecurringSelection(payload.selected_plan)) {
-    return json(400, { error: 'selected_plan is invalid.' })
-  }
-
-  if (payload.package_type === 'modules' && pricing.selected_modules.length === 0) {
-    return json(400, { error: 'At least one valid module is required.' })
-  }
-
-  let resolvedClientId = payload.client_id?.trim() || null
-  if (payload.package_id) {
-    const { data: existingPackage, error: existingPackageError } = await supabase
-      .from('client_packages')
-      .select('id, client_id')
-      .eq('id', payload.package_id)
-      .maybeSingle()
-
-    if (existingPackageError) {
-      throw existingPackageError
-    }
-    if (!existingPackage) {
-      return json(404, { error: 'package_id was not found.' })
-    }
-    if (resolvedClientId && existingPackage.client_id !== resolvedClientId) {
-      return json(400, { error: 'package_id does not belong to the provided client_id.' })
-    }
-    resolvedClientId = existingPackage.client_id
-  }
-
-  const createdRecords = { clientId: resolvedClientId ?? '', packageId: payload.package_id ?? '', createdClient: false, createdPackage: false }
+  let createdRecords: {
+    clientId: string
+    packageId: string
+    createdClient: boolean
+    createdPackage: boolean
+  } | null = null
   let paymentScheduleId: string | null = null
   let createdPaymentSchedule = false
 
   try {
+    const SUPABASE_URL = getRequiredEnv('SUPABASE_URL')
+    const ANVIS_SUPABASE_SECRET_KEY = getRequiredEnv('ANVIS_SUPABASE_SECRET_KEY')
+    const STRIPE_SECRET_KEY = getRequiredEnv('STRIPE_SECRET_KEY')
+    const STRIPE_CURRENCY = (getRequiredEnv('STRIPE_CURRENCY') ?? 'usd').toLowerCase()
+
+    if (!SUPABASE_URL || !ANVIS_SUPABASE_SECRET_KEY) {
+      return jsonResponse({ error: 'Supabase service role secret is not configured.' }, 500)
+    }
+
+    if (!STRIPE_SECRET_KEY) {
+      return jsonResponse({ error: 'Stripe secret key is not configured.' }, 500)
+    }
+
+    const supabase = createClient(SUPABASE_URL, ANVIS_SUPABASE_SECRET_KEY, {
+      auth: { persistSession: false, autoRefreshToken: false },
+    })
+
+    let payload: CheckoutPayload
+    try {
+      payload = (await request.json()) as CheckoutPayload
+    } catch {
+      return jsonResponse({ error: 'Invalid JSON body.' }, 400)
+    }
+
+    if (!isPackageType(payload?.package_type)) {
+      return jsonResponse({ error: 'package_type is required.' }, 400)
+    }
+
+    const successUrl = safeUrl(payload.success_url)
+    const cancelUrl = safeUrl(payload.cancel_url)
+    if (!successUrl || !cancelUrl) {
+      return jsonResponse({ error: 'success_url and cancel_url must be valid http(s) URLs.' }, 400)
+    }
+
+    const pricing = buildCheckoutPricing({
+      package_type: payload.package_type,
+      selected_audit: payload.selected_audit,
+      selected_modules: payload.selected_modules,
+      selected_build: payload.selected_build,
+      selected_plan: payload.selected_plan,
+      currency: STRIPE_CURRENCY,
+    })
+
+    if (payload.package_type === 'audit' && payload.selected_audit && payload.selected_audit !== 'full-audit') {
+      return jsonResponse({ error: 'Only the full audit can be sent to Stripe.' }, 400)
+    }
+
+    if (payload.package_type === 'build' && payload.selected_build && !isBuildSelection(payload.selected_build)) {
+      return jsonResponse({ error: 'selected_build is invalid.' }, 400)
+    }
+
+    if (payload.package_type === 'recurring' && payload.selected_plan && !isRecurringSelection(payload.selected_plan)) {
+      return jsonResponse({ error: 'selected_plan is invalid.' }, 400)
+    }
+
+    if (payload.package_type === 'modules' && pricing.selected_modules.length === 0) {
+      return jsonResponse({ error: 'At least one valid module is required.' }, 400)
+    }
+
+    let resolvedClientId = payload.client_id?.trim() || null
+    if (payload.package_id) {
+      const { data: existingPackage, error: existingPackageError } = await supabase
+        .from('client_packages')
+        .select('id, client_id')
+        .eq('id', payload.package_id)
+        .maybeSingle()
+
+      if (existingPackageError) {
+        throw existingPackageError
+      }
+      if (!existingPackage) {
+        return jsonResponse({ error: 'package_id was not found.' }, 404)
+      }
+      if (resolvedClientId && existingPackage.client_id !== resolvedClientId) {
+        return jsonResponse({ error: 'package_id does not belong to the provided client_id.' }, 400)
+      }
+      resolvedClientId = existingPackage.client_id
+    }
+
+    createdRecords = {
+      clientId: resolvedClientId ?? '',
+      packageId: payload.package_id ?? '',
+      createdClient: false,
+      createdPackage: false,
+    }
+
     const clientId = resolvedClientId ?? (await createClientRow(supabase, payload))
     createdRecords.clientId = clientId
     createdRecords.createdClient = !resolvedClientId
@@ -323,30 +343,42 @@ export default async function handler(request: Request): Promise<Response> {
       })
       .eq('id', paymentScheduleId)
 
-    return json(200, {
+    return jsonResponse({
       url: sessionUrl,
       session_id: sessionId,
       package_id: packageId,
       client_id: clientId,
     })
   } catch (error) {
-    if (createdRecords.createdPackage && createdRecords.packageId) {
-      await supabase.from('client_module_selections').delete().eq('package_id', createdRecords.packageId)
-      await supabase.from('payment_schedules').delete().eq('package_id', createdRecords.packageId)
-    }
-    if (createdPaymentSchedule && paymentScheduleId) {
-      await supabase.from('payment_schedules').delete().eq('id', paymentScheduleId)
-    }
-    if (createdRecords.createdPackage && createdRecords.packageId) {
-      await supabase.from('client_packages').delete().eq('id', createdRecords.packageId)
-    }
-    if (createdRecords.createdClient && createdRecords.clientId) {
-      await supabase.from('clients').delete().eq('id', createdRecords.clientId)
+    console.error('create-checkout-session failed', error)
+    const SUPABASE_URL = getRequiredEnv('SUPABASE_URL')
+    const ANVIS_SUPABASE_SECRET_KEY = getRequiredEnv('ANVIS_SUPABASE_SECRET_KEY')
+    if (SUPABASE_URL && ANVIS_SUPABASE_SECRET_KEY && createdRecords) {
+      const supabase = createClient(SUPABASE_URL, ANVIS_SUPABASE_SECRET_KEY, {
+        auth: { persistSession: false, autoRefreshToken: false },
+      })
+      try {
+        if (createdRecords.createdPackage && createdRecords.packageId) {
+          await supabase.from('client_module_selections').delete().eq('package_id', createdRecords.packageId)
+          await supabase.from('payment_schedules').delete().eq('package_id', createdRecords.packageId)
+        }
+        if (createdPaymentSchedule && paymentScheduleId) {
+          await supabase.from('payment_schedules').delete().eq('id', paymentScheduleId)
+        }
+        if (createdRecords.createdPackage && createdRecords.packageId) {
+          await supabase.from('client_packages').delete().eq('id', createdRecords.packageId)
+        }
+        if (createdRecords.createdClient && createdRecords.clientId) {
+          await supabase.from('clients').delete().eq('id', createdRecords.clientId)
+        }
+      } catch (cleanupError) {
+        console.error('create-checkout-session cleanup failed', cleanupError)
+      }
     }
 
-    return json(400, {
-      error: error instanceof Error ? error.message : 'Could not create Stripe Checkout session.',
-    })
+    return jsonResponse({
+      error: error instanceof Error ? error.message : 'Unknown checkout error',
+    }, 500)
   }
 }
 

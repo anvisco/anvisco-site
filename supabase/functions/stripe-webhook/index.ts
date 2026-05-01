@@ -19,6 +19,7 @@ const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, stripe-signature',
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
+  'Access-Control-Max-Age': '86400',
 }
 
 function json(status: number, body: Record<string, unknown>) {
@@ -113,7 +114,10 @@ async function markEventProcessed(
 
 export default async function handler(request: Request): Promise<Response> {
   if (request.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders })
+    return new Response(null, {
+      status: 204,
+      headers: corsHeaders,
+    })
   }
 
   if (request.method !== 'POST') {

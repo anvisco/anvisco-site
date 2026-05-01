@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
+import { FunctionsFetchError, FunctionsHttpError } from '@supabase/supabase-js'
 import { Nav } from '@/components/layout/Nav'
 import { Footer } from '@/components/layout/Footer'
 import { BracketLabel } from '@/components/ui/BracketLabel'
@@ -180,11 +181,33 @@ export function CheckoutPage() {
       redirected = true
       window.location.assign(sessionUrl)
     } catch (err) {
-      console.error('Stripe checkout session creation failed', {
-        name: err instanceof Error ? err.name : 'UnknownError',
-        message: err instanceof Error ? err.message : String(err),
-      })
-      setSubmit({ kind: 'error', message: CHECKOUT_ERROR_MESSAGE })
+      console.error('Stripe checkout session creation failed', err)
+
+      let message = CHECKOUT_ERROR_MESSAGE
+      if (err instanceof FunctionsFetchError) {
+        message = 'Could not reach the checkout function. Check CORS, deployment, or function logs.'
+      } else if (err instanceof FunctionsHttpError) {
+        try {
+          const body = await err.context.json()
+          if (body && typeof body === 'object') {
+            const returnedMessage =
+              typeof (body as { error?: unknown }).error === 'string'
+                ? (body as { error: string }).error
+                : typeof (body as { message?: unknown }).message === 'string'
+                  ? (body as { message: string }).message
+                  : null
+            if (returnedMessage) {
+              message = returnedMessage
+            }
+          }
+        } catch {
+          message = err.message
+        }
+      } else if (err instanceof Error && err.message.trim()) {
+        message = err.message
+      }
+
+      setSubmit({ kind: 'error', message })
     } finally {
       if (!redirected) {
         setSubmit((current) => (current.kind === 'submitting' ? { kind: 'idle' } : current))
