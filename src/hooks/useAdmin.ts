@@ -25,12 +25,10 @@ export function useAdmin(): UseAdminReturn {
       setState({ loading: false, session: null, isAdmin: false })
       return
     }
-    const { data } = await supabase
-      .from('profiles')
-      .select('role')
-      .eq('id', session.user.id)
-      .single()
-    setState({ loading: false, session, isAdmin: data?.role === 'admin' })
+    // Use the SECURITY DEFINER RPC — bypasses RLS, always readable by any
+    // authenticated user regardless of whether a profiles row exists yet.
+    const { data } = await supabase.rpc('is_admin')
+    setState({ loading: false, session, isAdmin: data === true })
   }
 
   useEffect(() => {
