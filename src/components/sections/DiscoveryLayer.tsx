@@ -29,8 +29,7 @@ export function DiscoveryLayer() {
           <span className="text-amber">how people search.</span>
         </motion.h2>
 
-        <div className="grid gap-10 lg:grid-cols-[minmax(0,620px)_minmax(260px,1fr)]">
-          <div className="space-y-5">
+        <div className="max-w-[68ch] space-y-5">
           <motion.p
             initial={{ opacity: 0, y: 16 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -38,7 +37,7 @@ export function DiscoveryLayer() {
             transition={{ duration: 0.5, ease: 'easeOut', delay: 0.1 }}
             className="text-[1.125rem] leading-relaxed text-ink-muted"
           >
-            People do not only type short keywords into Google anymore. They ask AI tools, Maps, and search engines direct questions.
+            People do not only type short keywords into Google anymore. They ask <span className="text-amber">Google, AI tools, Maps, and local recommendations</span> direct questions.
           </motion.p>
 
           <motion.div
@@ -50,7 +49,7 @@ export function DiscoveryLayer() {
           >
             {['best dentist near me', 'emergency dentist open nearby', 'who should I trust for Invisalign?'].map((query) => (
               <div key={query} className="border border-[var(--color-border)] bg-[var(--color-bg)] px-4 py-3">
-                "{query}"
+                &quot;{query}&quot;
               </div>
             ))}
           </motion.div>
@@ -62,19 +61,17 @@ export function DiscoveryLayer() {
             transition={{ duration: 0.5, ease: 'easeOut', delay: 0.18 }}
             className="text-[1.125rem] leading-relaxed text-ink-muted"
           >
-            When someone asks ChatGPT or Google AI to recommend a clinic, your website either gives those tools enough to work with, or it does not. The clinics with clear structure get suggested. The ones without get skipped.
+            Your website needs to clearly explain who you are, what you offer, where you serve, and why people should trust you.
           </motion.p>
-          </div>
 
           <motion.p
             initial={{ opacity: 0, y: 12 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5, ease: 'easeOut', delay: 0.24 }}
-            className="h-fit border-l border-amber/45 pl-6 text-[1.2rem] leading-relaxed text-ink"
-            style={{ fontFamily: '"Instrument Serif", Georgia, serif', fontStyle: 'italic' }}
+            className="text-[1.125rem] leading-relaxed text-ink-muted"
           >
-            This is not a replacement for SEO. It is a layer on top of it.
+            This is <span className="text-amber">not a replacement for SEO</span>. It is a <span className="text-amber">layer on top</span> of it.
           </motion.p>
         </div>
 

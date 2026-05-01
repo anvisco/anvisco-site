@@ -78,8 +78,8 @@
     --color-surface: #12141C;
     --color-surface-2: #1A1D27;
     --color-ink: #F5F4EE;
-    --color-ink-muted: #D0CDC2;
-    --color-ink-subtle: #918E84;
+    --color-ink-muted: #DAD6CA;
+    --color-ink-subtle: #AAA69A;
     --color-navy: #1B3A6B;
     --color-amber: #D0AF68;
     --color-amber-soft: #E8D9B8;
@@ -99,6 +99,11 @@
 
   html {
     @apply font-sans scroll-smooth;
+    scroll-padding-top: 5rem;
+  }
+
+  [id] {
+    scroll-margin-top: 5rem;
   }
 
   @media (prefers-reduced-motion: reduce) {

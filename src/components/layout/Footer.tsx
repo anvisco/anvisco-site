@@ -1,12 +1,12 @@
+import { Link } from 'react-router-dom'
 import { EMAIL } from '@/data/contact'
 
 const links = [
-  { label: 'home', href: '/' },
-  { label: 'work', href: '/portfolio' },
-  { label: 'services', href: '/services' },
-  { label: 'audit', href: '/audit' },
-  { label: 'process', href: '/#process' },
-  { label: 'about', href: '/#about' },
+  { label: 'Home', href: '/' },
+  { label: 'Work', href: '/portfolio' },
+  { label: 'Services', href: '/services' },
+  { label: 'FAQ', href: '/#faq' },
+  { label: 'Get Free Audit', href: '/audit' },
 ]
 
 export function Footer() {
@@ -16,14 +16,10 @@ export function Footer() {
 
         {/* Wordmark + email */}
         <div>
-          <p className="text-sm font-medium tracking-tight mb-1 text-ink">anvisco</p>
+          <p className="text-sm font-medium tracking-tight mb-1 text-ink">Anvis</p>
           <a
             href={`mailto:${EMAIL}`}
-            className="text-base text-[var(--color-amber-soft)] transition-colors duration-150 hover:text-ink"
-            style={{
-              fontFamily: '"Instrument Serif", Georgia, serif',
-              fontStyle: 'italic',
-            }}
+            className="font-sans text-sm text-ink-muted transition-colors duration-150 hover:text-amber"
           >
             {EMAIL}
           </a>
@@ -32,15 +28,15 @@ export function Footer() {
         {/* Navigation links: bracket style */}
         <nav className="flex flex-wrap gap-6">
           {links.map((link) => (
-            <a
+            <Link
               key={link.href}
-              href={link.href}
+              to={link.href}
               className="text-ink-muted transition-colors duration-150 hover:text-amber"
             >
               <span className="font-sans text-[0.7rem] font-medium uppercase tracking-[0.12em]">
                 [ {link.label} ]
               </span>
-            </a>
+            </Link>
           ))}
         </nav>
 

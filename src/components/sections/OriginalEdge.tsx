@@ -25,16 +25,10 @@ export function OriginalEdge() {
           transition={{ duration: 0.6, ease: 'easeOut' }}
           className="mb-8 text-[2rem] md:text-[2.5rem] font-medium tracking-[-0.02em] text-ink leading-[1.1] max-w-2xl"
         >
-          Your website should do more than{' '}
-          <span
-            className="font-serif italic text-amber"
-            style={{ fontFamily: '"Instrument Serif", Georgia, serif' }}
-          >
-            look good.
-          </span>
+          Your website should do <span className="text-amber">more than look good.</span>
         </motion.h2>
 
-        <div className="grid gap-8 lg:grid-cols-[minmax(0,620px)_minmax(260px,1fr)] lg:items-start">
+        <div className="max-w-[68ch]">
           <motion.div
             initial={{ opacity: 0, y: 16 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -43,25 +37,13 @@ export function OriginalEdge() {
             className="space-y-5"
           >
             <p className="text-[1.25rem] leading-relaxed text-ink">
-              A good website should support the way your business actually works.
+              A good website should support the way your business <span className="text-amber">actually works</span>.
             </p>
             <p className="text-[1.0625rem] leading-relaxed text-ink-muted">
-              It should guide visitors, answer the right questions, build trust quickly, make booking easy, and help your team turn interest into real appointments.
+              It should guide visitors, answer the right questions, build trust quickly, make booking easy, and help turn interest into real appointments.
             </p>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 12 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5, ease: 'easeOut', delay: 0.18 }}
-            className="self-end border-l border-amber/45 pl-6"
-          >
-            <p
-              className="text-[1.35rem] leading-snug text-ink"
-              style={{ fontFamily: '"Instrument Serif", Georgia, serif', fontStyle: 'italic' }}
-            >
-              Most websites describe the business. They do not run it.
+            <p className="text-[1.0625rem] leading-relaxed text-ink-muted">
+              Most websites only describe the business. Anvis builds sites that help <span className="text-amber">run it</span>.
             </p>
           </motion.div>
         </div>

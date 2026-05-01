@@ -1,5 +1,5 @@
 import { motion } from 'motion/react'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { Nav } from '@/components/layout/Nav'
 import { Footer } from '@/components/layout/Footer'
 import { BracketLabel } from '@/components/ui/BracketLabel'
@@ -8,7 +8,6 @@ import { BuildTierCard } from '@/components/sections/BuildTierCard'
 import { PlanCard } from '@/components/sections/PlanCard'
 import { Accordion } from '@/components/ui/Accordion'
 import { modules } from '@/data/modules'
-import { CONTACT_URL } from '@/data/contact'
 
 const buildTiers = [
   {
@@ -88,7 +87,7 @@ const faqs = [
   {
     question: 'How is this different from a Wix or Squarespace site?',
     answer:
-      'Templates are built for speed of setup, not for how a specific business operates or how people now search. Anvisco builds custom-coded sites structured around your actual flow and around how people find local businesses today.',
+      'Templates are built for speed of setup, not for how a specific business operates or how people now search. Anvis builds custom-coded sites structured around your actual flow and around how people find local businesses today.',
   },
   {
     question: 'Do I need a full rebuild?',
@@ -129,7 +128,7 @@ export function ServicesPage() {
               <span className="block">your business needs.</span>
             </h1>
             <p className="max-w-[30ch] break-words text-base leading-relaxed text-ink-muted sm:max-w-[62ch] sm:text-[1.125rem]">
-              Anvisco offers four ways to work together: an audit to start, modules to upgrade specific parts, a full custom build, and recurring plans to keep the site improving.
+              Anvis offers four ways to work together: an audit to start, modules to upgrade specific parts, a full custom build, and recurring plans to keep the site improving.
             </p>
           </div>
         </section>
@@ -138,7 +137,7 @@ export function ServicesPage() {
           <div className="max-w-screen-xl mx-auto px-6 lg:px-12">
             <SectionHeader number="01" label="The ladder" title="The ladder." />
             <p className="max-w-[30ch] break-words text-base leading-relaxed text-ink-muted sm:max-w-[62ch] sm:text-[1.0625rem]">
-              Most agencies sell one thing - a full rebuild - whether or not it is the right move. Anvisco is structured differently.
+              Most agencies sell one thing: a full rebuild, whether or not it is the right move. Anvis is structured differently.
             </p>
             <p className="my-10 flex max-w-full flex-col items-start gap-2 overflow-hidden border-y border-[var(--color-border)] py-8 text-lg tracking-[-0.01em] text-ink sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-3 sm:text-xl md:text-3xl md:tracking-[-0.02em]">
               <span>Audit</span><span className="hidden text-amber sm:inline">→</span><span>Modules</span><span className="hidden text-amber sm:inline">→</span><span>Full Build</span><span className="hidden text-amber sm:inline">→</span><span>Recurring</span>
@@ -157,13 +156,15 @@ export function ServicesPage() {
                 title="Free AI-Ready Website Snapshot"
                 body="Three to five priority findings. A quick first look at where the site may be losing visibility, trust, or bookings."
                 footnote="No cost."
-                cta="Request an Audit"
+                cta="Get Free Audit"
+                to="/audit"
               />
               <OptionCard
                 title="Paid AI-Ready Website Audit - $250"
                 body="A deeper review with a ranked action plan covering visibility, trust, content, speed, and booking flow."
                 footnote="$250, credited toward any module or full build within 30 days."
-                cta="Request an Audit"
+                cta="Request Checkout"
+                to="/checkout?path=audit"
               />
             </div>
           </div>
@@ -178,12 +179,12 @@ export function ServicesPage() {
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {modules.map((module, i) => (
                 <div key={module.id} id={module.id} className="scroll-mt-24">
-                  <ModuleCard module={module} index={i} href="/checkout" />
+                  <ModuleCard module={module} index={i} href="/checkout?path=modules" />
                 </div>
               ))}
             </div>
             <p className="mt-8 text-sm text-ink-muted">Any three modules - 15% off the combined price.</p>
-            <ContactLink label="Talk Through a Module" />
+            <ContactLink label="Request Modules" to="/checkout?path=modules" />
           </div>
         </section>
 
@@ -255,27 +256,27 @@ function SectionHeader({ number, label, title }: { number: string; label: string
   )
 }
 
-function OptionCard({ title, body, footnote, cta }: { title: string; body: string; footnote?: string; cta: string }) {
+function OptionCard({ title, body, footnote, cta, to }: { title: string; body: string; footnote?: string; cta: string; to: string }) {
   return (
     <div className="flex min-h-[300px] flex-col bg-[var(--color-surface)] p-8">
       <h3 className="mb-4 text-lg font-medium tracking-[-0.01em] text-ink">{title}</h3>
       <p className="text-sm leading-relaxed text-ink-muted">{body}</p>
       {footnote && <p className="mt-5 text-sm leading-relaxed text-ink-muted">{footnote}</p>}
       <div className="mt-auto">
-        <ContactLink label={cta} />
+        <ContactLink label={cta} to={to} />
       </div>
     </div>
   )
 }
 
-function ContactLink({ label }: { label: string }) {
+function ContactLink({ label, to }: { label: string; to: string }) {
   return (
-    <a
-      href={CONTACT_URL}
+    <Link
+      to={to}
       className="group mt-8 inline-flex items-center gap-2.5 border border-[var(--color-border-strong)] px-5 py-3 text-[0.7rem] tracking-[0.1em] uppercase text-ink font-medium transition-all duration-200 hover:border-amber hover:text-amber"
     >
       {label}
       <span className="text-amber transition-transform duration-200 group-hover:translate-x-0.5">→</span>
-    </a>
+    </Link>
   )
 }

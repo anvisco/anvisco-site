@@ -1,7 +1,6 @@
 import { motion } from 'motion/react'
 import { Link } from 'react-router-dom'
 import { BracketLabel } from '@/components/ui/BracketLabel'
-import { EMAIL } from '@/data/contact'
 
 export function Contact() {
   return (
@@ -20,7 +19,7 @@ export function Contact() {
             viewport={{ once: true }}
             transition={{ duration: 0.4 }}
           >
-            <BracketLabel>Website audit</BracketLabel>
+            <BracketLabel>Website request</BracketLabel>
           </motion.div>
         </div>
 
@@ -34,7 +33,7 @@ export function Contact() {
             transition={{ duration: 0.6, ease: 'easeOut' }}
             className="text-[2.5rem] md:text-[3rem] font-medium tracking-[-0.03em] leading-[1.05] mb-6 text-ink"
           >
-            Find out what your website is missing.
+            Ready to choose the right path for your website?
           </motion.h2>
 
           <motion.p
@@ -44,7 +43,7 @@ export function Contact() {
             transition={{ duration: 0.5, ease: 'easeOut', delay: 0.1 }}
             className="mb-10 text-[1.125rem] leading-relaxed text-ink-muted max-w-[52ch]"
           >
-            A short audit, three to five priority findings, no cost. If a full audit makes more sense, that is a $250 deep review credited toward any module or build within 30 days.
+            Start with a simple request. Choose whether you need an audit, targeted improvements, a full build, or ongoing support. No instant payment, just a clear next step.
           </motion.p>
 
           {/* CTAs */}
@@ -53,28 +52,30 @@ export function Contact() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5, ease: 'easeOut', delay: 0.18 }}
-            className="flex flex-col sm:flex-row items-start sm:items-center gap-6"
+            className="flex flex-col items-start gap-6 sm:flex-row sm:flex-wrap sm:items-center"
           >
-            {/* Primary outlined CTA */}
             <Link
-              to="/audit"
+              to="/checkout"
               className="group inline-flex items-center gap-2.5 border-[1.5px] border-ink px-8 py-4 text-sm font-medium text-ink tracking-[-0.005em] transition-all duration-200 hover:border-amber hover:text-amber"
             >
-              Get a Website Audit
+              Start a Website Request
               <span className="text-amber transition-transform duration-200 group-hover:translate-x-0.5">→</span>
             </Link>
 
-            {/* Email: serif italic editorial touch */}
-            <a
-              href={`mailto:${EMAIL}`}
-              className="text-sm text-[var(--color-amber-soft)] transition-colors duration-150 hover:text-ink"
-              style={{
-                fontFamily: '"Instrument Serif", Georgia, serif',
-                fontStyle: 'italic',
-              }}
+            <Link
+              to="/services"
+              className="group relative text-sm text-ink-muted transition-colors duration-200 hover:text-ink"
             >
-              {EMAIL}
-            </a>
+              Compare Services
+              <span
+                aria-hidden="true"
+                className="absolute -bottom-0.5 left-0 h-px w-0 bg-amber transition-all duration-200 group-hover:w-full"
+              />
+            </Link>
+
+            <p className="text-sm text-ink-muted">
+              Questions? <a href="mailto:brian@anvisco.com" className="text-amber transition-colors hover:text-ink">brian@anvisco.com</a>
+            </p>
           </motion.div>
 
         </div>

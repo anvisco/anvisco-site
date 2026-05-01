@@ -18,19 +18,15 @@ export function Hero() {
                 <BracketLabel>Local service websites</BracketLabel>
               </div>
 
-              <h1 className="mb-8 max-w-[11ch] text-[clamp(3rem,8vw,7rem)] font-medium leading-[0.98] tracking-[-0.035em] text-ink sm:max-w-[14ch] lg:max-w-[13ch]">
+              <h1 className="mb-8 max-w-[12ch] text-[clamp(3rem,8vw,7rem)] font-medium leading-[0.98] tracking-[-0.035em] text-ink sm:max-w-[15ch] lg:max-w-[14ch]">
                 <span className="block font-sans text-[0.74em] tracking-[-0.025em]">Websites built to</span>
                 <span
-                  className="mt-2 block font-serif italic leading-[0.9] text-amber"
+                  className="mt-3 flex flex-wrap items-baseline gap-x-[0.18em] gap-y-[0.02em] font-serif italic leading-[0.96] text-amber"
                   style={{ fontFamily: '"Instrument Serif", Georgia, serif' }}
                 >
-                  run, grow,
-                </span>
-                <span
-                  className="block font-serif italic leading-[0.9] text-amber"
-                  style={{ fontFamily: '"Instrument Serif", Georgia, serif' }}
-                >
-                  and get discovered.
+                  <span>run,</span>
+                  <span>grow,</span>
+                  <span className="whitespace-nowrap">and get discovered.</span>
                 </span>
               </h1>
 
@@ -49,8 +45,8 @@ export function Hero() {
                   <span className="text-amber transition-transform duration-200 group-hover:translate-x-0.5">→</span>
                 </Link>
 
-                <a
-                  href="/portfolio"
+                <Link
+                  to="/portfolio"
                   className="group relative text-sm text-ink-muted transition-colors duration-200 hover:text-ink"
                 >
                   See Selected Work
@@ -58,7 +54,7 @@ export function Hero() {
                     aria-hidden="true"
                     className="absolute -bottom-0.5 left-0 h-px w-0 bg-amber transition-all duration-200 group-hover:w-full"
                   />
-                </a>
+                </Link>
               </div>
 
             </div>

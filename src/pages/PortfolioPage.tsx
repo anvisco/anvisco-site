@@ -1,6 +1,7 @@
 import { Nav } from '@/components/layout/Nav'
 import { Footer } from '@/components/layout/Footer'
 import { BracketLabel } from '@/components/ui/BracketLabel'
+import { About } from '@/components/sections/About'
 import { ProjectCard } from '@/components/sections/ProjectCard'
 import { projects, otherProjects } from '@/data/projects'
 
@@ -26,10 +27,12 @@ export function PortfolioPage() {
           </div>
         </section>
 
+        <About />
+
         <section className="py-20 md:py-28 bg-[var(--color-surface)]">
           <div className="max-w-screen-xl mx-auto px-6 lg:px-12">
             <div className="mb-12 flex items-center gap-4 border-t border-[var(--color-border)] pt-7">
-              <span className="text-[0.7rem] tabular-nums text-amber font-medium tracking-[0.08em]">04</span>
+              <span className="text-[0.7rem] tabular-nums text-amber font-medium tracking-[0.08em]">05</span>
               <BracketLabel>Supporting context</BracketLabel>
             </div>
             <p className="mb-10 max-w-[62ch] text-sm leading-relaxed text-ink-muted">

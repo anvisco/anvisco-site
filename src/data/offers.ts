@@ -1,5 +1,5 @@
 /**
- * Source of truth for every Anvisco offer, price, and bundle rule.
+ * Source of truth for every Anvis offer, price, and bundle rule.
  *
  * - Prices are stored in DOLLARS as numbers for direct UI use.
  * - The DB stores them in cents (offer.priceCents = price * 100).

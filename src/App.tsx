@@ -1,4 +1,5 @@
-import { Routes, Route } from 'react-router-dom'
+import { useEffect } from 'react'
+import { Routes, Route, useLocation } from 'react-router-dom'
 import { HomePage } from '@/pages/HomePage'
 import { ServicesPage } from '@/pages/ServicesPage'
 import { AuditPage } from '@/pages/AuditPage'
@@ -12,6 +13,22 @@ import { AdminClientDetailPage } from '@/pages/AdminClientDetailPage'
 import { NextStepsPage } from '@/pages/NextStepsPage'
 
 function App() {
+  const location = useLocation()
+
+  useEffect(() => {
+    if (!location.hash) {
+      window.scrollTo({ top: 0, left: 0, behavior: 'auto' })
+      return
+    }
+
+    const frame = window.requestAnimationFrame(() => {
+      const target = document.querySelector(location.hash)
+      if (target) target.scrollIntoView({ block: 'start', behavior: 'auto' })
+    })
+
+    return () => window.cancelAnimationFrame(frame)
+  }, [location.pathname, location.hash])
+
   return (
     <div className="dark min-h-screen bg-[var(--color-bg)] text-ink">
       <Routes>

@@ -1,14 +1,12 @@
 import { useState, useEffect } from 'react'
-import { useLocation } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import { Menu, X } from 'lucide-react'
 
 const links = [
-  { label: 'home', href: '/' },
-  { label: 'work', href: '/portfolio' },
-  { label: 'services', href: '/services' },
-  { label: 'audit', href: '/audit' },
-  { label: 'process', href: '/#process' },
-  { label: 'about', href: '/#about' },
+  { label: 'Home', href: '/' },
+  { label: 'Work', href: '/portfolio' },
+  { label: 'Services', href: '/services' },
+  { label: 'FAQ', href: '/#faq' },
 ]
 
 export function Nav() {
@@ -47,13 +45,13 @@ export function Nav() {
       <div className="max-w-screen-xl mx-auto px-6 lg:px-12 h-16 flex items-center justify-between">
 
         {/* Wordmark */}
-        <a
-          href="/"
+        <Link
+          to="/"
           onClick={() => setOpen(false)}
           className="text-sm font-medium tracking-tight text-ink transition-colors duration-200 hover:text-amber"
         >
-          anvisco
-        </a>
+          Anvis
+        </Link>
 
         {/* Desktop nav: bracket style */}
         <nav className="hidden md:flex items-center gap-6 lg:gap-7">
@@ -66,9 +64,9 @@ export function Nav() {
               : location.pathname === path && (!hash || !activeHash)
 
             return (
-              <a
+              <Link
                 key={link.href}
-                href={link.href}
+                to={link.href}
                 className={`group relative text-[0.68rem] font-medium tracking-[0.12em] uppercase transition-colors duration-200 hover:text-ink ${
                   active ? 'text-amber' : 'text-ink-muted'
                 }`}
@@ -78,19 +76,19 @@ export function Nav() {
                   aria-hidden="true"
                   className="absolute -bottom-1 left-0 h-px w-0 bg-amber transition-all duration-200 group-hover:w-full"
                 />
-              </a>
+              </Link>
             )
           })}
         </nav>
 
         {/* Contact CTA: outlined */}
-        <a
-          href="/audit"
+        <Link
+          to="/audit"
           className="hidden md:inline-flex items-center gap-2 border border-[var(--color-border-strong)] px-4 py-2 text-[0.68rem] font-medium tracking-[0.1em] uppercase text-ink transition-all duration-200 hover:border-amber hover:text-amber group"
         >
-          <span>[ audit ]</span>
+          <span>[ Get Free Audit ]</span>
           <span className="text-amber transition-transform duration-200 group-hover:translate-x-0.5">→</span>
-        </a>
+        </Link>
 
         {/* Mobile hamburger */}
         <button
@@ -106,22 +104,22 @@ export function Nav() {
       {open && (
         <div className="md:hidden border-t border-[var(--color-border)] bg-[var(--color-bg)] px-6 py-8 flex flex-col gap-6">
           {links.map((link) => (
-            <a
+            <Link
               key={link.href}
-              href={link.href}
+              to={link.href}
               onClick={() => setOpen(false)}
               className="text-[0.7rem] font-medium tracking-[0.14em] uppercase text-ink-muted transition-colors duration-150 hover:text-ink"
             >
               {`[ ${link.label} ]`}
-            </a>
+            </Link>
           ))}
-          <a
-            href="/audit"
+          <Link
+            to="/audit"
             onClick={() => setOpen(false)}
             className="mt-2 inline-flex items-center gap-2 border border-[var(--color-border-strong)] px-4 py-3 text-[0.7rem] font-medium tracking-[0.1em] uppercase text-ink transition-all duration-150 hover:border-amber hover:text-amber w-fit"
           >
-            [ audit ] <span className="text-amber">→</span>
-          </a>
+            [ Get Free Audit ] <span className="text-amber">→</span>
+          </Link>
         </div>
       )}
     </header>

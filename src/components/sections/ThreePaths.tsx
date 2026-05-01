@@ -12,14 +12,14 @@ const paths = [
   {
     name: 'Improve',
     description: 'Upgrade specific parts of your existing website.',
-    cta: 'See Modules',
-    to: '/services#modules',
+    cta: 'See Services',
+    to: '/services',
   },
   {
     name: 'Rebuild',
     description: 'A full custom-coded website built around your business.',
     cta: 'See Custom Builds',
-    to: '/services#build',
+    to: '/services',
   },
 ]
 

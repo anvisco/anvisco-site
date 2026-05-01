@@ -1,6 +1,25 @@
-# Anvisco Website Copy - Refinement Pass
+# Anvis Website Copy - Refinement Pass
 
 Scope: homepage refinement, offer/services page, audit landing page, portfolio content notes, module request flow, and client stage pages.
+
+Public brand name: Anvis. Keep `anvisco.com` and `brian@anvisco.com` unchanged where they refer to the domain or email address.
+
+Typography rule: the serif/script treatment is reserved for the hero accent line only: "run, grow, and get discovered." All body copy, callouts, notes, email links, cards, and footer text use sans-serif.
+
+Public navigation:
+- Home -> `/`
+- Work -> `/portfolio`
+- Services -> `/services`
+- Get Free Audit -> `/audit`
+
+Footer navigation matches the public navigation. About and Process are not exposed in nav/footer. FAQ is included in nav/footer and scrolls to the homepage FAQ section.
+
+CTA routing:
+- "Get a Website Audit" and "Get Free Audit" -> `/audit`
+- "See Selected Work" and "See Work" -> `/portfolio`
+- Homepage module/service CTAs -> `/services`
+- Paid audit, module, build, and recurring request CTAs -> `/checkout` with the relevant `path` query when needed
+- Route changes scroll to the top by default; hash links use fixed-nav scroll margin when used.
 
 ---
 
@@ -14,9 +33,8 @@ Scope: homepage refinement, offer/services page, audit landing page, portfolio c
 5. Modules Teaser
 6. Custom Build / Rebuild Properly
 7. Process
-8. About
-9. Website Audit CTA
-10. Footer
+8. FAQ
+9. Final CTA
 
 ### 1.1 Hero
 
@@ -29,7 +47,7 @@ Websites built to run, grow, and get discovered.
 **Subtext:**
 I build custom websites for local service businesses that improve operations, trust, and conversion. Now structured for how people search through Google, AI tools, Maps, and local recommendations.
 
-**Primary CTA:** Get a Website Audit
+**Primary CTA:** Get Free Audit
 **Secondary CTA:** See Selected Work
 
 ---
@@ -45,9 +63,11 @@ Your website should do more than look good.
 **Body:**
 A good website should support the way your business actually works.
 
-It should guide visitors, answer the right questions, build trust quickly, make booking easy, and help your team turn interest into real appointments.
+It should guide visitors, answer the right questions, build trust quickly, make booking easy, and help turn interest into real appointments.
 
-Most websites describe the business. They do not run it.
+Most websites only describe the business. Anvis builds sites that help run it.
+
+Accent emphasis: "more than look good", "actually works", and "run it".
 
 ---
 
@@ -60,16 +80,20 @@ Modern discovery
 Now it also needs to be built for how people search.
 
 **Body:**
-People do not only type short keywords into Google anymore. They ask AI tools, Maps, and search engines direct questions.
+People do not only type short keywords into Google anymore. They ask Google, AI tools, Maps, and local recommendations direct questions.
 
 Examples:
 - "best dentist near me"
 - "emergency dentist open nearby"
 - "who should I trust for Invisalign?"
 
-When someone asks ChatGPT or Google AI to recommend a clinic, your website either gives those tools enough to work with, or it does not. The clinics with clear structure get suggested. The ones without get skipped.
+Your website needs to clearly explain who you are, what you offer, where you serve, and why people should trust you.
 
 This is not a replacement for SEO. It is a layer on top of it.
+
+This line is integrated into normal body copy, not a separate quote or callout box.
+
+Accent emphasis: "how people search", "Google, AI tools, Maps, and local recommendations", "not a replacement for SEO", and "layer on top".
 
 ---
 
@@ -111,7 +135,7 @@ Start with the layer holding the site back, then view the full module menu when 
 - **Visual Redesign:** modernize the look without rebuilding the system. Starting at $1,800.
 - **Booking Flow Optimization:** make it easier to move from interest to appointment. Starting at $1,200.
 
-**CTA:** See all modules
+**CTA:** View all modules -> `/services`
 
 ---
 
@@ -138,21 +162,31 @@ Three tiers: Essentials, Standard, Premium. Public rates start at $2,200, with f
 
 ---
 
-### 1.8 About
+### 1.8 FAQ
 
-Keep concise background and positioning.
+Short homepage FAQ with six questions:
+
+1. Do I need a full rebuild?
+2. What makes a website AI-ready?
+3. Is this replacing SEO?
+4. Can you improve my existing site?
+5. What happens after the audit?
+6. Do I pay right away?
+
+Answers stay short and plain. The homepage FAQ is the primary linked FAQ and includes `id="faq"` for nav scrolling.
 
 ---
 
 ### 1.9 Final CTA
 
 **Headline:**
-Find out what your website is missing.
+Ready to choose the right path for your website?
 
 **Body:**
-A short audit, three to five priority findings, no cost. If a full audit makes more sense, that is a $250 deep review credited toward any module or build within 30 days.
+Start with a simple request. Choose whether you need an audit, targeted improvements, a full build, or ongoing support. No instant payment, just a clear next step.
 
-**Primary CTA:** Get a Website Audit
+**Primary CTA:** Start a Website Request -> `/checkout`
+**Secondary CTA:** Compare Services -> `/services`
 
 ---
 
@@ -164,7 +198,7 @@ A short audit, three to five priority findings, no cost. If a full audit makes m
 Built modular. Buy only the layer your business needs.
 
 **Subtext:**
-Anvisco offers four ways to work together: an audit to start, modules to upgrade specific parts, a full custom build, and recurring plans to keep the site improving.
+Anvis offers four ways to work together: an audit to start, modules to upgrade specific parts, a full custom build, and recurring plans to keep the site improving.
 
 ---
 
@@ -174,7 +208,7 @@ Anvisco offers four ways to work together: an audit to start, modules to upgrade
 The ladder.
 
 **Body:**
-Most agencies sell one thing, a full rebuild, whether or not it is the right move. Anvisco is structured differently.
+Most agencies sell one thing: a full rebuild, whether or not it is the right move. Anvis is structured differently.
 
 ```
 Audit  ->  Modules  ->  Full Build  ->  Recurring
@@ -199,7 +233,7 @@ A deeper review with a ranked action plan covering visibility, trust, content, s
 
 $250, credited toward any module or full build within 30 days.
 
-**CTA:** Request an Audit
+**CTA:** Free snapshot goes to `/audit`; paid audit goes to `/checkout?path=audit`.
 
 ---
 
@@ -216,7 +250,7 @@ For businesses that do not need a full rebuild yet. Six modules covering content
 **Bundle:**
 Any three modules: 15% off the combined price.
 
-**CTA:** Talk Through a Module
+**CTA:** Request Modules -> `/checkout?path=modules`
 
 ---
 
@@ -293,7 +327,7 @@ Everything in Care Plan, plus up to 3 hours of content or page updates monthly, 
 ### 2.7 FAQ
 
 **How is this different from a Wix or Squarespace site?**
-Templates are built for speed of setup, not for how a specific business operates or how people now search. Anvisco builds custom-coded sites structured around your actual flow and around how people find local businesses today.
+Templates are built for speed of setup, not for how a specific business operates or how people now search. Anvis builds custom-coded sites structured around your actual flow and around how people find local businesses today.
 
 **Do I need a full rebuild?**
 Probably not. Most businesses get more value from one or two modules than from a full rebuild. The audit is designed to tell you which path makes sense.
@@ -422,6 +456,13 @@ Scope: content update only, not a rebuild.
 - Card copy: "Reserved for the next local service build that proves the system in the wild."
 - Communicates intentional curation, not an empty portfolio
 
+**About section:**
+- Title: About Anvis
+- Keep it short and conversion-relevant
+- Explain that Anvis builds custom websites for local service businesses that need more than a visual refresh
+- Mention structure, clarity, trust, conversion, and modern discovery
+- Mention the portfolio is curated to show relevant systems and outcomes, not every project
+
 **Pull from public showcase:**
 - Any weak Wix work
 - Any project that does not support the premium claim
@@ -437,13 +478,20 @@ Scope: content update only, not a rebuild.
 
 ## 5. Implementation Notes
 
-- Nav structure: Home, Work, Services, Audit, Process, About.
+- Nav structure: Home, Work, Services, FAQ, Get Free Audit.
+- Footer structure: Home, Work, Services, FAQ, Get Free Audit.
+- Public-facing company name is Anvis. Domain/email references remain anvisco.com and brian@anvisco.com.
+- Quote/callout boxes for "Most websites describe the business..." and "This is not a replacement for SEO..." are removed. Their meaning is integrated into normal body copy with short amber accent spans.
+- Serif/script font usage is allowed only in the hero accent line. Email links, footer text, notes, cards, and body copy are sans-serif.
 - All "starting at" pricing should be visible. No hidden quote-only pricing on modules.
 - Founding rates shown on the full build tier only, with the framing line: "Limited to the first few dental and local service builds."
-- Primary site CTA throughout: "Get a Website Audit" links to the audit landing page.
+- Primary site CTA throughout: "Get a Website Audit" or "Get Free Audit" links to the audit landing page.
 - Homepage is an overview and conversion path. It should not duplicate the portfolio page or full services detail.
 - Work lives on `/portfolio`, not on the homepage.
-- Module detail lives on `/services`; the homepage shows only a teaser.
+- About lives on `/portfolio`, not as a top-level homepage section.
+- FAQ lives on the homepage and is the primary linked FAQ surface.
+- Module detail lives on `/services`; the homepage shows only a teaser and sends users to `/services`.
+- The homepage bottom CTA is now a higher-intent request step: "Start a Website Request" -> `/checkout`.
 - The module bundle discount is supported by `/checkout`, which now serves every offer (audit, modules, full build, recurring) as a request flow rather than a payment checkout.
 - Public stage pages live at `/next-steps/audit`, `/next-steps/scope`, `/next-steps/build`, and `/next-steps/launch` for clients who want a plain-English read of where they are in the process.
 - Module canonical IDs are now `content-architecture`, `visual-redesign`, `booking-flow`, `animation-premium`, `service-page-expansion`, `mobile-speed-cleanup`. Marketing display names match `MODULE_OFFERS` in `src/data/offers.ts`. AI-readiness is positioned as an additive layer inside relevant modules, not a rebrand of the company.

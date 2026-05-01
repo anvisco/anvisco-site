@@ -58,7 +58,7 @@ export function CustomBuild() {
               transition={{ duration: 0.45, ease: 'easeOut', delay: 0.22 }}
             >
               <Link
-                to="/services#build"
+                to="/services"
                 className="group inline-flex items-center gap-2.5 border-[1.5px] border-ink px-6 py-3 text-sm font-medium text-ink tracking-[-0.005em] transition-all duration-200 hover:border-amber hover:text-amber"
               >
                 See Build Tiers

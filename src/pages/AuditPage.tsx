@@ -2,6 +2,7 @@ import { Nav } from '@/components/layout/Nav'
 import { Footer } from '@/components/layout/Footer'
 import { BracketLabel } from '@/components/ui/BracketLabel'
 import { CONTACT_URL } from '@/data/contact'
+import { Link } from 'react-router-dom'
 
 const reviewAreas = [
   ['AI discovery readiness', 'can AI search tools and Google AI results clearly understand and recommend the business?'],
@@ -42,7 +43,7 @@ export function AuditPage() {
             </p>
             <div className="flex flex-wrap gap-4">
               <AuditCta label="Get the Free Snapshot" />
-              <AuditCta label="Get the Full Audit - $250" subtle />
+              <AuditCta label="Get the Full Audit - $250" to="/checkout?path=audit" subtle />
             </div>
           </div>
         </section>
@@ -62,6 +63,7 @@ export function AuditPage() {
                 items={fullAuditItems}
                 bestFor="Practices that want depth and a clear plan before deciding what to invest in."
                 cta="Request the Full Audit"
+                to="/checkout?path=audit"
               />
             </div>
           </div>
@@ -108,7 +110,7 @@ export function AuditPage() {
             </p>
             <div className="flex flex-wrap gap-4">
               <AuditCta label="Get the Free Snapshot" />
-              <AuditCta label="Get the Full Audit - $250" subtle />
+              <AuditCta label="Get the Full Audit - $250" to="/checkout?path=audit" subtle />
             </div>
           </div>
         </section>
@@ -138,12 +140,14 @@ function AuditOption({
   bestFor,
   credit,
   cta,
+  to,
 }: {
   title: string
   items: string[]
   bestFor: string
   credit?: string
   cta: string
+  to?: string
 }) {
   return (
     <div className="flex min-w-0 flex-col border border-[var(--color-border)] bg-[var(--color-bg)] p-8">
@@ -159,22 +163,34 @@ function AuditOption({
       <p className="max-w-[28ch] break-words text-sm leading-relaxed text-ink-muted sm:max-w-none"><span className="text-ink">Best for:</span> {bestFor}</p>
       {credit && <p className="mt-4 max-w-[28ch] break-words text-sm leading-relaxed text-ink-muted sm:max-w-none"><span className="text-ink">Credit:</span> {credit}</p>}
       <div className="mt-auto">
-        <AuditCta label={cta} compact />
+        <AuditCta label={cta} to={to} compact />
       </div>
     </div>
   )
 }
 
-function AuditCta({ label, subtle, compact }: { label: string; subtle?: boolean; compact?: boolean }) {
-  return (
-    <a
-      href={CONTACT_URL}
-      className={`group inline-flex items-center gap-2.5 border px-6 py-3 text-sm font-medium tracking-[-0.005em] transition-all duration-200 hover:border-amber hover:text-amber ${
-        compact ? 'mt-8' : ''
-      } ${subtle ? 'border-[var(--color-border-strong)] text-ink-muted' : 'border-ink text-ink'}`}
-    >
+function AuditCta({ label, to, subtle, compact }: { label: string; to?: string; subtle?: boolean; compact?: boolean }) {
+  const className = `group inline-flex items-center gap-2.5 border px-6 py-3 text-sm font-medium tracking-[-0.005em] transition-all duration-200 hover:border-amber hover:text-amber ${
+    compact ? 'mt-8' : ''
+  } ${subtle ? 'border-[var(--color-border-strong)] text-ink-muted' : 'border-ink text-ink'}`
+
+  const content = (
+    <>
       {label}
       <span className="text-amber transition-transform duration-200 group-hover:translate-x-0.5">→</span>
+    </>
+  )
+
+  return to ? (
+    <Link to={to} className={className}>
+      {content}
+    </Link>
+  ) : (
+    <a
+      href={CONTACT_URL}
+      className={className}
+    >
+      {content}
     </a>
   )
 }

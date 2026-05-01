@@ -45,15 +45,15 @@ export function Modules() {
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {featuredModules.map((module, i) => (
-            <ModuleCard key={module.id} module={module} index={i} compact href={`/services#${module.id}`} />
+            <ModuleCard key={module.id} module={module} index={i} compact href="/services" />
           ))}
         </div>
 
         <Link
-          to="/services#modules"
+          to="/services"
           className="group mt-10 inline-flex items-center gap-2.5 border border-[var(--color-border-strong)] px-5 py-3 text-[0.7rem] font-medium uppercase tracking-[0.1em] text-ink transition-all duration-200 hover:border-amber hover:text-amber"
         >
-          See all modules
+          View all modules
           <span className="text-amber transition-transform duration-200 group-hover:translate-x-0.5">→</span>
         </Link>
 
