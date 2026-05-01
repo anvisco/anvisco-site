@@ -144,6 +144,17 @@ function safeUrl(value: unknown): string | null {
   }
 }
 
+function safeCents(value: number | null | undefined): number {
+  const n = typeof value === 'number' ? value : NaN
+  return Number.isFinite(n) ? Math.round(n) : 0
+}
+
+function assertIntegerCents(name: string, value: number | null | undefined) {
+  if (!Number.isInteger(value ?? NaN)) {
+    throw checkoutFailure(`Invalid pricing for ${name}.`, 'invalid_payload')
+  }
+}
+
 const VALID_PACKAGE_TYPES: PackageType[] = ['audit', 'modules', 'build', 'recurring']
 const VALID_BUILD_SELECTIONS: BuildSelection[] = ['essentials', 'standard', 'premium']
 const VALID_RECURRING_SELECTIONS: RecurringSelection[] = ['care', 'growth']
@@ -594,23 +605,41 @@ async function createPackageRow(
   pricing: ReturnType<typeof buildCheckoutPricing>,
   step: CheckoutStep,
 ): Promise<string> {
+  assertIntegerCents('subtotal_cents', pricing.subtotal_cents)
+  assertIntegerCents('discount_cents', pricing.discount_cents)
+  assertIntegerCents('total_cents', pricing.total_cents)
+  if (payload.package_type === 'recurring') {
+    assertIntegerCents('recurring_amount_cents', pricing.recurring_amount_cents)
+  }
+
+  const recurringAmountCents =
+    payload.package_type === 'recurring'
+      ? safeCents(pricing.recurring_amount_cents)
+      : 0
+
+  const insertPayload = {
+    client_id: clientId,
+    package_type: payload.package_type,
+    package_name: pricing.package_name,
+    status: 'requested',
+    subtotal_cents: safeCents(pricing.subtotal_cents),
+    discount_cents: safeCents(pricing.discount_cents),
+    total_cents: safeCents(pricing.total_cents),
+    recurring_amount_cents: recurringAmountCents,
+  }
+
   const { data, error } = await supabase
     .from('client_packages')
-    .insert({
-      client_id: clientId,
-      package_type: payload.package_type,
-      package_name: pricing.package_name,
-      status: 'requested',
-      subtotal_cents: pricing.subtotal_cents,
-      discount_cents: pricing.discount_cents,
-      total_cents: pricing.total_cents,
-      recurring_amount_cents: pricing.recurring_amount_cents,
-    })
+    .insert(insertPayload)
     .select('id')
     .single()
 
   if (error || !data) {
     logSupabaseFailure(step, error ?? new Error('package_insert_failed'))
+    console.error('Supabase insert payload', {
+      step,
+      payload: insertPayload,
+    })
     throw checkoutFailure(
       (error as { message?: string } | null)?.message || 'Supabase package insert failed.',
       'supabase_insert_failed',
