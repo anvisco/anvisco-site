@@ -181,30 +181,61 @@ export function CheckoutPage() {
       redirected = true
       window.location.assign(sessionUrl)
     } catch (err) {
-      console.error('Stripe checkout session creation failed', err)
-
       let message = CHECKOUT_ERROR_MESSAGE
+      let debugCode: string | null = null
+      let step: string | null = null
+      let returnedError: string | null = null
       if (err instanceof FunctionsFetchError) {
+        console.error('Stripe checkout session creation failed', {
+          error: 'Could not reach the checkout function.',
+          debug_code: 'functions_fetch_error',
+        })
         message = 'Could not reach the checkout function. Check CORS, deployment, or function logs.'
       } else if (err instanceof FunctionsHttpError) {
         try {
           const body = await err.context.json()
           if (body && typeof body === 'object') {
-            const returnedMessage =
+            returnedError =
               typeof (body as { error?: unknown }).error === 'string'
                 ? (body as { error: string }).error
-                : typeof (body as { message?: unknown }).message === 'string'
-                  ? (body as { message: string }).message
-                  : null
-            if (returnedMessage) {
-              message = returnedMessage
+                : null
+            debugCode =
+              typeof (body as { debug_code?: unknown }).debug_code === 'string'
+                ? (body as { debug_code: string }).debug_code
+                : null
+            step =
+              typeof (body as { step?: unknown }).step === 'string'
+                ? (body as { step: string }).step
+                : null
+            if (returnedError) {
+              message = debugCode
+                ? `${returnedError} (${debugCode}${step ? `: ${step}` : ''})`
+                : returnedError
+            } else if (debugCode) {
+              message = `${CHECKOUT_ERROR_MESSAGE} (${debugCode}${step ? `: ${step}` : ''})`
+            } else if (typeof (body as { message?: unknown }).message === 'string') {
+              message = (body as { message: string }).message
             }
           }
         } catch {
           message = err.message
         }
+        console.error('Stripe checkout session creation failed', {
+          error: returnedError ?? message,
+          debug_code: debugCode ?? 'checkout_http_error',
+          step: step ?? undefined,
+        })
       } else if (err instanceof Error && err.message.trim()) {
         message = err.message
+        console.error('Stripe checkout session creation failed', {
+          error: message,
+          debug_code: 'checkout_client_error',
+        })
+      } else {
+        console.error('Stripe checkout session creation failed', {
+          error: CHECKOUT_ERROR_MESSAGE,
+          debug_code: 'unknown_error',
+        })
       }
 
       setSubmit({ kind: 'error', message })

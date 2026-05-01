@@ -17,8 +17,11 @@ supabase secrets set \
   ANVIS_SUPABASE_SECRET_KEY=... \
   STRIPE_SECRET_KEY=... \
   STRIPE_WEBHOOK_SECRET=... \
-  STRIPE_CURRENCY=usd
+  STRIPE_CURRENCY=cad \
+  SITE_URL=http://localhost:5173
 ```
+
+For production later, set `SITE_URL=https://anvisco.com`.
 
 ## 3. Deploy the Edge Functions
 
@@ -39,6 +42,9 @@ npx supabase functions deploy stripe-webhook --no-verify-jwt --project-ref evvoz
 These functions are intentionally configured with `verify_jwt = false` in `supabase/config.toml`.
 That is required because Stripe webhooks and the browser preflight for checkout must reach the
 Edge Function without Supabase platform JWT blocking the request first.
+
+Edge Functions do not automatically read frontend `.env.local` `VITE_` variables. If a function
+needs a base URL for `success_url` / `cancel_url`, set it as the `SITE_URL` Supabase secret.
 
 ## 4. Configure the Stripe webhook endpoint
 
@@ -80,6 +86,12 @@ then JWT verification is still enabled. Redeploy with:
 
 ```bash
 npx supabase functions deploy create-checkout-session --no-verify-jwt --project-ref evvozwtspivyumboqcnu
+```
+
+If the response is a `500` with `SITE_URL function secret is missing.`, add the secret with:
+
+```bash
+npx supabase secrets set SITE_URL=http://localhost:5173
 ```
 
 ## 6. Test the webhook

@@ -1,6 +1,7 @@
 import { createClient } from 'npm:@supabase/supabase-js@2.105.1'
 import {
   buildCheckoutPricing,
+  type CheckoutPricingResult,
   type AuditSelection,
   type BuildSelection,
   type PackageType,
@@ -29,6 +30,40 @@ type CheckoutPayload = {
 type DbClient = { id: string }
 type DbPackage = { id: string; client_id: string }
 type DbPaymentSchedule = { id: string }
+type CheckoutStep =
+  | 'client_lookup'
+  | 'clients_insert'
+  | 'client_packages_select'
+  | 'client_packages_insert'
+  | 'module_selections_insert'
+  | 'payment_schedules_insert'
+  | 'client_packages_update'
+  | 'payment_schedules_update'
+  | 'stripe_session_create'
+
+type CheckoutErrorCode =
+  | 'missing_supabase_secret'
+  | 'missing_supabase_url'
+  | 'missing_stripe_secret'
+  | 'missing_site_url'
+  | 'invalid_payload'
+  | 'invalid_package_type'
+  | 'stripe_session_create_failed'
+  | 'supabase_insert_failed'
+  | 'supabase_update_failed'
+  | 'unknown_error'
+
+class CheckoutFailure extends Error {
+  debug_code: CheckoutErrorCode
+  step?: CheckoutStep
+
+  constructor(message: string, debug_code: CheckoutErrorCode, step?: CheckoutStep) {
+    super(message)
+    this.name = 'CheckoutFailure'
+    this.debug_code = debug_code
+    this.step = step
+  }
+}
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -45,6 +80,53 @@ function jsonResponse(body: unknown, status = 200) {
       'Content-Type': 'application/json',
     },
   })
+}
+
+function errorResponse(status: number, error: string, debug_code: CheckoutErrorCode, step?: CheckoutStep) {
+  return jsonResponse({ error, debug_code, ...(step ? { step } : {}) }, status)
+}
+
+function safeCheckoutErrorMessage(error: unknown): string {
+  if (error instanceof Error && error.message.trim()) return error.message.trim()
+  if (typeof error === 'string' && error.trim()) return error.trim()
+  return 'Unknown checkout error'
+}
+
+function logCheckoutError(error: unknown) {
+  const stripeError =
+    error && typeof error === 'object' ? (error as { type?: unknown; code?: unknown; param?: unknown; message?: unknown }) : null
+  console.error('create-checkout-session failed', {
+    message: safeCheckoutErrorMessage(error),
+    stack: error instanceof Error ? error.stack : undefined,
+    type: typeof stripeError?.type === 'string' ? stripeError.type : undefined,
+    code: typeof stripeError?.code === 'string' ? stripeError.code : undefined,
+    param: typeof stripeError?.param === 'string' ? stripeError.param : undefined,
+    stripe_message: typeof stripeError?.message === 'string' ? stripeError.message : undefined,
+  })
+}
+
+function logSupabaseFailure(step: CheckoutStep, error: unknown) {
+  const supabaseError = error as {
+    message?: unknown
+    details?: unknown
+    hint?: unknown
+    code?: unknown
+  }
+  console.error('Supabase insert/update failed', {
+    step,
+    message: typeof supabaseError?.message === 'string' ? supabaseError.message : safeCheckoutErrorMessage(error),
+    details: typeof supabaseError?.details === 'string' ? supabaseError.details : undefined,
+    hint: typeof supabaseError?.hint === 'string' ? supabaseError.hint : undefined,
+    code: typeof supabaseError?.code === 'string' ? supabaseError.code : undefined,
+  })
+}
+
+function checkoutFailure(message: string, debug_code: CheckoutErrorCode, step?: CheckoutStep) {
+  return new CheckoutFailure(message, debug_code, step)
+}
+
+function logStep(step: string, details?: Record<string, unknown>) {
+  console.log('create-checkout-session', { step, ...(details ?? {}) })
 }
 
 function getRequiredEnv(name: string): string | null {
@@ -139,6 +221,8 @@ async function stripeApi(
 }
 
 Deno.serve(async (request) => {
+  logStep('function started')
+
   if (request.method === 'OPTIONS') {
     return new Response(null, {
       status: 204,
@@ -147,6 +231,7 @@ Deno.serve(async (request) => {
   }
 
   if (request.method === 'GET') {
+    logStep('health check requested')
     return jsonResponse({
       ok: true,
       function: 'create-checkout-session',
@@ -167,40 +252,62 @@ Deno.serve(async (request) => {
   } | null = null
   let paymentScheduleId: string | null = null
   let createdPaymentSchedule = false
+  let failureStep: CheckoutStep | undefined = undefined
+  let failureCode: CheckoutErrorCode = 'unknown_error'
 
   try {
-    const SUPABASE_URL = getRequiredEnv('SUPABASE_URL')
+    logStep('method received', { method: request.method })
+
+    const SUPABASE_URL = getRequiredEnv('SUPABASE_URL') ?? getRequiredEnv('ANVIS_SUPABASE_URL')
     const ANVIS_SUPABASE_SECRET_KEY = getRequiredEnv('ANVIS_SUPABASE_SECRET_KEY')
     const STRIPE_SECRET_KEY = getRequiredEnv('STRIPE_SECRET_KEY')
-    const STRIPE_CURRENCY = (getRequiredEnv('STRIPE_CURRENCY') ?? 'usd').toLowerCase()
+    const STRIPE_CURRENCY = getRequiredEnv('STRIPE_CURRENCY')
+    const SITE_URL = getRequiredEnv('SITE_URL')
 
-    if (!SUPABASE_URL || !ANVIS_SUPABASE_SECRET_KEY) {
-      return jsonResponse({ error: 'Supabase service role secret is not configured.' }, 500)
+    logStep('loaded env vars')
+
+    if (!SUPABASE_URL) {
+      return errorResponse(500, 'Supabase URL function secret is missing.', 'missing_supabase_url')
+    }
+
+    if (!ANVIS_SUPABASE_SECRET_KEY) {
+      return errorResponse(500, 'Supabase service secret is not configured.', 'missing_supabase_secret')
     }
 
     if (!STRIPE_SECRET_KEY) {
-      return jsonResponse({ error: 'Stripe secret key is not configured.' }, 500)
+      return errorResponse(500, 'Stripe secret key is not configured.', 'missing_stripe_secret')
+    }
+
+    if (!STRIPE_CURRENCY) {
+      return errorResponse(500, 'Stripe currency secret is not configured.', 'missing_stripe_secret')
+    }
+
+    if (!SITE_URL) {
+      return errorResponse(500, 'SITE_URL function secret is missing.', 'missing_site_url')
     }
 
     const supabase = createClient(SUPABASE_URL, ANVIS_SUPABASE_SECRET_KEY, {
       auth: { persistSession: false, autoRefreshToken: false },
     })
+    logStep('supabase client initialized')
 
     let payload: CheckoutPayload
     try {
       payload = (await request.json()) as CheckoutPayload
     } catch {
-      return jsonResponse({ error: 'Invalid JSON body.' }, 400)
+      return errorResponse(400, 'Invalid checkout selection.', 'invalid_payload')
     }
+    logStep('parsed payload')
 
     if (!isPackageType(payload?.package_type)) {
-      return jsonResponse({ error: 'package_type is required.' }, 400)
+      return errorResponse(400, 'Invalid checkout selection.', 'invalid_package_type')
     }
+    logStep('validated package type', { package_type: payload.package_type })
 
-    const successUrl = safeUrl(payload.success_url)
-    const cancelUrl = safeUrl(payload.cancel_url)
+    const successUrl = safeUrl(payload.success_url) ?? new URL('/checkout/success', SITE_URL).toString()
+    const cancelUrl = safeUrl(payload.cancel_url) ?? new URL('/checkout', SITE_URL).toString()
     if (!successUrl || !cancelUrl) {
-      return jsonResponse({ error: 'success_url and cancel_url must be valid http(s) URLs.' }, 400)
+      return errorResponse(400, 'Invalid checkout selection.', 'invalid_payload')
     }
 
     const pricing = buildCheckoutPricing({
@@ -209,27 +316,34 @@ Deno.serve(async (request) => {
       selected_modules: payload.selected_modules,
       selected_build: payload.selected_build,
       selected_plan: payload.selected_plan,
-      currency: STRIPE_CURRENCY,
+      currency: STRIPE_CURRENCY.toLowerCase(),
+    })
+    logStep('calculated pricing', {
+      package_type: payload.package_type,
+      line_items: pricing.line_items.length,
+      total_cents: pricing.total_cents,
+      charge_cents: pricing.charge_cents,
     })
 
     if (payload.package_type === 'audit' && payload.selected_audit && payload.selected_audit !== 'full-audit') {
-      return jsonResponse({ error: 'Only the full audit can be sent to Stripe.' }, 400)
+      return errorResponse(400, 'Invalid checkout selection.', 'invalid_payload')
     }
 
     if (payload.package_type === 'build' && payload.selected_build && !isBuildSelection(payload.selected_build)) {
-      return jsonResponse({ error: 'selected_build is invalid.' }, 400)
+      return errorResponse(400, 'Invalid checkout selection.', 'invalid_payload')
     }
 
     if (payload.package_type === 'recurring' && payload.selected_plan && !isRecurringSelection(payload.selected_plan)) {
-      return jsonResponse({ error: 'selected_plan is invalid.' }, 400)
+      return errorResponse(400, 'Invalid checkout selection.', 'invalid_payload')
     }
 
     if (payload.package_type === 'modules' && pricing.selected_modules.length === 0) {
-      return jsonResponse({ error: 'At least one valid module is required.' }, 400)
+      return errorResponse(400, 'Invalid checkout selection.', 'invalid_payload')
     }
 
     let resolvedClientId = payload.client_id?.trim() || null
     if (payload.package_id) {
+      failureStep = 'client_packages_select'
       const { data: existingPackage, error: existingPackageError } = await supabase
         .from('client_packages')
         .select('id, client_id')
@@ -237,13 +351,18 @@ Deno.serve(async (request) => {
         .maybeSingle()
 
       if (existingPackageError) {
-        throw existingPackageError
+        logSupabaseFailure('client_packages_select', existingPackageError)
+        throw checkoutFailure(
+          existingPackageError.message || 'Supabase package lookup failed.',
+          'supabase_insert_failed',
+          'client_packages_select',
+        )
       }
       if (!existingPackage) {
-        return jsonResponse({ error: 'package_id was not found.' }, 404)
+        return errorResponse(404, 'Invalid checkout selection.', 'invalid_payload')
       }
       if (resolvedClientId && existingPackage.client_id !== resolvedClientId) {
-        return jsonResponse({ error: 'package_id does not belong to the provided client_id.' }, 400)
+        return errorResponse(400, 'Invalid checkout selection.', 'invalid_payload')
       }
       resolvedClientId = existingPackage.client_id
     }
@@ -255,26 +374,35 @@ Deno.serve(async (request) => {
       createdPackage: false,
     }
 
-    const clientId = resolvedClientId ?? (await createClientRow(supabase, payload))
+    failureStep = 'clients_insert'
+    const clientId = resolvedClientId ?? (await createClientRow(supabase, payload, 'clients_insert'))
     createdRecords.clientId = clientId
     createdRecords.createdClient = !resolvedClientId
+    logStep('client record ready')
 
-    const packageId = payload.package_id ?? (await createPackageRow(supabase, clientId, payload, pricing))
+    failureStep = 'client_packages_insert'
+    const packageId = payload.package_id ?? (await createPackageRow(supabase, clientId, payload, pricing, 'client_packages_insert'))
     createdRecords.packageId = packageId
     createdRecords.createdPackage = !payload.package_id
+    logStep('package record ready')
 
     if (payload.package_type === 'modules' && pricing.selected_modules.length > 0 && !payload.package_id) {
-      await insertModuleSelections(supabase, packageId, pricing.selected_modules)
+      failureStep = 'module_selections_insert'
+      await insertModuleSelections(supabase, packageId, pricing.selected_modules, 'module_selections_insert')
+      logStep('module selections inserted')
     }
 
+    failureStep = 'payment_schedules_insert'
     paymentScheduleId = await createPaymentScheduleRow(
       supabase,
       clientId,
       packageId,
       payload.package_type,
       pricing,
+      'payment_schedules_insert',
     )
     createdPaymentSchedule = true
+    logStep('payment schedule ready')
 
     const sessionParams = new URLSearchParams()
     sessionParams.set('mode', payload.package_type === 'recurring' ? 'subscription' : 'payment')
@@ -313,10 +441,24 @@ Deno.serve(async (request) => {
     }
 
     pricing.line_items.forEach((item, index) => appendLineItem(sessionParams, index, item))
+    logStep('prepared line items', { count: pricing.line_items.length })
 
+    logStep('creating Stripe session')
     const stripeRes = await stripeApi(STRIPE_SECRET_KEY, '/checkout/sessions', sessionParams)
     const stripeJson = await stripeRes.json()
+    failureStep = 'stripe_session_create'
+    failureCode = 'stripe_session_create_failed'
     if (!stripeRes.ok) {
+      const stripeError =
+        stripeJson && typeof stripeJson.error === 'object' && stripeJson.error
+          ? (stripeJson.error as { type?: unknown; code?: unknown; message?: unknown; param?: unknown })
+          : null
+      console.error('create-checkout-session stripe error', {
+        type: typeof stripeError?.type === 'string' ? stripeError.type : undefined,
+        code: typeof stripeError?.code === 'string' ? stripeError.code : undefined,
+        message: typeof stripeError?.message === 'string' ? stripeError.message : undefined,
+        param: typeof stripeError?.param === 'string' ? stripeError.param : undefined,
+      })
       throw new Error(
         typeof stripeJson.error === 'object' && stripeJson.error && 'message' in stripeJson.error
           ? String((stripeJson.error as { message?: unknown }).message ?? 'Stripe request failed')
@@ -329,20 +471,41 @@ Deno.serve(async (request) => {
     if (!sessionUrl || !sessionId) {
       throw new Error('Stripe session response was incomplete.')
     }
+    logStep('Stripe session created', { session_id: sessionId })
 
-    await supabase
-      .from('client_packages')
-      .update({ payment_url: sessionUrl })
-      .eq('id', packageId)
+    failureStep = 'client_packages_update'
+    failureCode = 'supabase_update_failed'
+    try {
+      const { error: clientPackageUpdateError } = await supabase
+        .from('client_packages')
+        .update({ payment_url: sessionUrl })
+        .eq('id', packageId)
+      if (clientPackageUpdateError) {
+        logSupabaseFailure('client_packages_update', clientPackageUpdateError)
+      } else {
+        logStep('supabase records updated', { table: 'client_packages' })
+      }
 
-    await supabase
-      .from('payment_schedules')
-      .update({
-        payment_url: sessionUrl,
-        stripe_session_id: sessionId,
-        status: 'pending',
+      failureStep = 'payment_schedules_update'
+      const { error: paymentScheduleUpdateError } = await supabase
+        .from('payment_schedules')
+        .update({
+          payment_url: sessionUrl,
+          stripe_session_id: sessionId,
+          status: 'pending',
+        })
+        .eq('id', paymentScheduleId)
+      if (paymentScheduleUpdateError) {
+        logSupabaseFailure('payment_schedules_update', paymentScheduleUpdateError)
+      } else {
+        logStep('supabase records updated', { table: 'payment_schedules' })
+      }
+    } catch (updateError) {
+      console.error('create-checkout-session supabase update failed', {
+        message: safeCheckoutErrorMessage(updateError),
+        stack: updateError instanceof Error ? updateError.stack : undefined,
       })
-      .eq('id', paymentScheduleId)
+    }
 
     return jsonResponse({
       url: sessionUrl,
@@ -351,8 +514,8 @@ Deno.serve(async (request) => {
       client_id: clientId,
     })
   } catch (error) {
-    console.error('create-checkout-session failed', error)
-    const SUPABASE_URL = getRequiredEnv('SUPABASE_URL')
+    logCheckoutError(error)
+    const SUPABASE_URL = getRequiredEnv('SUPABASE_URL') ?? getRequiredEnv('ANVIS_SUPABASE_URL')
     const ANVIS_SUPABASE_SECRET_KEY = getRequiredEnv('ANVIS_SUPABASE_SECRET_KEY')
     if (SUPABASE_URL && ANVIS_SUPABASE_SECRET_KEY && createdRecords) {
       const supabase = createClient(SUPABASE_URL, ANVIS_SUPABASE_SECRET_KEY, {
@@ -377,13 +540,23 @@ Deno.serve(async (request) => {
       }
     }
 
-    return jsonResponse({
-      error: error instanceof Error ? error.message : 'Unknown checkout error',
-    }, 500)
+    const failureMessage =
+      error instanceof CheckoutFailure
+        ? error.message
+        : safeCheckoutErrorMessage(error)
+    const debug_code =
+      error instanceof CheckoutFailure ? error.debug_code : failureCode
+    const step =
+      error instanceof CheckoutFailure ? error.step ?? failureStep : failureStep
+    return errorResponse(500, failureMessage, debug_code, step)
   }
 })
 
-async function createClientRow(supabase: ReturnType<typeof createClient>, payload: CheckoutPayload): Promise<string> {
+async function createClientRow(
+  supabase: ReturnType<typeof createClient>,
+  payload: CheckoutPayload,
+  step: CheckoutStep,
+): Promise<string> {
   const name = payload.name?.trim()
   const email = payload.email?.trim().toLowerCase()
   if (!name) throw new Error('name is required.')
@@ -403,7 +576,14 @@ async function createClientRow(supabase: ReturnType<typeof createClient>, payloa
     .select('id')
     .single()
 
-  if (error || !data) throw error ?? new Error('client_insert_failed')
+  if (error || !data) {
+    logSupabaseFailure(step, error ?? new Error('client_insert_failed'))
+    throw checkoutFailure(
+      (error as { message?: string } | null)?.message || 'Supabase client insert failed.',
+      'supabase_insert_failed',
+      step,
+    )
+  }
   return (data as DbClient).id
 }
 
@@ -412,6 +592,7 @@ async function createPackageRow(
   clientId: string,
   payload: CheckoutPayload,
   pricing: ReturnType<typeof buildCheckoutPricing>,
+  step: CheckoutStep,
 ): Promise<string> {
   const { data, error } = await supabase
     .from('client_packages')
@@ -428,7 +609,14 @@ async function createPackageRow(
     .select('id')
     .single()
 
-  if (error || !data) throw error ?? new Error('package_insert_failed')
+  if (error || !data) {
+    logSupabaseFailure(step, error ?? new Error('package_insert_failed'))
+    throw checkoutFailure(
+      (error as { message?: string } | null)?.message || 'Supabase package insert failed.',
+      'supabase_insert_failed',
+      step,
+    )
+  }
   return (data as DbPackage).id
 }
 
@@ -436,6 +624,7 @@ async function insertModuleSelections(
   supabase: ReturnType<typeof createClient>,
   packageId: string,
   selectedModules: { module_id: string; module_name: string; quantity: number; unit_price_cents: number; total_cents: number }[],
+  step: CheckoutStep,
 ) {
   const rows = selectedModules.map((module) => ({
     package_id: packageId,
@@ -447,7 +636,14 @@ async function insertModuleSelections(
   }))
 
   const { error } = await supabase.from('client_module_selections').insert(rows)
-  if (error) throw error
+  if (error) {
+    logSupabaseFailure(step, error)
+    throw checkoutFailure(
+      error.message || 'Supabase module selection insert failed.',
+      'supabase_insert_failed',
+      step,
+    )
+  }
 }
 
 async function createPaymentScheduleRow(
@@ -456,6 +652,7 @@ async function createPaymentScheduleRow(
   packageId: string,
   packageType: PackageType,
   pricing: CheckoutPricingResult,
+  step: CheckoutStep,
 ): Promise<string> {
   const label =
     packageType === 'audit'
@@ -486,6 +683,13 @@ async function createPaymentScheduleRow(
     .select('id')
     .single()
 
-  if (error || !data) throw error ?? new Error('payment_schedule_insert_failed')
+  if (error || !data) {
+    logSupabaseFailure(step, error ?? new Error('payment_schedule_insert_failed'))
+    throw checkoutFailure(
+      (error as { message?: string } | null)?.message || 'Supabase payment schedule insert failed.',
+      'supabase_insert_failed',
+      step,
+    )
+  }
   return (data as DbPaymentSchedule).id
 }

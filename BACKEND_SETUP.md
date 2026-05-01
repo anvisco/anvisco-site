@@ -57,7 +57,8 @@ VITE_SITE_URL=http://localhost:5173
 ANVIS_SUPABASE_SECRET_KEY=
 STRIPE_SECRET_KEY=
 STRIPE_WEBHOOK_SECRET=
-STRIPE_CURRENCY=usd
+STRIPE_CURRENCY=cad
+SITE_URL=http://localhost:5173
 ```
 
 `.env.local` is gitignored. Never commit it.
@@ -72,10 +73,15 @@ supabase secrets set \
   ANVIS_SUPABASE_SECRET_KEY=... \
   STRIPE_SECRET_KEY=... \
   STRIPE_WEBHOOK_SECRET=... \
-  STRIPE_CURRENCY=usd
+  STRIPE_CURRENCY=cad \
+  SITE_URL=http://localhost:5173
 ```
 
 Never prefix these with `VITE_`.
+
+`SITE_URL` is the server-side base URL used by the checkout Edge Function for Stripe
+`success_url` and `cancel_url`. Frontend `VITE_` variables are not available inside Edge Functions
+unless you pass them explicitly as Supabase secrets.
 
 ## 3. Run the migration
 
@@ -152,8 +158,15 @@ from trusted data before it talks to Stripe.
 Deploy both functions after setting secrets:
 
 ```bash
-supabase functions deploy create-checkout-session
-supabase functions deploy stripe-webhook
+npx supabase functions deploy create-checkout-session --project-ref evvozwtspivyumboqcnu
+npx supabase functions deploy stripe-webhook --project-ref evvozwtspivyumboqcnu
+```
+
+If JWT verification is still blocking the requests, force the deploy without it:
+
+```bash
+npx supabase functions deploy create-checkout-session --no-verify-jwt --project-ref evvozwtspivyumboqcnu
+npx supabase functions deploy stripe-webhook --no-verify-jwt --project-ref evvozwtspivyumboqcnu
 ```
 
 The repo ships `supabase/config.toml` with:
@@ -251,7 +264,8 @@ the target client id.
   `.env.local` and restart `npm run dev`.
 - **Stripe Checkout or webhook failing:** confirm the Edge Function secrets are set with
   `supabase secrets set`, that `verify_jwt = false` is present for both functions, and that Stripe
-  is pointing to the webhook endpoint documented below.
+  is pointing to the webhook endpoint documented below. Also confirm `SITE_URL` is set as a
+  Supabase secret; Edge Functions do not read `VITE_SITE_URL` from the browser env.
 - **`new row violates row-level security` when inserting a client:** the `clients` insert path is
   expected to be done by the public `/checkout` flow. The anon user inserts those rows. If you
   added a stricter policy, also add a policy that lets `anon` insert into `clients` and

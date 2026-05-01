@@ -73,6 +73,10 @@ On submit, `/checkout`:
 `create-checkout-session` must be deployed with `verify_jwt = false` so the browser preflight can
 reach the Edge Function without Supabase platform auth blocking it first.
 
+The function also expects a server-side `SITE_URL` secret for Stripe `success_url` and
+`cancel_url`. Frontend `VITE_` env vars are not read inside Edge Functions unless they are passed
+through as Supabase secrets.
+
 If Stripe or Supabase returns an error, the page surfaces the message in the summary and keeps
 the form filled in.
 
