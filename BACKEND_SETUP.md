@@ -1,21 +1,21 @@
-# Backend setup (Pass 1)
+# Backend setup
 
-This is the Pass 1 foundation for the Anvisco backend and client portal. It is intentionally
-small: a Supabase schema, a request-flow `/checkout`, and stub routes for `/admin` and `/portal`.
-Real auth, admin UI, and full Stripe wiring land in later passes.
+This is the shared backend foundation for the Anvis site, admin system, and authenticated client
+portal. It includes the Supabase schema, request flow at `/checkout`, the admin portal, and the
+real authenticated `/portal` client view.
 
-## What Pass 1 includes
+## What this backend includes
 
 - Supabase schema for clients, packages, payments, project updates, emails (with RLS)
 - Source-of-truth offer/pricing data in `src/data/offers.ts`
 - Bundle discount logic (`3+ modules = 15% off`) in `src/lib/pricing.ts`
 - `/checkout` request flow that saves to Supabase when configured, and shows a clear message when not
 - `/checkout/success` confirmation page
-- `/admin` and `/portal` stubs (route + safe placeholder UI)
+- `/admin` and `/portal` routes
 - `/next-steps/{audit,scope,build,launch}` public stage pages
 - TypeScript types in `src/types/backend.ts`
 
-## What is intentionally NOT in Pass 1
+## What is intentionally not included
 
 - Admin login, dashboard, and CRUD UI
 - Client portal login and live data binding
@@ -24,7 +24,7 @@ Real auth, admin UI, and full Stripe wiring land in later passes.
 - Server functions / Edge Functions
 - Audit / module credit tracking
 
-These all hang off the schema and data layer that Pass 1 establishes.
+These all hang off the schema and data layer that the backend establishes.
 
 ---
 
@@ -84,7 +84,7 @@ All have RLS enabled.
 
 ## 4. Create the first admin profile
 
-Until admin auth lands in Pass 2, you bootstrap the first admin manually.
+Until admin auth lands in the admin portal, you bootstrap the first admin manually.
 
 1. **Authentication → Users → Add user → Send invite** (use your real email).
 2. Click the invite link in your inbox to set a password and confirm the user.
@@ -129,7 +129,7 @@ Payments are **manual / Stripe-hosted**:
 The optional `VITE_STRIPE_PAYMENT_LINK_*` env vars exist for a future pass that links
 straight from `/checkout` to a hosted Payment Link for canned offers (audit, three build tiers).
 
-## 7. Admin portal (Pass 2)
+## 7. Admin portal
 
 ### Accessing `/admin`
 
@@ -142,8 +142,8 @@ Navigate to `/admin` in the browser. The portal:
 
 ### Creating the first admin user
 
-The first admin must be bootstrapped manually in Supabase. See **step 4** above — it was written
-for Pass 1 and still applies. The SQL snippet creates the `profiles` row with `role = 'admin'`.
+The first admin must be bootstrapped manually in Supabase. See **step 4** above. The SQL snippet
+creates the `profiles` row with `role = 'admin'`.
 
 After that you can log in at `/admin` with the email/password you set for that user.
 
@@ -166,7 +166,6 @@ After that you can log in at `/admin` with the email/password you set for that u
   actually sent. Real sending wires up in Pass 3 (Resend / Postmark).
 - **Payment processing:** Payment URLs are Stripe-hosted links pasted manually by admin. No
   Stripe webhook processing yet. Pass 3.
-- **Client portal:** `/portal` is still a placeholder. Pass 3.
 - **Audit credit tracking:** Not yet built.
 
 ### RLS notes
@@ -175,19 +174,33 @@ All admin reads/writes go through Supabase RLS. The `is_admin()` helper in the s
 admin-scoped policies. If an operation returns an RLS error, the admin UI surfaces the error
 message clearly — check that the user's `profiles.role = 'admin'` row exists.
 
-## 8. What still needs to be built
+## 8. Client portal
 
-- **Pass 3:** client portal login + live data, real email sending (Resend/Postmark), Stripe
-  webhooks → `payment_schedules.status`, audit-credit tracking, file delivery for audits.
+- `/portal` is authenticated with Supabase Auth.
+- The portal looks up the signed-in user in `client_users` using `auth.uid()`.
+- That mapping resolves the related client record, then loads only that client’s packages,
+  module selections, payment schedules, and client-visible project updates.
+- If a login has not been mapped yet, the portal shows a clean "No client profile is connected to
+  this login yet." state.
+- If Supabase env vars are missing, the portal shows a setup message instead of crashing.
+- The portal never exposes other clients, email logs, or internal-only updates.
+
+To connect a user to a client, insert a row into `client_users` with the Supabase auth user id and
+the target client id.
+
+## 9. What still needs to be built
+
+- **Pass 3:** real email sending (Resend/Postmark), Stripe webhooks → `payment_schedules.status`,
+  audit-credit tracking, file delivery for audits.
 - **Pass 4:** subscription billing, churn/lifecycle automations, analytics on `package_type` mix.
 
 ## Troubleshooting
 
-- **"Backend is not connected" on /checkout:** env vars are missing. Add them to `.env.local` and
-  restart `npm run dev`.
+- **"Backend is not connected" on `/checkout` or `/portal`:** env vars are missing. Add them to
+  `.env.local` and restart `npm run dev`.
 - **`new row violates row-level security` when inserting a client:** the `clients` insert path is
-  expected to be done by the public `/checkout` flow. Pass 1 inserts as the anon user. If you
+  expected to be done by the public `/checkout` flow. The anon user inserts those rows. If you
   added a stricter policy, also add a policy that lets `anon` insert into `clients` and
-  `client_packages` (or wire submission through a Supabase Edge Function in Pass 2).
+  `client_packages` (or wire submission through a Supabase Edge Function).
 - **`is_admin()` returns false:** the profile row is missing or its `role` is not `'admin'`. Re-run
   the SQL in step 4.

@@ -107,11 +107,11 @@ export function ThankYouPage() {
               </div>
 
               <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
-                <Link
-                  to={`/portal?plan=${planKey}&stage=1`}
-                  className="inline-flex min-h-[52px] items-center justify-center rounded-md bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground transition-colors duration-150 hover:bg-primary/85"
-                >
-                  {'View your project portal ->'}
+              <Link
+                to="/portal"
+                className="inline-flex min-h-[52px] items-center justify-center rounded-md bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground transition-colors duration-150 hover:bg-primary/85"
+              >
+                  {'Open client portal ->'}
                 </Link>
                 <a
                   href="mailto:brian@anvisco.com"

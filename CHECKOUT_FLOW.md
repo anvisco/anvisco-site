@@ -1,8 +1,8 @@
-# Checkout / request flow (Pass 1)
+# Checkout / plan builder flow
 
-`/checkout` is a **request flow**, not a payment flow. It captures what a client wants, runs the
-bundle math, and saves a request to Supabase. Brian follows up by email with a hosted Stripe
-Payment Link, an invoice, or e-transfer detail.
+`/checkout` is a **plan builder**, not an instant payment page. It captures what a client wants,
+runs the bundle math, and saves the chosen path to Supabase. Brian then follows up with the next
+step, payment link, or setup details based on the selected path.
 
 ## Pricing source of truth
 
@@ -12,7 +12,7 @@ page, and `/checkout` cannot disagree about a price.
 
 | Offer | File reference |
 | --- | --- |
-| Audit (free snapshot, full audit $250) | `AUDIT_OFFERS` |
+| Audit (free snapshot, full audit shown on the plan builder) | `AUDIT_OFFERS` |
 | Improvement modules (six modules) | `MODULE_OFFERS` |
 | Full builds (Essentials, Standard, Premium - founding + public rates) | `BUILD_OFFERS` |
 | Recurring (Care $149/mo, Growth $449/mo) | `RECURRING_OFFERS` |
@@ -74,6 +74,18 @@ On submit, `/checkout`:
 
 If any insert fails (RLS, network, constraint), the page surfaces the error in the summary and
 keeps the form filled in.
+
+## Client portal handoff
+
+After a plan is created, an admin can connect a Supabase Auth user to that client by inserting a
+row into `client_users`.
+
+Once the mapping exists, the client signs into `/portal` to see:
+
+- their active package
+- next payment
+- stage and visible updates
+- support contact details
 
 ## What happens if Supabase is not configured
 

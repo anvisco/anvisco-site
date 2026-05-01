@@ -1,59 +1,640 @@
+import { useEffect, useMemo, useState } from 'react'
 import { Nav } from '@/components/layout/Nav'
 import { Footer } from '@/components/layout/Footer'
 import { BracketLabel } from '@/components/ui/BracketLabel'
+import { Field, StatusBadge } from '@/lib/adminUtils'
+import { fmtCents, fmtDate } from '@/lib/adminFormatters'
+import { CONTACT_URL, EMAIL } from '@/data/contact'
 import {
   isSupabaseConfigured,
   SUPABASE_NOT_CONFIGURED_MESSAGE,
+  supabase,
 } from '@/lib/supabase'
-import { EMAIL } from '@/data/contact'
+import { useClientPortal } from '@/hooks/useClientPortal'
 
-const SECTIONS = [
-  { title: 'Active package', body: 'Your current audit, module bundle, build, or plan.' },
-  { title: 'Current stage', body: 'Where the project is: audit, scope, build, launch, or support.' },
-  { title: 'Next payment due', body: 'Hosted Stripe payment links. No card data stored on this site.' },
-  { title: 'Updates', body: 'Notes Brian flags as visible to you appear here.' },
-  { title: 'Support', body: 'Email or book a 15-minute call any time.' },
+type ProjectStage = 'audit' | 'scope' | 'build' | 'launch' | 'support' | 'complete'
+type PackageStatus = 'requested' | 'scoped' | 'in_progress' | 'complete' | 'cancelled'
+type PaymentStatus = 'not_started' | 'pending' | 'paid' | 'overdue' | 'cancelled'
+type PackageType = 'audit' | 'modules' | 'build' | 'recurring'
+
+interface DbClient {
+  id: string
+  name: string
+  business_name: string | null
+  email: string
+  phone: string | null
+  website_url: string | null
+  status: string
+  notes: string | null
+  created_at: string
+  updated_at: string
+}
+
+interface DbPackage {
+  id: string
+  client_id: string
+  package_type: PackageType
+  package_name: string
+  status: PackageStatus
+  subtotal_cents: number
+  discount_cents: number
+  total_cents: number
+  recurring_amount_cents: number | null
+  next_payment_due_at: string | null
+  payment_url: string | null
+  stripe_customer_id: string | null
+  stripe_subscription_id: string | null
+  created_at: string
+  updated_at: string
+}
+
+interface DbModuleSelection {
+  id: string
+  package_id: string
+  module_id: string
+  module_name: string
+  quantity: number
+  unit_price_cents: number
+  total_cents: number
+  created_at: string
+}
+
+interface DbPayment {
+  id: string
+  client_id: string
+  package_id: string
+  label: string
+  amount_cents: number
+  due_date: string | null
+  status: PaymentStatus
+  payment_url: string | null
+  paid_at: string | null
+  created_at: string
+}
+
+interface DbUpdate {
+  id: string
+  client_id: string
+  package_id: string | null
+  stage: ProjectStage
+  title: string
+  body: string | null
+  visible_to_client: boolean
+  created_at: string
+}
+
+interface PortalData {
+  client: DbClient | null
+  packages: DbPackage[]
+  moduleSelections: DbModuleSelection[]
+  payments: DbPayment[]
+  updates: DbUpdate[]
+  loading: boolean
+  error: string | null
+}
+
+const STAGES: { key: ProjectStage; title: string; hint: string }[] = [
+  { key: 'audit', title: 'Audit', hint: 'What needs attention' },
+  { key: 'scope', title: 'Scope', hint: 'What gets built or changed' },
+  { key: 'build', title: 'Build or upgrade', hint: 'Work in progress' },
+  { key: 'launch', title: 'Launch + handover', hint: 'QA and go-live' },
+  { key: 'support', title: 'Support', hint: 'Ongoing care' },
+  { key: 'complete', title: 'Complete', hint: 'Wrapped up' },
 ]
 
+const STAGE_LABELS: Record<ProjectStage, string> = {
+  audit: 'Audit',
+  scope: 'Scope',
+  build: 'Build',
+  launch: 'Launch',
+  support: 'Support',
+  complete: 'Complete',
+}
+
+const INPUT_CLASS =
+  'w-full border border-[var(--color-border-strong)] bg-transparent px-3 py-2 text-sm text-ink placeholder:text-ink-subtle focus:border-amber focus:outline-none'
+
+const STATUS_PRIORITY: PackageStatus[] = ['in_progress', 'scoped', 'requested']
+const PAYMENT_STATUSES: PaymentStatus[] = ['not_started', 'pending', 'overdue']
+
 export function PortalPage() {
+  const { loading: authLoading, session, signIn, signOut } = useClientPortal()
+  const [portal, setPortal] = useState<PortalData>({
+    client: null,
+    packages: [],
+    moduleSelections: [],
+    payments: [],
+    updates: [],
+    loading: false,
+    error: null,
+  })
+  const [portalKnown, setPortalKnown] = useState(false)
+
+  useEffect(() => {
+    if (!isSupabaseConfigured || !supabase) return
+
+    const client = supabase
+
+    if (!session) {
+      void Promise.resolve().then(() => {
+        setPortal({
+          client: null,
+          packages: [],
+          moduleSelections: [],
+          payments: [],
+          updates: [],
+          loading: false,
+          error: null,
+        })
+        setPortalKnown(false)
+      })
+      return
+    }
+
+    const currentSession = session
+    let alive = true
+
+    async function loadPortal() {
+      setPortal((prev) => ({ ...prev, loading: true, error: null }))
+
+      const { data: linkRow, error: linkError } = await client
+        .from('client_users')
+        .select('client_id')
+        .eq('user_id', currentSession.user.id)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle()
+
+      if (!alive) return
+
+      if (linkError) {
+        setPortal({
+          client: null,
+          packages: [],
+          moduleSelections: [],
+          payments: [],
+          updates: [],
+          loading: false,
+          error: linkError.message,
+        })
+        setPortalKnown(true)
+        return
+      }
+
+      if (!linkRow?.client_id) {
+        setPortal({
+          client: null,
+          packages: [],
+          moduleSelections: [],
+          payments: [],
+          updates: [],
+          loading: false,
+          error: null,
+        })
+        setPortalKnown(true)
+        return
+      }
+
+      const clientId = linkRow.client_id
+
+      const [clientRes, packagesRes, paymentsRes, updatesRes] = await Promise.all([
+        client.from('clients').select('*').eq('id', clientId).maybeSingle(),
+        client
+          .from('client_packages')
+          .select('*')
+          .eq('client_id', clientId)
+          .order('created_at', { ascending: false }),
+        client
+          .from('payment_schedules')
+          .select('*')
+          .eq('client_id', clientId)
+          .order('due_date', { ascending: true }),
+        client
+          .from('project_updates')
+          .select('*')
+          .eq('client_id', clientId)
+          .eq('visible_to_client', true)
+          .order('created_at', { ascending: false }),
+      ])
+
+      if (!alive) return
+
+      if (clientRes.error) {
+        setPortal({
+          client: null,
+          packages: [],
+          moduleSelections: [],
+          payments: [],
+          updates: [],
+          loading: false,
+          error: clientRes.error.message,
+        })
+        setPortalKnown(true)
+        return
+      }
+
+      const packages = ((packagesRes.data as DbPackage[]) ?? []).filter(Boolean)
+      const activePackage = selectActivePackage(packages)
+      const moduleSelections = activePackage
+        ? (
+            (
+              await client
+                .from('client_module_selections')
+                .select('*')
+                .eq('package_id', activePackage.id)
+                .order('created_at', { ascending: true })
+            ).data as DbModuleSelection[]
+          ) ?? []
+        : []
+
+      if (!alive) return
+
+      setPortal({
+        client: clientRes.data as DbClient,
+        packages,
+        moduleSelections,
+        payments: ((paymentsRes.data as DbPayment[]) ?? []).filter(Boolean),
+        updates: ((updatesRes.data as DbUpdate[]) ?? []).filter(Boolean),
+        loading: false,
+        error: null,
+      })
+      setPortalKnown(true)
+    }
+
+    void loadPortal().catch((error) => {
+      if (!alive) return
+      setPortal({
+        client: null,
+        packages: [],
+        moduleSelections: [],
+        payments: [],
+        updates: [],
+        loading: false,
+        error: error instanceof Error ? error.message : 'Could not load the portal.',
+      })
+      setPortalKnown(true)
+    })
+
+    return () => {
+      alive = false
+    }
+  }, [session])
+
+  const activePackage = useMemo(() => selectActivePackage(portal.packages), [portal.packages])
+  const otherPackages = useMemo(
+    () => portal.packages.filter((pkg) => pkg.id !== activePackage?.id),
+    [activePackage?.id, portal.packages],
+  )
+  const nextPayment = useMemo(() => selectNextPayment(portal.payments), [portal.payments])
+  const currentStage = useMemo(
+    () => deriveStage(portal.updates, activePackage),
+    [activePackage, portal.updates],
+  )
+  const currentStageLabel = currentStage ? STAGE_LABELS[currentStage] : 'Not started yet'
+  const currentStageIndex = currentStage ? STAGES.findIndex((stage) => stage.key === currentStage) : -1
+  const progress = currentStageIndex >= 0 ? Math.round(((currentStageIndex + 1) / STAGES.length) * 100) : 0
+
   return (
     <>
       <Nav />
       <main className="min-h-screen pt-16 bg-[var(--color-bg)]">
-        <div className="mx-auto max-w-screen-xl px-6 py-20 lg:px-12 lg:py-24">
-          <div className="mb-12 border-t border-[var(--color-border)] pt-7">
-            <div className="mb-6 flex items-center gap-4">
-              <span className="text-[0.7rem] tabular-nums text-amber font-medium tracking-[0.08em]">/portal</span>
-              <BracketLabel>Client portal</BracketLabel>
+        <div className="mx-auto max-w-screen-2xl px-6 py-20 lg:px-12 lg:py-24">
+          <section className="grid gap-8 lg:grid-cols-[minmax(0,1.15fr)_minmax(340px,420px)] lg:items-start">
+            <div className="border-t border-[var(--color-border)] pt-7">
+              <div className="mb-6 flex items-center gap-4">
+                <span className="text-[0.7rem] tabular-nums text-amber font-medium tracking-[0.08em]">
+                  /portal
+                </span>
+                <BracketLabel>Client portal</BracketLabel>
+              </div>
+              <h1 className="mb-5 max-w-[16ch] text-[2.5rem] font-medium leading-[1.04] tracking-[-0.03em] text-ink md:text-[4rem]">
+                Your private client portal.
+              </h1>
+              <p className="max-w-[62ch] text-base leading-relaxed text-ink-muted md:text-[1.0625rem]">
+                Track your package, stage, payments, and visible project updates in one place.
+                Only your own client data shows here.
+              </p>
             </div>
-            <h1 className="mb-5 max-w-[20ch] text-[2.5rem] font-medium leading-[1.04] tracking-[-0.03em] text-ink md:text-[3.5rem]">
-              Your project portal.
-            </h1>
-            <p className="max-w-[58ch] text-base leading-relaxed text-ink-muted">
-              Track your active package, current stage, payments, and updates from Brian. Login and
-              live data wire up in a later pass.
-            </p>
-          </div>
 
-          {!isSupabaseConfigured ? (
-            <NotConfigured />
-          ) : (
-            <NoSession />
+            <AuthPanel
+              authLoading={authLoading}
+              session={session}
+              signIn={signIn}
+              signOut={signOut}
+              portalKnown={portalKnown}
+              clientConnected={Boolean(portal.client)}
+            />
+          </section>
+
+          {session && !portal.loading && !portal.error && !portal.client ? (
+            <EmptyConnectionState onSignOut={signOut} />
+          ) : null}
+
+          {portal.error && (
+            <div className="mt-8 border border-amber/60 bg-amber/5 px-5 py-4 text-sm text-amber">
+              {portal.error}
+            </div>
           )}
 
-          <section className="mt-12">
-            <p className="mb-5 text-[0.7rem] uppercase tracking-[0.1em] text-ink-subtle">
-              What will live here
-            </p>
-            <div className="grid gap-px bg-[var(--color-border)] sm:grid-cols-2 lg:grid-cols-3">
-              {SECTIONS.map((s) => (
-                <div key={s.title} className="bg-[var(--color-surface)] p-6">
-                  <h2 className="mb-2 text-base font-medium text-ink">{s.title}</h2>
-                  <p className="text-sm leading-relaxed text-ink-muted">{s.body}</p>
+          {session && portal.client && (
+            <div className="mt-10 space-y-6">
+              <section className="border border-[var(--color-border)] bg-[var(--color-surface)] p-6">
+                <div className="mb-5 flex flex-wrap items-start justify-between gap-4">
+                  <div>
+                    <p className="mb-1 text-[0.7rem] uppercase tracking-[0.08em] text-ink-subtle">
+                      Welcome
+                    </p>
+                    <h2 className="text-xl font-medium tracking-[-0.01em] text-ink">
+                      {portal.client.business_name || portal.client.name}
+                    </h2>
+                    <p className="mt-1 text-sm text-ink-muted">
+                      {portal.client.name}
+                      {portal.client.email ? ` · ${portal.client.email}` : ''}
+                    </p>
+                  </div>
+                  <button
+                    onClick={signOut}
+                    className="inline-flex items-center gap-2 border border-[var(--color-border-strong)] px-4 py-2 text-[0.7rem] font-medium uppercase tracking-[0.1em] text-ink-muted transition-colors hover:border-amber hover:text-amber"
+                  >
+                    Sign out
+                  </button>
                 </div>
-              ))}
+
+                <div className="grid gap-px bg-[var(--color-border)] sm:grid-cols-2 xl:grid-cols-4">
+                  <InfoTile label="Business" value={portal.client.business_name || portal.client.name} />
+                  <InfoTile label="Contact" value={portal.client.name} />
+                  <InfoTile
+                    label="Active package"
+                    value={activePackage ? activePackage.package_name : 'No active package'}
+                    sub={activePackage ? packageTypeLabel(activePackage.package_type) : undefined}
+                  />
+                  <InfoTile label="Current stage" value={currentStageLabel} sub={`${progress}% progress`} />
+                </div>
+
+                <div className="mt-6">
+                  <div className="mb-3 flex items-center justify-between gap-4">
+                    <p className="text-[0.7rem] uppercase tracking-[0.08em] text-ink-subtle">
+                      Progress
+                    </p>
+                    <span className="text-sm text-ink-muted">{progress ? `${progress}%` : 'Not started yet'}</span>
+                  </div>
+                  <div className="h-2 overflow-hidden bg-[var(--color-border)]">
+                    <div
+                      className="h-full bg-amber transition-all duration-300"
+                      style={{ width: `${progress}%` }}
+                    />
+                  </div>
+                </div>
+              </section>
+
+              <section className="grid gap-6 xl:grid-cols-2">
+                <Card title="Active package" eyebrow="Package">
+                  {activePackage ? (
+                    <div className="space-y-4">
+                      <div className="flex flex-wrap items-start justify-between gap-4">
+                        <div>
+                          <h3 className="text-lg font-medium tracking-[-0.01em] text-ink">
+                            {activePackage.package_name}
+                          </h3>
+                          <p className="mt-1 text-sm text-ink-muted">
+                            {packageTypeLabel(activePackage.package_type)} ·{' '}
+                            <StatusBadge status={activePackage.status} />
+                          </p>
+                        </div>
+                        <p className="text-xl font-medium tracking-[-0.02em] text-amber tabular-nums">
+                          {fmtCents(activePackage.total_cents)}
+                        </p>
+                      </div>
+
+                      <div className="grid gap-4 sm:grid-cols-2">
+                        <SmallFact label="Subtotal" value={fmtCents(activePackage.subtotal_cents)} />
+                        <SmallFact label="Discount" value={activePackage.discount_cents > 0 ? `-${fmtCents(activePackage.discount_cents)}` : '—'} />
+                        <SmallFact
+                          label="Recurring"
+                          value={activePackage.recurring_amount_cents !== null ? `${fmtCents(activePackage.recurring_amount_cents)}/mo` : '—'}
+                        />
+                        <SmallFact
+                          label="Status"
+                          value={activePackage.status.replace(/_/g, ' ')}
+                        />
+                      </div>
+
+                      {activePackage.package_type === 'modules' && portal.moduleSelections.length > 0 && (
+                        <div className="border-t border-[var(--color-border)] pt-4">
+                          <p className="mb-3 text-[0.7rem] uppercase tracking-[0.08em] text-ink-subtle">
+                            Selected modules
+                          </p>
+                          <div className="space-y-2">
+                            {portal.moduleSelections.map((selection) => (
+                              <div
+                                key={selection.id}
+                                className="flex items-center justify-between gap-4 text-sm"
+                              >
+                                <span className="text-ink-muted">
+                                  {selection.module_name}
+                                  {selection.quantity > 1 ? ` × ${selection.quantity}` : ''}
+                                </span>
+                                <span className="tabular-nums text-ink">
+                                  {fmtCents(selection.total_cents)}
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {otherPackages.length > 0 && (
+                        <div className="border-t border-[var(--color-border)] pt-4">
+                          <p className="mb-3 text-[0.7rem] uppercase tracking-[0.08em] text-ink-subtle">
+                            Other packages
+                          </p>
+                          <div className="space-y-2">
+                            {otherPackages.map((pkg) => (
+                              <div
+                                key={pkg.id}
+                                className="flex items-center justify-between gap-4 border border-[var(--color-border)] px-3 py-2"
+                              >
+                                <span className="text-sm text-ink-muted">{pkg.package_name}</span>
+                                <StatusBadge status={pkg.status} />
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <EmptyState message="No active package is connected yet." />
+                  )}
+                </Card>
+
+                <Card title="Next payment" eyebrow="Payments">
+                  {nextPayment ? (
+                    <div className="space-y-4">
+                      <div className="flex flex-wrap items-start justify-between gap-4">
+                        <div>
+                          <h3 className="text-lg font-medium tracking-[-0.01em] text-ink">
+                            {nextPayment.label}
+                          </h3>
+                          <p className="mt-1 text-sm text-ink-muted">
+                            Due {nextPayment.due_date ? fmtDate(nextPayment.due_date) : 'when ready'}
+                          </p>
+                        </div>
+                        <p className="text-xl font-medium tracking-[-0.02em] text-amber tabular-nums">
+                          {fmtCents(nextPayment.amount_cents)}
+                        </p>
+                      </div>
+
+                      <div className="flex flex-wrap items-center gap-3">
+                        <StatusBadge status={nextPayment.status} />
+                        {nextPayment.status === 'overdue' && (
+                          <span className="text-sm text-amber">This payment is past due.</span>
+                        )}
+                      </div>
+
+                      {nextPayment.payment_url ? (
+                        <a
+                          href={nextPayment.payment_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-2 border border-amber px-5 py-3 text-[0.7rem] font-medium uppercase tracking-[0.1em] text-amber transition-all duration-200 hover:bg-amber/10"
+                        >
+                          Open payment link
+                          <span className="transition-transform duration-200 group-hover:translate-x-0.5">
+                            →
+                          </span>
+                        </a>
+                      ) : (
+                        <p className="text-sm text-ink-muted">
+                          Payment link will appear here when ready.
+                        </p>
+                      )}
+                    </div>
+                  ) : (
+                    <EmptyState message="No upcoming payment is currently scheduled." />
+                  )}
+                </Card>
+
+                <Card title="Project timeline" eyebrow="Stages" wide>
+                  <div className="mb-5 flex flex-wrap items-center justify-between gap-4">
+                    <div>
+                      <p className="text-[0.7rem] uppercase tracking-[0.08em] text-ink-subtle">
+                        Current stage
+                      </p>
+                      <p className="mt-1 text-sm text-ink-muted">{currentStageLabel}</p>
+                    </div>
+                    <p className="text-sm text-amber tabular-nums">
+                      {progress ? `${progress}%` : 'Not started yet'}
+                    </p>
+                  </div>
+
+                  <div className="mb-6 h-2 bg-[var(--color-border)]">
+                    <div
+                      className="h-full bg-amber transition-all duration-300"
+                      style={{ width: `${progress}%` }}
+                    />
+                  </div>
+
+                  <div className="grid gap-px bg-[var(--color-border)] md:grid-cols-2 xl:grid-cols-3">
+                    {STAGES.map((stage, index) => {
+                      const active = stage.key === currentStage
+                      const past = currentStageIndex > -1 && index < currentStageIndex
+                      return (
+                        <div
+                          key={stage.key}
+                          className={`min-h-[132px] border border-[var(--color-border)] p-4 transition-colors ${
+                            active
+                              ? 'bg-[var(--color-surface)] border-amber/60'
+                              : past
+                                ? 'bg-[var(--color-surface)]'
+                                : 'bg-[var(--color-bg)]'
+                          }`}
+                        >
+                          <div className="mb-3 flex items-center justify-between gap-4">
+                            <span className="text-[0.65rem] uppercase tracking-[0.08em] text-ink-subtle">
+                              {String(index + 1).padStart(2, '0')}
+                            </span>
+                            {active && <StatusBadge status="active" />}
+                            {!active && past && <StatusBadge status="complete" />}
+                          </div>
+                          <p className="mb-2 text-sm font-medium text-ink">{stage.title}</p>
+                          <p className="text-sm leading-relaxed text-ink-muted">{stage.hint}</p>
+                        </div>
+                      )
+                    })}
+                  </div>
+                </Card>
+
+                <Card title="Updates" eyebrow="Visible notes">
+                  {portal.updates.length > 0 ? (
+                    <div className="space-y-3">
+                      {portal.updates.map((update) => (
+                        <article key={update.id} className="border border-[var(--color-border)] p-4">
+                          <div className="mb-2 flex flex-wrap items-start justify-between gap-4">
+                            <div>
+                              <span className="mr-2 text-[0.62rem] uppercase tracking-[0.06em] text-amber">
+                                {STAGE_LABELS[update.stage]}
+                              </span>
+                              <h3 className="inline text-sm font-medium text-ink">{update.title}</h3>
+                            </div>
+                            <span className="text-xs text-ink-subtle">{fmtDate(update.created_at)}</span>
+                          </div>
+                          {update.body && (
+                            <p className="max-w-[60ch] text-sm leading-relaxed text-ink-muted whitespace-pre-line">
+                              {update.body}
+                            </p>
+                          )}
+                        </article>
+                      ))}
+                    </div>
+                  ) : (
+                    <EmptyState message="No client-visible updates yet." />
+                  )}
+                </Card>
+
+                <Card title="Support" eyebrow="Reach out">
+                  <p className="max-w-[56ch] text-sm leading-relaxed text-ink-muted">
+                    Questions about your project, payment, or next step? Reach out anytime.
+                  </p>
+                  <div className="mt-5 space-y-3">
+                    <a
+                      href={`mailto:${EMAIL}`}
+                      className="block font-sans text-sm text-ink-muted transition-colors duration-150 hover:text-amber"
+                    >
+                      {EMAIL}
+                    </a>
+                    <a
+                      href={CONTACT_URL}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2 border border-[var(--color-border-strong)] px-5 py-3 text-[0.7rem] font-medium uppercase tracking-[0.1em] text-ink transition-all duration-200 hover:border-amber hover:text-amber"
+                    >
+                      Book a quick call
+                      <span className="text-amber">→</span>
+                    </a>
+                  </div>
+                </Card>
+              </section>
             </div>
-          </section>
+          )}
+
+          {!session && !authLoading && isSupabaseConfigured && (
+            <section className="mt-10 grid gap-6 xl:grid-cols-2">
+              <Card title="What the portal shows" eyebrow="Private access" wide>
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <PortalPreview label="Active package" value="Package, type, selected modules, total, and recurring amount." />
+                  <PortalPreview label="Next payment" value="Due date, amount due, status, and payment link if ready." />
+                  <PortalPreview label="Timeline" value="Audit, scope, build, launch, support, complete." />
+                  <PortalPreview label="Updates" value="Only notes marked visible to the client." />
+                </div>
+              </Card>
+              <Card title="Need access?" eyebrow="Private data">
+                <p className="max-w-[54ch] text-sm leading-relaxed text-ink-muted">
+                  Sign in with the email and password that Brian connected to your client profile.
+                  If your login has not been mapped yet, Brian will connect it on the admin side.
+                </p>
+              </Card>
+            </section>
+          )}
         </div>
       </main>
       <Footer />
@@ -61,10 +642,185 @@ export function PortalPage() {
   )
 }
 
+function AuthPanel({
+  authLoading,
+  session,
+  signIn,
+  signOut,
+  portalKnown,
+  clientConnected,
+}: {
+  authLoading: boolean
+  session: { user: { email?: string | null } } | null
+  signIn: (email: string, password: string) => Promise<string | null>
+  signOut: () => Promise<void>
+  portalKnown: boolean
+  clientConnected: boolean
+}) {
+  if (!isSupabaseConfigured) {
+    return <NotConfigured />
+  }
+
+  if (authLoading) {
+    return <Card title="Loading" eyebrow="Session"><p className="text-sm text-ink-muted">Checking your login…</p></Card>
+  }
+
+  if (!session) {
+    return <LoginCard signIn={signIn} />
+  }
+
+  return (
+    <Card title="Account" eyebrow="Signed in">
+      <div className="space-y-4">
+        <p className="text-sm text-ink-muted">
+          Signed in as <span className="text-ink">{session.user.email ?? 'your account'}</span>.
+        </p>
+        <p className="text-sm text-ink-muted">
+          {clientConnected
+            ? 'Your client data is connected and ready.'
+            : portalKnown
+              ? 'No client profile is connected to this login yet.'
+              : 'Loading your client profile…'}
+        </p>
+        <button
+          onClick={signOut}
+          className="inline-flex items-center gap-2 border border-[var(--color-border-strong)] px-5 py-3 text-[0.7rem] font-medium uppercase tracking-[0.1em] text-ink-muted transition-all duration-200 hover:border-amber hover:text-amber"
+        >
+          Sign out
+          <span className="text-amber">→</span>
+        </button>
+      </div>
+    </Card>
+  )
+}
+
+function LoginCard({ signIn }: { signIn: (email: string, password: string) => Promise<string | null> }) {
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    setError(null)
+    setLoading(true)
+    const err = await signIn(email, password)
+    setLoading(false)
+    if (err) setError(err)
+  }
+
+  return (
+    <Card title="Sign in" eyebrow="Client access">
+      <p className="mb-5 text-sm leading-relaxed text-ink-muted">
+        Use the email and password Brian connected to your client profile.
+      </p>
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <Field label="Email" required>
+          <input
+            type="email"
+            required
+            autoComplete="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className={INPUT_CLASS}
+          />
+        </Field>
+        <Field label="Password" required>
+          <input
+            type="password"
+            required
+            autoComplete="current-password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className={INPUT_CLASS}
+          />
+        </Field>
+        {error && <p className="border border-amber/60 bg-amber/5 px-3 py-2 text-sm text-amber">{error}</p>}
+        <button
+          type="submit"
+          disabled={loading}
+          className="inline-flex items-center gap-2 border border-amber px-5 py-3 text-[0.7rem] font-medium uppercase tracking-[0.1em] text-amber transition-all duration-200 hover:bg-amber/10 disabled:opacity-60"
+        >
+          {loading ? 'Signing in…' : 'Sign in'}
+          <span className="text-amber">→</span>
+        </button>
+      </form>
+    </Card>
+  )
+}
+
+function Card({
+  title,
+  eyebrow,
+  children,
+  wide,
+}: {
+  title: string
+  eyebrow: string
+  children: React.ReactNode
+  wide?: boolean
+}) {
+  return (
+    <section
+      className={`border border-[var(--color-border)] bg-[var(--color-surface)] p-6 ${
+        wide ? 'xl:col-span-2' : ''
+      }`}
+    >
+      <div className="mb-5 border-t border-[var(--color-border)] pt-6">
+        <p className="mb-2 text-[0.7rem] uppercase tracking-[0.08em] text-ink-subtle">
+          {eyebrow}
+        </p>
+        <h2 className="text-lg font-medium tracking-[-0.01em] text-ink">{title}</h2>
+      </div>
+      {children}
+    </section>
+  )
+}
+
+function InfoTile({
+  label,
+  value,
+  sub,
+}: {
+  label: string
+  value: string
+  sub?: string
+}) {
+  return (
+    <div className="bg-[var(--color-bg)] p-4">
+      <p className="mb-2 text-[0.65rem] uppercase tracking-[0.08em] text-ink-subtle">
+        {label}
+      </p>
+      <p className="text-sm font-medium leading-relaxed text-ink">{value}</p>
+      {sub && <p className="mt-2 text-xs text-ink-muted">{sub}</p>}
+    </div>
+  )
+}
+
+function SmallFact({ label, value }: { label: string; value: string }) {
+  return (
+    <div>
+      <p className="mb-1 text-[0.65rem] uppercase tracking-[0.08em] text-ink-subtle">{label}</p>
+      <p className="text-sm text-ink tabular-nums">{value}</p>
+    </div>
+  )
+}
+
+function PortalPreview({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="border border-[var(--color-border)] p-4">
+      <p className="mb-2 text-[0.65rem] uppercase tracking-[0.08em] text-ink-subtle">{label}</p>
+      <p className="text-sm leading-relaxed text-ink-muted">{value}</p>
+    </div>
+  )
+}
+
 function NotConfigured() {
   return (
-    <div className="border border-amber/60 bg-amber/5 p-6">
-      <p className="mb-2 text-[0.7rem] uppercase tracking-[0.1em] text-amber">Setup required</p>
+    <div className="mt-8 border border-amber/60 bg-amber/5 p-6">
+      <p className="mb-2 text-[0.7rem] uppercase tracking-[0.1em] text-amber">
+        Setup required
+      </p>
       <p className="max-w-[62ch] text-sm leading-relaxed text-ink-muted">
         {SUPABASE_NOT_CONFIGURED_MESSAGE}
       </p>
@@ -72,21 +828,74 @@ function NotConfigured() {
   )
 }
 
-function NoSession() {
+function EmptyConnectionState({ onSignOut }: { onSignOut: () => Promise<void> }) {
   return (
-    <div className="border border-[var(--color-border)] bg-[var(--color-surface)] p-6">
+    <section className="mt-8 border border-[var(--color-border)] bg-[var(--color-surface)] p-6">
       <p className="mb-2 text-[0.7rem] uppercase tracking-[0.1em] text-ink-subtle">
-        Login coming next pass
+        Connection missing
       </p>
       <p className="mb-4 max-w-[62ch] text-sm leading-relaxed text-ink-muted">
-        Until login is wired up, Brian sends progress and payment links by email.
+        No client profile is connected to this login yet.
       </p>
-      <a
-        href={`mailto:${EMAIL}`}
-        className="inline-flex items-center gap-2 text-sm text-amber transition-colors duration-150 hover:underline"
+      <button
+        onClick={() => void onSignOut()}
+        className="inline-flex items-center gap-2 border border-[var(--color-border-strong)] px-5 py-3 text-[0.7rem] font-medium uppercase tracking-[0.1em] text-ink-muted transition-all duration-200 hover:border-amber hover:text-amber"
       >
-        Email Brian → {EMAIL}
-      </a>
+        Sign out
+        <span className="text-amber">→</span>
+      </button>
+    </section>
+  )
+}
+
+function EmptyState({ message, sub }: { message: string; sub?: string }) {
+  return (
+    <div className="border border-[var(--color-border)] px-6 py-8">
+      <p className="text-sm text-ink-muted">{message}</p>
+      {sub && <p className="mt-2 text-xs text-ink-subtle">{sub}</p>}
     </div>
   )
+}
+
+function packageTypeLabel(type: PackageType): string {
+  if (type === 'audit') return 'Audit'
+  if (type === 'modules') return 'Modules'
+  if (type === 'build') return 'Full build'
+  return 'Care plan'
+}
+
+function selectActivePackage(packages: DbPackage[]): DbPackage | null {
+  for (const status of STATUS_PRIORITY) {
+    const match = packages.find((pkg) => pkg.status === status)
+    if (match) return match
+  }
+  return packages.find((pkg) => pkg.status !== 'cancelled') ?? null
+}
+
+function selectNextPayment(payments: DbPayment[]): DbPayment | null {
+  const candidates = payments.filter((payment) => PAYMENT_STATUSES.includes(payment.status))
+  if (candidates.length === 0) return null
+
+  return candidates.sort((a, b) => {
+    const aDate = a.due_date ? new Date(a.due_date).getTime() : Number.POSITIVE_INFINITY
+    const bDate = b.due_date ? new Date(b.due_date).getTime() : Number.POSITIVE_INFINITY
+    if (aDate !== bDate) return aDate - bDate
+    return new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+  })[0]
+}
+
+function deriveStage(updates: DbUpdate[], activePackage: DbPackage | null): ProjectStage | null {
+  if (updates.length > 0) return updates[0].stage
+  if (!activePackage) return null
+
+  if (activePackage.package_type === 'audit') return 'audit'
+  if (activePackage.package_type === 'modules') return 'scope'
+  if (activePackage.package_type === 'build') return 'build'
+  if (activePackage.package_type === 'recurring') return 'support'
+
+  if (activePackage.status === 'requested') return 'audit'
+  if (activePackage.status === 'scoped') return 'scope'
+  if (activePackage.status === 'in_progress') return 'build'
+  if (activePackage.status === 'complete') return 'complete'
+  return null
 }
