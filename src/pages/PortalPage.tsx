@@ -103,8 +103,8 @@ type ClaimClientProfileResponse =
 const STAGES: { key: ProjectStage; title: string; hint: string }[] = [
   { key: 'audit', title: 'Audit', hint: 'What needs attention' },
   { key: 'scope', title: 'Scope', hint: 'What gets built or changed' },
-  { key: 'build', title: 'Build or upgrade', hint: 'Work in progress' },
-  { key: 'launch', title: 'Launch + handover', hint: 'QA and go-live' },
+  { key: 'build', title: 'Build', hint: 'Work in progress' },
+  { key: 'launch', title: 'Launch', hint: 'QA and go-live' },
   { key: 'support', title: 'Support', hint: 'Ongoing care' },
   { key: 'complete', title: 'Complete', hint: 'Wrapped up' },
 ]
@@ -123,6 +123,41 @@ const INPUT_CLASS =
 
 const STATUS_PRIORITY: PackageStatus[] = ['active', 'in_progress', 'scoped', 'requested']
 const PAYMENT_STATUSES: PaymentStatus[] = ['not_started', 'pending', 'overdue']
+
+function getClientDisplayName(client: DbClient | null): string {
+  if (!client) return 'your project'
+  if (client.business_name?.trim()) return client.business_name.trim()
+  const trimmedName = client.name.trim()
+  if (!trimmedName) return 'your project'
+  const firstName = trimmedName.split(/\s+/)[0]
+  return firstName || trimmedName
+}
+
+function normalizeStageValue(value: string | null | undefined): ProjectStage | null {
+  if (!value) return null
+
+  const trimmed = value.trim().toLowerCase()
+  const compact = trimmed.replace(/[\s-]+/g, '_')
+
+  if (compact in STAGE_LABELS) {
+    return compact as ProjectStage
+  }
+
+  const labelMatch = (Object.entries(STAGE_LABELS) as [ProjectStage, string][]).find(
+    ([, label]) => label.toLowerCase() === trimmed,
+  )
+
+  if (labelMatch) return labelMatch[0]
+
+  if (trimmed.includes('audit')) return 'audit'
+  if (trimmed.includes('scope')) return 'scope'
+  if (trimmed.includes('build')) return 'build'
+  if (trimmed.includes('launch') || trimmed.includes('handover')) return 'launch'
+  if (trimmed.includes('support') || trimmed.includes('care')) return 'support'
+  if (trimmed.includes('complete') || trimmed.includes('done')) return 'complete'
+
+  return null
+}
 
 export function PortalPage() {
   const { loading: authLoading, session, sendMagicLink, signOut } = useClientPortal()
@@ -472,7 +507,6 @@ export function PortalPage() {
   )
   const currentStageLabel = currentStage ? STAGE_LABELS[currentStage] : 'Not started yet'
   const currentStageIndex = currentStage ? STAGES.findIndex((stage) => stage.key === currentStage) : -1
-  const progress = currentStageIndex >= 0 ? Math.round(((currentStageIndex + 1) / STAGES.length) * 100) : 0
   const portalLoading = Boolean(session) && portalState === 'loading'
   const portalClaiming = Boolean(session) && portalState === 'claiming'
   const portalMissing = Boolean(session) && portalState === 'missing'
@@ -491,11 +525,11 @@ export function PortalPage() {
                 <BracketLabel>CLIENT PORTAL</BracketLabel>
               </div>
               <h1 className="mb-5 max-w-[16ch] text-[2.5rem] font-medium leading-[1.04] tracking-[-0.03em] text-ink md:text-[4rem]">
-                Client portal login.
+                Welcome to your client portal.
               </h1>
               <p className="max-w-[62ch] text-base leading-relaxed text-ink-muted md:text-[1.0625rem]">
-                Log in with the same email you used at checkout. We’ll send you a secure link to
-                access your portal.
+                Log in with the same email you used at checkout. We’ll send a secure magic link to
+                connect the right account.
               </p>
             </div>
 
@@ -542,38 +576,72 @@ export function PortalPage() {
                       Welcome
                     </p>
                     <h2 className="text-xl font-medium tracking-[-0.01em] text-ink">
-                      {portal.client.business_name || portal.client.name}
+                      Welcome, {getClientDisplayName(portal.client)}.
                     </h2>
-                    <p className="mt-1 text-sm text-ink-muted">
-                      {portal.client.name}
-                      {portal.client.email ? ` · ${portal.client.email}` : ''}
+                    <p className="mt-1 max-w-[56ch] text-sm leading-relaxed text-ink-muted">
+                      Your project portal shows your current package, stage, payments, and updates.
                     </p>
                   </div>
                 </div>
 
                 <div className="grid gap-px bg-[var(--color-border)] sm:grid-cols-2 xl:grid-cols-4">
-                  <InfoTile label="Business" value={portal.client.business_name || portal.client.name} />
-                  <InfoTile label="Contact" value={portal.client.name} />
+                  {portal.client.business_name && (
+                    <InfoTile label="Business" value={portal.client.business_name} />
+                  )}
+                  <InfoTile
+                    label="Contact"
+                    value={portal.client.name}
+                  />
                   <InfoTile
                     label="Active package"
                     value={activePackage ? activePackage.package_name : 'No active package'}
                     sub={activePackage ? packageTypeLabel(activePackage.package_type) : undefined}
                   />
-                  <InfoTile label="Current stage" value={currentStageLabel} sub={`${progress}% progress`} />
+                  <InfoTile label="Current stage" value={currentStageLabel} />
                 </div>
 
                 <div className="mt-6">
                   <div className="mb-3 flex items-center justify-between gap-4">
                     <p className="text-[0.7rem] uppercase tracking-[0.08em] text-ink-subtle">
-                      Progress
+                      Stage tracker
                     </p>
-                    <span className="text-sm text-ink-muted">{progress ? `${progress}%` : 'Not started yet'}</span>
+                    <span className="text-sm text-ink-muted">Current stage: {currentStageLabel}</span>
                   </div>
-                  <div className="h-2 overflow-hidden bg-[var(--color-border)]">
-                    <div
-                      className="h-full bg-amber transition-all duration-300"
-                      style={{ width: `${progress}%` }}
-                    />
+                  <div className="overflow-x-auto pb-2">
+                    <div className="flex min-w-max gap-3">
+                      {STAGES.map((stage, index) => {
+                        const active = currentStageIndex === index
+                        const complete = currentStageIndex > index
+                        const upcoming = currentStageIndex === -1 || index > currentStageIndex
+                        return (
+                          <div
+                            key={stage.key}
+                            className={`min-w-[150px] border px-4 py-3 transition-colors ${
+                              active
+                                ? 'border-amber/60 bg-[var(--color-bg)]'
+                                : complete
+                                  ? 'border-[var(--color-border)] bg-[var(--color-surface)]'
+                                  : 'border-[var(--color-border)] bg-[var(--color-bg)] opacity-80'
+                            }`}
+                          >
+                            <div className="mb-3 flex items-center justify-between gap-3">
+                              <span className="text-[0.65rem] uppercase tracking-[0.08em] text-ink-subtle">
+                                {String(index + 1).padStart(2, '0')}
+                              </span>
+                              {active && <StatusBadge status="active" />}
+                              {!active && complete && <StatusBadge status="complete" />}
+                              {!active && upcoming && (
+                                <span className="text-[0.65rem] uppercase tracking-[0.08em] text-ink-subtle">
+                                  Upcoming
+                                </span>
+                              )}
+                            </div>
+                            <p className="mb-2 text-sm font-medium text-ink">{stage.title}</p>
+                            <p className="text-sm leading-relaxed text-ink-muted">{stage.hint}</p>
+                          </div>
+                        )
+                      })}
+                    </div>
                   </div>
                 </div>
               </section>
@@ -605,7 +673,7 @@ export function PortalPage() {
                           value={activePackage.recurring_amount_cents !== null ? `${fmtCents(activePackage.recurring_amount_cents)}/mo` : '—'}
                         />
                         <SmallFact
-                          label="Status"
+                          label="Package status"
                           value={activePackage.status.replace(/_/g, ' ')}
                         />
                       </div>
@@ -658,7 +726,7 @@ export function PortalPage() {
                   )}
                 </Card>
 
-                <Card title="Next payment" eyebrow="Payments">
+                <Card title="Next payment due" eyebrow="Payments">
                   {displayedNextPayment ? (
                     <div className="space-y-4">
                       <div className="flex flex-wrap items-start justify-between gap-4">
@@ -701,7 +769,7 @@ export function PortalPage() {
                       )}
                     </div>
                   ) : (
-                    <EmptyState message="No upcoming payment is currently scheduled." />
+                    <EmptyState message="No upcoming payment due." />
                   )}
                 </Card>
 
@@ -713,31 +781,22 @@ export function PortalPage() {
                       </p>
                       <p className="mt-1 text-sm text-ink-muted">{currentStageLabel}</p>
                     </div>
-                    <p className="text-sm text-amber tabular-nums">
-                      {progress ? `${progress}%` : 'Not started yet'}
-                    </p>
                   </div>
 
-                  <div className="mb-6 h-2 bg-[var(--color-border)]">
-                    <div
-                      className="h-full bg-amber transition-all duration-300"
-                      style={{ width: `${progress}%` }}
-                    />
-                  </div>
-
-                  <div className="grid gap-px bg-[var(--color-border)] md:grid-cols-2 xl:grid-cols-3">
+                  <div className="overflow-x-auto pb-2">
+                    <div className="flex min-w-max gap-3">
                     {STAGES.map((stage, index) => {
                       const active = stage.key === currentStage
                       const past = currentStageIndex > -1 && index < currentStageIndex
                       return (
                         <div
                           key={stage.key}
-                          className={`min-h-[132px] border border-[var(--color-border)] p-4 transition-colors ${
+                          className={`min-w-[150px] border p-4 transition-colors ${
                             active
                               ? 'bg-[var(--color-surface)] border-amber/60'
                               : past
                                 ? 'bg-[var(--color-surface)]'
-                                : 'bg-[var(--color-bg)]'
+                                : 'bg-[var(--color-bg)] opacity-80'
                           }`}
                         >
                           <div className="mb-3 flex items-center justify-between gap-4">
@@ -746,12 +805,18 @@ export function PortalPage() {
                             </span>
                             {active && <StatusBadge status="active" />}
                             {!active && past && <StatusBadge status="complete" />}
+                            {!active && !past && (
+                              <span className="text-[0.65rem] uppercase tracking-[0.08em] text-ink-subtle">
+                                Upcoming
+                              </span>
+                            )}
                           </div>
                           <p className="mb-2 text-sm font-medium text-ink">{stage.title}</p>
                           <p className="text-sm leading-relaxed text-ink-muted">{stage.hint}</p>
                         </div>
                       )
                     })}
+                    </div>
                   </div>
                 </Card>
 
@@ -810,7 +875,7 @@ export function PortalPage() {
 
           {!session && !authLoading && isSupabaseConfigured && (
             <section className="mt-10 grid gap-6 xl:grid-cols-2">
-              <Card title="Client portal directory" eyebrow="Client portal directory" wide>
+              <Card title="Portal snapshot" eyebrow="Client view" wide>
                 <div className="grid gap-4 sm:grid-cols-2">
                   <PortalPreview label="Active package" value="Package, type, selected modules, total, and recurring amount." />
                   <PortalPreview label="Next payment" value="Due date, amount due, status, and payment link if ready." />
@@ -818,7 +883,7 @@ export function PortalPage() {
                   <PortalPreview label="Updates" value="Only notes marked visible to the client." />
                 </div>
               </Card>
-              <Card title="Portal access" eyebrow="Private data">
+              <Card title="Portal access" eyebrow="Secure login">
                 <p className="max-w-[54ch] text-sm leading-relaxed text-ink-muted">
                   Use the same checkout email, then sign in with the secure link Supabase sends.
                   If the portal does not find a matching client profile, Brian can connect it
@@ -864,20 +929,22 @@ function AuthPanel({
   return (
     <Card title="Account" eyebrow="Signed in">
       <div className="space-y-4">
-        <p className="text-sm text-ink-muted">
-          Signed in as <span className="text-ink">{session.user.email ?? 'your account'}</span>.
-        </p>
-        <p className="text-sm text-ink-muted">
-          {clientConnected
-            ? 'Your client data is connected and ready.'
-            : portalState === 'loading'
-              ? 'Loading your client portal…'
-              : portalState === 'claiming'
-                ? 'Checking your checkout email against your client profile.'
-                : portalState === 'missing'
-                  ? 'No matching client profile found.'
-                  : 'No matching client profile found.'}
-        </p>
+        <div>
+          <p className="text-[0.7rem] uppercase tracking-[0.08em] text-ink-subtle">Signed in as:</p>
+          <p className="mt-1 text-sm text-ink">{session.user.email ?? 'your account'}</p>
+        </div>
+        <div>
+          <p className="text-[0.7rem] uppercase tracking-[0.08em] text-ink-subtle">Connection:</p>
+          <p className="mt-1 text-sm text-ink">
+            {clientConnected
+              ? 'Portal connected'
+              : portalState === 'loading'
+                ? 'Loading your client portal'
+                : portalState === 'claiming'
+                  ? 'Matching your checkout email to a client profile'
+                  : 'Portal connection pending'}
+          </p>
+        </div>
         <button
           onClick={signOut}
           className="inline-flex items-center gap-2 border border-[var(--color-border-strong)] px-5 py-3 text-[0.7rem] font-medium uppercase tracking-[0.1em] text-ink-muted transition-all duration-200 hover:border-amber hover:text-amber"
@@ -917,8 +984,8 @@ function LoginCard({
   return (
     <Card title="Client portal login" eyebrow="Client access">
       <p className="mb-5 text-sm leading-relaxed text-ink-muted">
-        Log in with the same email you used at checkout. We’ll send you a secure login link to
-        access your portal.
+        Log in with the same email you used at checkout. We’ll send a secure magic link so your
+        portal connects to the right client record.
       </p>
       <form onSubmit={handleSendMagicLink} className="space-y-4">
         <Field label="Email" required>
@@ -1110,7 +1177,8 @@ function selectNextPayment(payments: DbPayment[]): DbPayment | null {
 }
 
 function deriveStage(updates: DbUpdate[], activePackage: DbPackage | null): ProjectStage | null {
-  if (updates.length > 0) return updates[0].stage
+  const latestUpdateStage = normalizeStageValue(updates[0]?.stage)
+  if (latestUpdateStage) return latestUpdateStage
   if (!activePackage) return null
 
   if (activePackage.package_type === 'audit') return 'audit'

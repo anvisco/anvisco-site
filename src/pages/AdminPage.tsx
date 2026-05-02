@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import {
   AdminShell,
@@ -11,9 +11,9 @@ import {
 import { StatusBadge, Field } from '@/lib/adminUtils'
 import { fmtDate, fmtCents } from '@/lib/adminFormatters'
 import {
-  deleteAdminClient,
-  loadAdminClientDeletePreview,
-  type AdminClientDeletePreview,
+  deleteAdminClients,
+  type AdminClientDeletePreviewBundle,
+  loadAdminClientDeletePreviewBundle,
 } from '@/lib/adminClientDeletion'
 import { supabase } from '@/lib/supabase'
 import type { ClientStatus } from '@/types/backend'
@@ -167,11 +167,16 @@ function Dashboard() {
   const [payments, setPayments] = useState<DbPayment[]>([])
   const [statusFilter, setStatusFilter] = useState<string>('all')
   const [showAdd, setShowAdd] = useState(false)
+  const [activeTab, setActiveTab] = useState<'clients' | 'cleanup'>('clients')
   const [refreshKey, setRefreshKey] = useState(0)
-  const [deletePreview, setDeletePreview] = useState<AdminClientDeletePreview | null>(null)
-  const [deleteLoading, setDeleteLoading] = useState(false)
-  const [deleteError, setDeleteError] = useState<string | null>(null)
-  const [deleteMessage, setDeleteMessage] = useState<string | null>(null)
+  const [selectedClientIds, setSelectedClientIds] = useState<string[]>([])
+  const [bulkDeletePreview, setBulkDeletePreview] = useState<AdminClientDeletePreviewBundle | null>(null)
+  const [bulkDeleteLoading, setBulkDeleteLoading] = useState(false)
+  const [bulkDeleteError, setBulkDeleteError] = useState<string | null>(null)
+  const [bulkDeleteConfirm, setBulkDeleteConfirm] = useState(false)
+  const [actionError, setActionError] = useState<string | null>(null)
+  const [actionMessage, setActionMessage] = useState<string | null>(null)
+  const selectAllRef = useRef<HTMLInputElement | null>(null)
   const refresh = () => setRefreshKey((k) => k + 1)
 
   useEffect(() => {
@@ -207,38 +212,89 @@ function Dashboard() {
   const filtered = statusFilter === 'all'
     ? clients
     : clients.filter((c) => c.status === statusFilter)
+  const filteredIds = filtered.map((client) => client.id)
+  const selectedVisibleCount = filteredIds.filter((id) => selectedClientIds.includes(id)).length
+  const allVisibleSelected = filteredIds.length > 0 && selectedVisibleCount === filteredIds.length
+  const someVisibleSelected = selectedVisibleCount > 0 && !allVisibleSelected
+  useEffect(() => {
+    if (!selectAllRef.current) return
+    selectAllRef.current.indeterminate = someVisibleSelected
+  }, [someVisibleSelected])
 
-  async function openDeleteClient(clientId: string) {
-    setDeleteLoading(true)
-    setDeleteError(null)
-    setDeleteMessage(null)
+  function updateSelection(nextIds: string[]) {
+    setSelectedClientIds(nextIds)
+    setActionError(null)
+    setActionMessage(null)
+  }
+
+  function toggleClientSelection(clientId: string) {
+    updateSelection(
+      selectedClientIds.includes(clientId)
+        ? selectedClientIds.filter((id) => id !== clientId)
+        : [...selectedClientIds, clientId],
+    )
+  }
+
+  function toggleSelectAllVisible() {
+    updateSelection(
+      allVisibleSelected
+        ? selectedClientIds.filter((id) => !filteredIds.includes(id))
+        : Array.from(new Set([...selectedClientIds, ...filteredIds])),
+    )
+  }
+
+  function clearSelection() {
+    updateSelection([])
+    setBulkDeletePreview(null)
+    setBulkDeleteConfirm(false)
+    setBulkDeleteError(null)
+  }
+
+  async function openBulkDeleteConfirm() {
+    if (selectedClientIds.length === 0) return
+    setBulkDeleteLoading(true)
+    setBulkDeleteError(null)
+    setBulkDeleteConfirm(false)
+    setActionError(null)
+    setActionMessage(null)
     try {
-      const preview = await loadAdminClientDeletePreview(clientId)
-      setDeletePreview(preview)
+      const preview = await loadAdminClientDeletePreviewForSelected(selectedClientIds)
+      setBulkDeletePreview(preview)
     } catch (thrownError) {
-      setDeletePreview(null)
-      setDeleteError(thrownError instanceof Error ? thrownError.message : 'Could not load client details.')
+      setBulkDeletePreview(null)
+      setBulkDeleteError(null)
+      setActionError(thrownError instanceof Error ? thrownError.message : 'Could not load selected clients.')
     } finally {
-      setDeleteLoading(false)
+      setBulkDeleteLoading(false)
     }
   }
 
-  async function confirmDeleteClient() {
-    if (!deletePreview) return
-    setDeleteLoading(true)
-    setDeleteError(null)
-    setDeleteMessage(null)
+  async function confirmBulkDelete() {
+    if (!bulkDeletePreview) return
+    if (!bulkDeleteConfirm) {
+      setBulkDeleteError('Confirm the checkbox before deleting the selected clients.')
+      return
+    }
+
+    setBulkDeleteLoading(true)
+    setBulkDeleteError(null)
+    setActionError(null)
+    setActionMessage(null)
     try {
-      await deleteAdminClient(deletePreview.client.id)
-      setDeletePreview(null)
-      setDeleteMessage(
-        `Deleted ${deletePreview.client.business_name || deletePreview.client.name} and related records.`,
+      const clientIds = bulkDeletePreview.clients.map((client) => client.id)
+      await deleteAdminClients(clientIds)
+      clearSelection()
+      setBulkDeletePreview(null)
+      setActionMessage(
+        clientIds.length > 1
+          ? `Deleted ${clientIds.length} clients and related records.`
+          : `Deleted ${bulkDeletePreview.clients[0]?.business_name || bulkDeletePreview.clients[0]?.name || 'the client'} and related records.`,
       )
       refresh()
     } catch (thrownError) {
-      setDeleteError(thrownError instanceof Error ? thrownError.message : 'Could not delete client.')
+      setBulkDeleteError(thrownError instanceof Error ? thrownError.message : 'Could not delete selected clients.')
     } finally {
-      setDeleteLoading(false)
+      setBulkDeleteLoading(false)
     }
   }
 
@@ -261,65 +317,133 @@ function Dashboard() {
           {error}
         </p>
       )}
-      {deleteError && (
+      {actionError && (
         <p className="mb-6 border border-amber/60 bg-amber/5 px-3 py-2 text-sm text-amber">
-          {deleteError}
+          {actionError}
         </p>
       )}
-      {deleteMessage && (
+      {actionMessage && (
         <p className="mb-6 border border-amber/60 bg-amber/5 px-3 py-2 text-sm text-amber">
-          {deleteMessage}
+          {actionMessage}
         </p>
       )}
 
-      <SummaryCards summary={summary} loading={loading} />
-      <TestDataCleanupPanel onDeleted={refresh} />
-
-      <div className="mt-10">
-        <div className="mb-4 flex items-center justify-between gap-4">
-          <h2 className="text-sm font-medium text-ink">All clients</h2>
-          <select
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-            className="border border-[var(--color-border-strong)] bg-[var(--color-bg)] px-3 py-1.5 text-[0.7rem] uppercase tracking-[0.08em] text-ink-muted focus:border-amber focus:outline-none"
-          >
-            <option value="all">All statuses</option>
-            <option value="lead">Lead</option>
-            <option value="active">Active</option>
-            <option value="paused">Paused</option>
-            <option value="completed">Completed</option>
-            <option value="archived">Archived</option>
-          </select>
-        </div>
-
-        {loading ? (
-          <p className="py-8 text-sm text-ink-muted">Loading clients…</p>
-        ) : filtered.length === 0 ? (
-          <div className="border border-[var(--color-border)] px-6 py-10 text-center">
-            <p className="text-sm text-ink-muted">
-              {statusFilter === 'all' ? 'No clients yet.' : `No ${statusFilter} clients.`}
-            </p>
+      <div className="mt-8 border-b border-[var(--color-border)]">
+        <div className="flex flex-wrap gap-2">
+          {[
+            { key: 'clients' as const, label: 'Clients' },
+            { key: 'cleanup' as const, label: 'Cleanup Tools' },
+          ].map((tab) => (
             <button
-              onClick={() => setShowAdd(true)}
-              className="mt-4 text-sm text-amber hover:underline"
+              key={tab.key}
+              type="button"
+              onClick={() => setActiveTab(tab.key)}
+              className={`border-b-2 px-4 py-3 text-[0.7rem] uppercase tracking-[0.1em] transition-colors ${
+                activeTab === tab.key
+                  ? 'border-amber text-amber'
+                  : 'border-transparent text-ink-subtle hover:text-ink'
+              }`}
             >
-              Add the first one →
+              {tab.label}
             </button>
-          </div>
-        ) : (
-          <ClientsTable clients={filtered} onDelete={openDeleteClient} deleting={deleteLoading} />
-        )}
+          ))}
+        </div>
       </div>
 
-      {deletePreview && (
+      {activeTab === 'clients' ? (
+        <>
+          <SummaryCards summary={summary} loading={loading} />
+
+          <div className="mt-10">
+            <div className="mb-4 flex items-center justify-between gap-4">
+              <h2 className="text-sm font-medium text-ink">All clients</h2>
+              <select
+                value={statusFilter}
+                onChange={(e) => {
+                  setStatusFilter(e.target.value)
+                  setSelectedClientIds([])
+                }}
+                className="border border-[var(--color-border-strong)] bg-[var(--color-bg)] px-3 py-1.5 text-[0.7rem] uppercase tracking-[0.08em] text-ink-muted focus:border-amber focus:outline-none"
+              >
+                <option value="all">All statuses</option>
+                <option value="lead">Lead</option>
+                <option value="active">Active</option>
+                <option value="paused">Paused</option>
+                <option value="completed">Completed</option>
+                <option value="archived">Archived</option>
+              </select>
+            </div>
+
+            {selectedClientIds.length > 0 && (
+              <div className="mb-4 flex flex-wrap items-center justify-between gap-3 border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-3">
+                <p className="text-sm text-ink-muted">
+                  {selectedClientIds.length} client{selectedClientIds.length === 1 ? '' : 's'} selected
+                </p>
+                <div className="flex flex-wrap gap-3">
+                  <button
+                    type="button"
+                    onClick={() => void openBulkDeleteConfirm()}
+                    disabled={bulkDeleteLoading}
+                    className={A_BTN_DANGER}
+                  >
+                    Delete Selected
+                  </button>
+                  <button
+                    type="button"
+                    onClick={clearSelection}
+                    className={A_BTN_GHOST}
+                  >
+                    Clear Selection
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {loading ? (
+              <p className="py-8 text-sm text-ink-muted">Loading clients…</p>
+            ) : filtered.length === 0 ? (
+              <div className="border border-[var(--color-border)] px-6 py-10 text-center">
+                <p className="text-sm text-ink-muted">
+                  {statusFilter === 'all' ? 'No clients yet.' : `No ${statusFilter} clients.`}
+                </p>
+                <button
+                  onClick={() => setShowAdd(true)}
+                  className="mt-4 text-sm text-amber hover:underline"
+                >
+                  Add the first one →
+                </button>
+              </div>
+            ) : (
+              <ClientsTable
+                clients={filtered}
+                selectedClientIds={selectedClientIds}
+                onToggleClient={toggleClientSelection}
+                onToggleAll={toggleSelectAllVisible}
+                onSelectAllRef={selectAllRef}
+                allVisibleSelected={allVisibleSelected}
+              />
+            )}
+          </div>
+        </>
+      ) : (
+        <div className="mt-8">
+          <TestDataCleanupPanel onDeleted={refresh} />
+        </div>
+      )}
+
+      {bulkDeletePreview && (
         <DeleteClientModal
-          preview={deletePreview}
-          loading={deleteLoading}
+          preview={bulkDeletePreview}
+          loading={bulkDeleteLoading}
+          error={bulkDeleteError}
+          confirmChecked={bulkDeleteConfirm}
+          onConfirmChecked={setBulkDeleteConfirm}
           onClose={() => {
-            setDeletePreview(null)
-            setDeleteError(null)
+            setBulkDeletePreview(null)
+            setBulkDeleteConfirm(false)
+            setBulkDeleteError(null)
           }}
-          onConfirm={() => void confirmDeleteClient()}
+          onConfirm={() => void confirmBulkDelete()}
         />
       )}
 
@@ -360,6 +484,15 @@ function SummaryCards({ summary, loading }: { summary: Summary; loading: boolean
       ))}
     </div>
   )
+}
+
+async function loadAdminClientDeletePreviewForSelected(
+  clientIds: string[],
+): Promise<AdminClientDeletePreviewBundle> {
+  if (clientIds.length === 0) {
+    throw new Error('No client records were selected.')
+  }
+  return loadAdminClientDeletePreviewBundle(clientIds)
 }
 
 function TestDataCleanupPanel({ onDeleted }: { onDeleted: () => void }) {
@@ -531,7 +664,7 @@ function TestDataCleanupPanel({ onDeleted }: { onDeleted: () => void }) {
     : null
 
   return (
-    <section className="mt-8 border border-[var(--color-border)] bg-[var(--color-surface)] p-6">
+    <section className="border border-[var(--color-border)] bg-[var(--color-surface)] p-6">
       <div className="mb-4 border-t border-[var(--color-border)] pt-5">
         <p className="mb-2 text-[0.7rem] uppercase tracking-[0.08em] text-ink-subtle">
           Advanced cleanup
@@ -728,19 +861,35 @@ function PreviewList({ title, items }: { title: string; items: string[] }) {
 
 function ClientsTable({
   clients,
-  onDelete,
-  deleting,
+  selectedClientIds,
+  onToggleClient,
+  onToggleAll,
+  onSelectAllRef,
+  allVisibleSelected,
 }: {
   clients: DbClient[]
-  onDelete: (clientId: string) => Promise<void>
-  deleting: boolean
+  selectedClientIds: string[]
+  onToggleClient: (clientId: string) => void
+  onToggleAll: () => void
+  onSelectAllRef: React.RefObject<HTMLInputElement | null>
+  allVisibleSelected: boolean
 }) {
   return (
     <div className="overflow-x-auto border border-[var(--color-border)]">
       <table className="w-full min-w-[760px] text-sm">
         <thead>
           <tr className="border-b border-[var(--color-border)] bg-[var(--color-surface)]">
-            {['Business', 'Name', 'Email', 'Status', 'Package', 'Pkg status', 'Next payment', ''].map(
+            <th className="px-4 py-3 text-left">
+              <input
+                ref={onSelectAllRef}
+                type="checkbox"
+                checked={allVisibleSelected}
+                onChange={onToggleAll}
+                className="h-4 w-4 accent-amber"
+                aria-label="Select all visible clients"
+              />
+            </th>
+            {['Business', 'Name', 'Email', 'Status', 'Package', 'Package status', 'Next payment', ''].map(
               (h) => (
                 <th
                   key={h}
@@ -750,17 +899,26 @@ function ClientsTable({
                 </th>
               ),
             )}
-            <th className="px-4 py-3" />
           </tr>
         </thead>
         <tbody>
           {clients.map((c) => {
             const pkg = activePackageOf(c)
+            const selected = selectedClientIds.includes(c.id)
             return (
               <tr
                 key={c.id}
                 className="border-b border-[var(--color-border)] hover:bg-[var(--color-surface)] transition-colors"
               >
+                <td className="px-4 py-3 align-top">
+                  <input
+                    type="checkbox"
+                    checked={selected}
+                    onChange={() => onToggleClient(c.id)}
+                    className="h-4 w-4 accent-amber"
+                    aria-label={`Select ${c.business_name || c.name}`}
+                  />
+                </td>
                 <td className="px-4 py-3 font-medium text-ink">
                   {c.business_name || '—'}
                 </td>
@@ -795,22 +953,12 @@ function ClientsTable({
                   {fmtDate(pkg?.next_payment_due_at ?? null)}
                 </td>
                 <td className="px-4 py-3">
-                  <div className="flex items-center gap-3">
-                    <Link
-                      to={`/admin/clients/${c.id}`}
-                      className="text-[0.7rem] uppercase tracking-[0.08em] text-amber hover:underline"
-                    >
-                      View →
-                    </Link>
-                    <button
-                      type="button"
-                      onClick={() => void onDelete(c.id)}
-                      disabled={deleting}
-                      className="text-[0.7rem] uppercase tracking-[0.08em] text-ink-subtle transition-colors hover:text-amber disabled:cursor-not-allowed disabled:opacity-50"
-                    >
-                      Delete Client
-                    </button>
-                  </div>
+                  <Link
+                    to={`/admin/clients/${c.id}`}
+                    className="text-[0.7rem] uppercase tracking-[0.08em] text-amber hover:underline"
+                  >
+                    View →
+                  </Link>
                 </td>
               </tr>
             )
@@ -824,22 +972,29 @@ function ClientsTable({
 function DeleteClientModal({
   preview,
   loading,
+  error,
+  confirmChecked,
+  onConfirmChecked,
   onClose,
   onConfirm,
 }: {
-  preview: AdminClientDeletePreview
+  preview: AdminClientDeletePreviewBundle
   loading: boolean
+  error: string | null
+  confirmChecked: boolean
+  onConfirmChecked: (checked: boolean) => void
   onClose: () => void
   onConfirm: () => void
 }) {
-  const name = preview.client.business_name || preview.client.name
-  const counts = [
-    { label: 'Packages', value: preview.packages.length },
-    { label: 'Payments', value: preview.payments.length },
-    { label: 'Updates', value: preview.updates.length },
-    { label: 'Module rows', value: preview.moduleSelections.length },
-    { label: 'Links', value: preview.clientUsers.length },
-  ]
+  const summaryByClient = preview.clients.map((client) => {
+    const clientPackages = preview.packages.filter((pkg) => pkg.client_id === client.id)
+    const clientPayments = preview.payments.filter((payment) => payment.client_id === client.id)
+    return {
+      client,
+      packageCount: clientPackages.length,
+      paymentCount: clientPayments.length,
+    }
+  })
 
   return (
     <div
@@ -854,45 +1009,81 @@ function DeleteClientModal({
           <p className="mb-2 text-[0.7rem] uppercase tracking-[0.08em] text-ink-subtle">
             Confirm delete
           </p>
-          <h2 className="text-lg font-medium tracking-[-0.01em] text-ink">Delete Client</h2>
+          <h2 className="text-lg font-medium tracking-[-0.01em] text-ink">Delete selected clients</h2>
         </div>
 
         <p className="max-w-[60ch] text-sm leading-relaxed text-ink-muted">
-          This will delete the selected client and related test/project records. This cannot be
-          undone.
+          This will delete the selected client records and related project/test data. This cannot
+          be undone.
         </p>
 
-        <div className="mt-5 border border-[var(--color-border)] p-4">
-          <div className="flex flex-wrap items-start justify-between gap-3">
-            <div>
-              <p className="text-sm font-medium text-ink">{name}</p>
-              <p className="mt-1 text-xs text-ink-subtle">{preview.client.email}</p>
+        <div className="mt-5 space-y-3">
+          <div className="border border-[var(--color-border)] p-4">
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <p className="text-sm font-medium text-ink">
+                  {preview.clients.length} client{preview.clients.length === 1 ? '' : 's'} selected
+                </p>
+                <p className="mt-1 text-xs text-ink-subtle">
+                  Related records: {preview.packages.length} packages, {preview.payments.length} payments, {preview.updates.length} updates
+                </p>
+              </div>
+              <p className="text-xs uppercase tracking-[0.08em] text-ink-subtle">
+                {preview.moduleSelections.length} module rows · {preview.clientUsers.length} auth links
+              </p>
             </div>
-            <p className="text-xs uppercase tracking-[0.08em] text-ink-subtle">
-              Created {fmtDate(preview.client.created_at)}
-            </p>
           </div>
 
-          <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {counts.map((item) => (
-              <div key={item.label} className="border border-[var(--color-border)] p-3">
-                <p className="text-[0.65rem] uppercase tracking-[0.08em] text-ink-subtle">
-                  {item.label}
-                </p>
-                <p className="mt-2 text-xl font-medium tabular-nums text-ink">{item.value}</p>
-              </div>
+          <div className="max-h-[42vh] space-y-3 overflow-y-auto pr-1">
+            {summaryByClient.map(({ client, packageCount, paymentCount }) => (
+              <article key={client.id} className="border border-[var(--color-border)] p-4">
+                <div className="flex flex-wrap items-start justify-between gap-3">
+                  <div>
+                    <p className="text-sm font-medium text-ink">
+                      {client.business_name || client.name}
+                    </p>
+                    <p className="mt-1 text-xs text-ink-subtle">{client.email}</p>
+                  </div>
+                  <p className="text-xs uppercase tracking-[0.08em] text-ink-subtle">
+                    Created {fmtDate(client.created_at)}
+                  </p>
+                </div>
+
+                <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                  <StatBox label="Package count" value={packageCount} />
+                  <StatBox label="Payment count" value={paymentCount} />
+                </div>
+              </article>
             ))}
           </div>
         </div>
+
+        <div className="mt-5 border border-amber/30 bg-amber/5 p-4">
+          <label className="flex items-start gap-3 text-sm text-ink-muted">
+            <input
+              type="checkbox"
+              checked={confirmChecked}
+              onChange={(e) => onConfirmChecked(e.target.checked)}
+              className="mt-1 h-4 w-4 accent-amber"
+            />
+            <span>I understand this will delete the selected client records.</span>
+          </label>
+        </div>
+
+        {error && (
+          <p className="mt-4 border border-amber/60 bg-amber/5 px-3 py-2 text-sm text-amber">
+            {error}
+          </p>
+        )}
 
         <div className="mt-5 flex flex-wrap gap-3">
           <button
             type="button"
             onClick={onConfirm}
-            disabled={loading}
+            disabled={loading || !confirmChecked}
             className={A_BTN_DANGER}
           >
-            {loading ? 'Deleting…' : 'Delete Client'}
+            {loading ? 'Deleting…' : 'Delete Selected'}
           </button>
           <button type="button" onClick={onClose} className={A_BTN_GHOST}>
             Cancel

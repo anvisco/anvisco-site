@@ -64,6 +64,15 @@ export interface AdminClientDeletePreview {
   clientUsers: AdminClientDeletePreviewLink[]
 }
 
+export interface AdminClientDeletePreviewBundle {
+  clients: AdminClientDeletePreviewClient[]
+  packages: AdminClientDeletePreviewPackage[]
+  payments: AdminClientDeletePreviewPayment[]
+  updates: AdminClientDeletePreviewUpdate[]
+  moduleSelections: AdminClientDeletePreviewModuleSelection[]
+  clientUsers: AdminClientDeletePreviewLink[]
+}
+
 function ensureSupabase() {
   if (!supabase) {
     throw new Error('Supabase is not configured.')
@@ -82,18 +91,29 @@ async function query<T>(promise: PromiseLike<QueryResponse<T>>): Promise<T | nul
   return data as T | null
 }
 
-export async function loadAdminClientDeletePreview(clientId: string): Promise<AdminClientDeletePreview> {
-  const client = ensureSupabase()
+function uniqueIds(ids: string[]): string[] {
+  return [...new Set(ids.filter(Boolean))]
+}
 
-  const clientRow = await query<AdminClientDeletePreviewClient>(
+export async function loadAdminClientDeletePreviewBundle(
+  clientIds: string[],
+): Promise<AdminClientDeletePreviewBundle> {
+  const client = ensureSupabase()
+  const normalizedIds = uniqueIds(clientIds)
+
+  if (normalizedIds.length === 0) {
+    throw new Error('No client records were selected.')
+  }
+
+  const clients = (await query<AdminClientDeletePreviewClient[]>(
     client
       .from('clients')
       .select('id, name, business_name, email, status, created_at')
-      .eq('id', clientId)
-      .maybeSingle(),
-  )
+      .in('id', normalizedIds)
+      .order('created_at', { ascending: false }),
+  )) ?? []
 
-  if (!clientRow) {
+  if (clients.length === 0) {
     throw new Error('Client not found.')
   }
 
@@ -102,28 +122,28 @@ export async function loadAdminClientDeletePreview(clientId: string): Promise<Ad
       client
         .from('client_packages')
         .select('id, client_id, package_name, package_type, status, total_cents, recurring_amount_cents, created_at')
-        .eq('client_id', clientId)
+        .in('client_id', normalizedIds)
         .order('created_at', { ascending: false }),
     ),
     query<AdminClientDeletePreviewPayment[]>(
       client
         .from('payment_schedules')
         .select('id, client_id, package_id, label, amount_cents, status, due_date, created_at')
-        .eq('client_id', clientId)
+        .in('client_id', normalizedIds)
         .order('created_at', { ascending: false }),
     ),
     query<AdminClientDeletePreviewUpdate[]>(
       client
         .from('project_updates')
         .select('id, client_id, package_id, stage, title, created_at')
-        .eq('client_id', clientId)
+        .in('client_id', normalizedIds)
         .order('created_at', { ascending: false }),
     ),
     query<AdminClientDeletePreviewLink[]>(
       client
         .from('client_users')
         .select('id, client_id, user_id, created_at')
-        .eq('client_id', clientId)
+        .in('client_id', normalizedIds)
         .order('created_at', { ascending: false }),
     ),
   ])
@@ -140,7 +160,7 @@ export async function loadAdminClientDeletePreview(clientId: string): Promise<Ad
     : []
 
   return {
-    client: clientRow as AdminClientDeletePreviewClient,
+    clients,
     packages: (packages ?? []) as AdminClientDeletePreviewPackage[],
     payments: (payments ?? []) as AdminClientDeletePreviewPayment[],
     updates: (updates ?? []) as AdminClientDeletePreviewUpdate[],
@@ -149,20 +169,43 @@ export async function loadAdminClientDeletePreview(clientId: string): Promise<Ad
   }
 }
 
+export async function loadAdminClientDeletePreview(clientId: string): Promise<AdminClientDeletePreview> {
+  const preview = await loadAdminClientDeletePreviewBundle([clientId])
+
+  const client = preview.clients[0]
+  if (!client) {
+    throw new Error('Client not found.')
+  }
+
+  return {
+    client,
+    packages: preview.packages,
+    payments: preview.payments,
+    updates: preview.updates,
+    moduleSelections: preview.moduleSelections,
+    clientUsers: preview.clientUsers,
+  }
+}
+
 export async function deleteAdminClient(clientId: string): Promise<void> {
+  await deleteAdminClients([clientId])
+}
+
+export async function deleteAdminClients(clientIds: string[]): Promise<void> {
   const client = ensureSupabase()
-  const preview = await loadAdminClientDeletePreview(clientId)
+  const preview = await loadAdminClientDeletePreviewBundle(clientIds)
+  const normalizedIds = uniqueIds(clientIds)
   const packageIds = preview.packages.map((pkg) => pkg.id)
 
   const steps: Array<PromiseLike<{ error: { message: string } | null }>> = [
-    client.from('project_updates').delete().eq('client_id', clientId),
-    client.from('payment_schedules').delete().eq('client_id', clientId),
+    client.from('project_updates').delete().in('client_id', normalizedIds),
+    client.from('payment_schedules').delete().in('client_id', normalizedIds),
     packageIds.length
       ? client.from('client_module_selections').delete().in('package_id', packageIds)
       : Promise.resolve({ error: null }),
-    client.from('client_packages').delete().eq('client_id', clientId),
-    client.from('client_users').delete().eq('client_id', clientId),
-    client.from('clients').delete().eq('id', clientId),
+    client.from('client_packages').delete().in('client_id', normalizedIds),
+    client.from('client_users').delete().in('client_id', normalizedIds),
+    client.from('clients').delete().in('id', normalizedIds),
   ]
 
   for (const step of steps) {
