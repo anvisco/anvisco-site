@@ -90,15 +90,15 @@ export function ServicesPage() {
     <>
       <Nav />
       <main className="pt-16">
-        <section className="py-24 md:py-32 bg-[var(--color-bg)]">
-          <div className="max-w-screen-xl mx-auto px-6 lg:px-12">
+        <section className="bg-[var(--color-bg)] py-24 md:py-32">
+          <div className="mx-auto max-w-screen-xl px-6 lg:px-12">
             <BracketLabel>Services</BracketLabel>
-            <h1 className="mt-10 mb-8 max-w-4xl break-words text-[2.35rem] sm:text-[3.5rem] md:text-[5rem] font-medium leading-[1.04] md:leading-[0.98] tracking-[-0.02em] md:tracking-[-0.04em] text-ink">
+            <h1 className="mb-8 mt-10 max-w-[14ch] text-[2.35rem] font-medium leading-[1.04] tracking-[-0.02em] text-ink sm:max-w-[15ch] sm:text-[3.5rem] md:max-w-4xl md:leading-[0.98] md:tracking-[-0.04em] md:text-[5rem]">
               <span className="block">Built modular.</span>
               <span className="block">Buy only the layer</span>
               <span className="block">your business needs.</span>
             </h1>
-            <p className="max-w-[30ch] break-words text-base leading-relaxed text-ink-muted sm:max-w-[62ch] sm:text-[1.125rem]">
+            <p className="max-w-[62ch] text-base leading-relaxed text-ink-muted sm:text-[1.125rem]">
               Anvis offers four ways to work together: an audit to start, modules to upgrade specific parts, a full custom build, and recurring plans to keep the site improving.
             </p>
             <Link
@@ -114,19 +114,25 @@ export function ServicesPage() {
         <section className="py-20 md:py-28 bg-[var(--color-surface)]">
           <div className="max-w-screen-xl mx-auto px-6 lg:px-12">
             <SectionHeader number="01" label="How it works" title="The ladder." />
-            <p className="max-w-[30ch] break-words text-base leading-relaxed text-ink-muted sm:max-w-[62ch] sm:text-[1.0625rem]">
+            <p className="max-w-[62ch] text-base leading-relaxed text-ink-muted sm:text-[1.0625rem]">
               Most agencies sell one thing: a full rebuild, whether or not it is the right move. Anvis is structured differently.
             </p>
             <p className="my-10 flex max-w-full flex-col items-start gap-2 overflow-hidden border-y border-[var(--color-border)] py-8 text-lg tracking-[-0.01em] text-ink sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-3 sm:text-xl md:text-3xl md:tracking-[-0.02em]">
-              <span>Audit</span><span className="hidden text-amber sm:inline">→</span><span>Modules</span><span className="hidden text-amber sm:inline">→</span><span>Full Build</span><span className="hidden text-amber sm:inline">→</span><span>Recurring</span>
+              <span className="text-amber">Audit</span>
+              <span className="hidden text-ink-subtle sm:inline">→</span>
+              <span className="text-amber">Modules</span>
+              <span className="hidden text-ink-subtle sm:inline">→</span>
+              <span className="text-amber">Full Build</span>
+              <span className="hidden text-ink-subtle sm:inline">→</span>
+              <span>Recurring</span>
             </p>
-            <p className="max-w-[30ch] break-words text-base leading-relaxed text-ink-muted sm:max-w-[62ch] sm:text-[1.0625rem]">
+            <p className="max-w-[62ch] text-base leading-relaxed text-ink-muted sm:text-[1.0625rem]">
               Start where it makes sense. Upgrade when the business is ready.
             </p>
           </div>
         </section>
 
-        <section id="audit" className="scroll-mt-16 py-20 md:py-28 bg-[var(--color-bg)]">
+        <section id="audit" className="scroll-mt-16 bg-[var(--color-bg)] py-20 md:py-28">
           <div className="max-w-screen-xl mx-auto px-6 lg:px-12">
             <SectionHeader number="02" label="Audit" title="Audit" />
             <div className="grid gap-px bg-[var(--color-border)] md:grid-cols-2">
@@ -146,7 +152,7 @@ export function ServicesPage() {
           </div>
         </section>
 
-        <section id="modules" className="scroll-mt-16 py-20 md:py-28 bg-[var(--color-surface)]">
+        <section id="modules" className="scroll-mt-16 bg-[var(--color-surface)] py-20 md:py-28">
           <div className="max-w-screen-xl mx-auto px-6 lg:px-12">
             <SectionHeader number="03" label="Modules" title="Improvement Modules" />
             <p className="mb-12 max-w-[62ch] text-[1.0625rem] leading-relaxed text-ink-muted">
@@ -155,22 +161,26 @@ export function ServicesPage() {
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {modules.map((module, i) => (
                 <div key={module.id} id={module.id} className="scroll-mt-24">
-                  <ModuleCard module={module} index={i} href="/checkout?path=modules" />
+                  <ModuleCard
+                    module={module}
+                    index={i}
+                    href={`/checkout?path=modules&module=${module.id}`}
+                  />
                 </div>
               ))}
             </div>
-            <p className="mt-8 text-sm text-ink-muted">Any three modules - 15% off the combined price.</p>
+            <p className="mt-8 text-sm text-ink-muted">Any three modules — 15% off the combined price.</p>
             <ContactLink label="Choose Your Upgrades" to="/checkout?path=modules" />
           </div>
         </section>
 
-        <section id="build" className="scroll-mt-16 py-20 md:py-28 bg-[var(--color-bg)]">
+        <section id="build" className="scroll-mt-16 bg-[var(--color-bg)] py-20 md:py-28">
           <div className="max-w-screen-xl mx-auto px-6 lg:px-12">
             <SectionHeader number="04" label="Full custom build" title="Full Custom Build" />
             <p className="mb-12 max-w-[62ch] text-[1.0625rem] leading-relaxed text-ink-muted">
-              A custom-coded website designed for visibility, trust, speed, and bookings. Three tiers depending on scope.
+              Built around how your business actually operates, not around a template. Public rates start at $2,200, with founding rates available for the first 3 clients.
             </p>
-            <div className="grid grid-cols-1 lg:grid-cols-3 border-t border-[var(--color-border)]">
+            <div className="grid grid-cols-1 border-t border-[var(--color-border)] lg:grid-cols-3">
               {buildTiers.map((tier, i) => (
                 <BuildTierCard
                   key={tier.name}
@@ -181,12 +191,11 @@ export function ServicesPage() {
                 />
               ))}
             </div>
-            <p className="mt-8 text-sm text-ink-muted">Founding rate: Limited to the first few dental and local service clients.</p>
-            <p className="mt-2 text-sm text-ink-muted">Payment: 50% deposit to start. Balance due before launch.</p>
+            <p className="mt-8 text-sm text-ink-muted">Payment: 50% deposit to start. Balance due before launch.</p>
           </div>
         </section>
 
-        <section id="recurring" className="scroll-mt-16 py-20 md:py-28 bg-[var(--color-surface)]">
+        <section id="recurring" className="scroll-mt-16 bg-[var(--color-surface)] py-20 md:py-28">
           <div className="max-w-screen-xl mx-auto px-6 lg:px-12">
             <SectionHeader number="05" label="Recurring plans" title="Recurring Plans" />
             <p className="mb-12 max-w-[62ch] text-[1.0625rem] leading-relaxed text-ink-muted">
@@ -218,7 +227,7 @@ function SectionHeader({ number, label, title }: { number: string; label: string
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
         transition={{ duration: 0.5, ease: 'easeOut' }}
-        className="mb-6 text-[2rem] md:text-[2.5rem] font-medium tracking-[-0.02em] text-ink leading-[1.1]"
+        className="mb-6 max-w-[18ch] text-[2rem] font-medium leading-[1.08] tracking-[-0.02em] text-ink md:text-[2.5rem]"
       >
         {title}
       </motion.h2>
@@ -243,7 +252,7 @@ function ContactLink({ label, to }: { label: string; to: string }) {
   return (
     <Link
       to={to}
-      className="group mt-8 inline-flex items-center gap-2.5 border border-[var(--color-border-strong)] px-5 py-3 text-[0.7rem] tracking-[0.1em] uppercase text-ink font-medium transition-all duration-200 hover:border-amber hover:text-amber"
+      className="group mt-8 inline-flex items-center gap-2.5 border border-[var(--color-border-strong)] px-5 py-3 text-[0.7rem] font-medium uppercase tracking-[0.1em] text-ink transition-all duration-200 hover:border-amber hover:text-amber"
     >
       {label}
       <span className="text-amber transition-transform duration-200 group-hover:translate-x-0.5">→</span>

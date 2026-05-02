@@ -501,6 +501,7 @@ export function PortalPage() {
     }
   }, [activePackage])
   const displayedNextPayment = nextPayment ?? packageNextPayment
+  const latestVisibleUpdate = portal.updates[0] ?? null
   const currentStage = useMemo(
     () => deriveStage(portal.updates, activePackage),
     [activePackage, portal.updates],
@@ -585,21 +586,23 @@ export function PortalPage() {
                 </div>
 
                 <div className="grid gap-px bg-[var(--color-border)] sm:grid-cols-2 xl:grid-cols-4">
-                  {portal.client.business_name && (
-                    <InfoTile label="Business" value={portal.client.business_name} />
-                  )}
-                  <InfoTile
-                    label="Contact"
-                    value={portal.client.name}
-                  />
                   <InfoTile
                     label="Active package"
                     value={activePackage ? activePackage.package_name : 'No active package'}
                     sub={activePackage ? packageTypeLabel(activePackage.package_type) : undefined}
                   />
                   <InfoTile label="Current stage" value={currentStageLabel} />
+                  <InfoTile
+                    label="Next payment"
+                    value={displayedNextPayment ? fmtCents(displayedNextPayment.amount_cents) : 'No upcoming payment due'}
+                    sub={displayedNextPayment?.due_date ? `Due ${fmtDate(displayedNextPayment.due_date)}` : undefined}
+                  />
+                  <InfoTile
+                    label="Latest update"
+                    value={latestVisibleUpdate ? latestVisibleUpdate.title : 'No client-visible updates yet'}
+                    sub={latestVisibleUpdate ? STAGE_LABELS[latestVisibleUpdate.stage] : undefined}
+                  />
                 </div>
-
               </section>
 
               <section className="grid gap-6 xl:grid-cols-2">
@@ -739,40 +742,38 @@ export function PortalPage() {
                     </div>
                   </div>
 
-                  <div className="overflow-x-auto pb-2">
-                    <div className="flex min-w-max gap-3">
+                  <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
                     {STAGES.map((stage, index) => {
                       const active = stage.key === currentStage
                       const past = currentStageIndex > -1 && index < currentStageIndex
                       return (
                         <div
                           key={stage.key}
-                          className={`min-w-[150px] border p-4 transition-colors ${
+                          className={`border p-4 transition-colors ${
                             active
-                              ? 'bg-[var(--color-surface)] border-amber/60'
+                              ? 'border-amber/60 bg-[var(--color-surface)]'
                               : past
                                 ? 'bg-[var(--color-surface)]'
-                                : 'bg-[var(--color-bg)] opacity-80'
+                                : 'bg-[var(--color-bg)] opacity-70'
                           }`}
                         >
-                          <div className="mb-3 flex items-center justify-between gap-4">
+                          <div className="mb-3 flex items-center justify-between gap-2">
                             <span className="text-[0.65rem] uppercase tracking-[0.08em] text-ink-subtle">
                               {String(index + 1).padStart(2, '0')}
                             </span>
                             {active && <StatusBadge status="active" />}
                             {!active && past && <StatusBadge status="complete" />}
                             {!active && !past && (
-                              <span className="text-[0.65rem] uppercase tracking-[0.08em] text-ink-subtle">
-                                Upcoming
+                              <span className="text-[0.6rem] uppercase tracking-[0.06em] text-ink-subtle">
+                                Soon
                               </span>
                             )}
                           </div>
-                          <p className="mb-2 text-sm font-medium text-ink">{stage.title}</p>
-                          <p className="text-sm leading-relaxed text-ink-muted">{stage.hint}</p>
+                          <p className="mb-1.5 text-sm font-medium text-ink">{stage.title}</p>
+                          <p className="text-xs leading-relaxed text-ink-muted">{stage.hint}</p>
                         </div>
                       )
                     })}
-                    </div>
                   </div>
                 </Card>
 
@@ -830,7 +831,7 @@ export function PortalPage() {
           )}
 
           {!session && !authLoading && isSupabaseConfigured && (
-            <section className="mt-10 grid gap-6 xl:grid-cols-2">
+            <section className="mt-10">
               <Card title="Portal snapshot" eyebrow="Client view" wide>
                 <div className="grid gap-4 sm:grid-cols-2">
                   <PortalPreview label="Active package" value="Package, type, selected modules, total, and recurring amount." />
@@ -838,13 +839,6 @@ export function PortalPage() {
                   <PortalPreview label="Timeline" value="Audit, scope, build, launch, support, complete." />
                   <PortalPreview label="Updates" value="Only notes marked visible to the client." />
                 </div>
-              </Card>
-              <Card title="Portal access" eyebrow="Secure login">
-                <p className="max-w-[54ch] text-sm leading-relaxed text-ink-muted">
-                  Use the same checkout email, then sign in with the secure link Supabase sends.
-                  If the portal does not find a matching client profile, Brian can connect it
-                  manually after verifying the email.
-                </p>
               </Card>
             </section>
           )}
@@ -1011,7 +1005,7 @@ function InfoTile({
   sub?: string
 }) {
   return (
-    <div className="bg-[var(--color-bg)] p-4">
+    <div className="min-h-[122px] bg-[var(--color-bg)] p-4">
       <p className="mb-2 text-[0.65rem] uppercase tracking-[0.08em] text-ink-subtle">
         {label}
       </p>

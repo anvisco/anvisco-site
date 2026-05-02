@@ -38,7 +38,7 @@ export function PlanCard({ name, price, features, index, onCta }: PlanCardProps)
         onClick={onCta}
         className="group mt-auto inline-flex items-center gap-2.5 border border-[var(--color-border-strong)] px-5 py-3 text-[0.7rem] tracking-[0.1em] uppercase text-ink font-medium transition-all duration-200 hover:border-amber hover:text-amber w-fit"
       >
-        Choose a Care Plan
+        {name.toLowerCase().includes('growth') ? 'Choose Growth Plan' : 'Choose Care Plan'}
         <span className="transition-transform duration-200 group-hover:translate-x-0.5">→</span>
       </button>
     </motion.div>

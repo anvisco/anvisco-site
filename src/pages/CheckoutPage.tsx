@@ -84,7 +84,13 @@ export function CheckoutPage() {
   // Keep auditId so the package payload reads cleanly when additional audit
   // options are added.
   const [auditId] = useState<AuditId>('full-audit')
-  const [moduleQty, setModuleQty] = useState<Record<string, number>>({})
+  const [moduleQty, setModuleQty] = useState<Record<string, number>>(() => {
+    const moduleParam = searchParams.get('module')
+    if (moduleParam && MODULE_OFFERS.find((m) => m.id === moduleParam)) {
+      return { [moduleParam]: normalizeModuleQuantity(moduleParam as ModuleId, 1) }
+    }
+    return {}
+  })
   const [buildId, setBuildId] = useState<BuildId>('standard')
   const [recurringId, setRecurringId] = useState<RecurringId>('care')
 
@@ -267,7 +273,7 @@ export function CheckoutPage() {
               Build your plan.
             </h1>
             <p className="max-w-[58ch] text-base leading-relaxed text-ink-muted md:text-[1.0625rem]">
-              Choose your path and continue to secure Stripe checkout. Payment happens through Stripe.
+              Choose your path, then continue to secure checkout. Payment is processed through Stripe.
             </p>
           </div>
 

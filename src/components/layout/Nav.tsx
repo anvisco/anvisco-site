@@ -42,16 +42,16 @@ export function Nav() {
           : 'bg-transparent border-b border-transparent'
       }`}
     >
-      <div className="mx-auto grid h-16 max-w-screen-2xl grid-cols-[auto_1fr_auto] items-center gap-4 px-6 lg:px-12">
+      <div className="mx-auto grid h-16 max-w-screen-2xl grid-cols-[minmax(140px,1fr)_auto_minmax(140px,1fr)] items-center gap-4 px-6 lg:px-12">
         <Link
           to="/"
-          onClick={() => setOpen(false)}
-          className="text-sm font-medium tracking-tight text-ink transition-colors duration-200 hover:text-amber"
+          onClick={() => { setOpen(false); window.scrollTo({ top: 0, behavior: 'auto' }) }}
+          className="justify-self-start text-sm font-medium tracking-tight text-ink transition-colors duration-200 hover:text-amber"
         >
           Anvis
         </Link>
 
-        <nav className="hidden md:flex items-center justify-center gap-6 lg:gap-8 justify-self-center">
+        <nav className="hidden items-center justify-center gap-5 md:flex lg:gap-7">
           {links.map((link) => {
             const hashIndex = link.href.indexOf('#')
             const hash = hashIndex >= 0 ? link.href.slice(hashIndex) : ''
@@ -67,6 +67,7 @@ export function Nav() {
               <Link
                 key={link.href}
                 to={link.href}
+                onClick={() => window.scrollTo({ top: 0, behavior: 'auto' })}
                 className={`group relative text-[0.68rem] font-medium tracking-[0.12em] uppercase transition-colors duration-200 hover:text-ink ${
                   active ? 'text-amber' : 'text-ink-muted'
                 }`}
@@ -83,7 +84,8 @@ export function Nav() {
 
         <Link
           to="/portal"
-          className="hidden md:inline-flex items-center gap-2 justify-self-end border border-[var(--color-border-strong)] px-4 py-2 text-[0.68rem] font-medium tracking-[0.1em] uppercase text-ink transition-all duration-200 hover:border-amber hover:text-amber group"
+          onClick={() => window.scrollTo({ top: 0, behavior: 'auto' })}
+          className="hidden items-center gap-2 justify-self-end border border-[var(--color-border-strong)] px-4 py-2 text-[0.68rem] font-medium tracking-[0.1em] uppercase text-ink transition-all duration-200 hover:border-amber hover:text-amber group md:inline-flex"
         >
           <span>[ Client Login ]</span>
           <span className="text-amber transition-transform duration-200 group-hover:translate-x-0.5">→</span>
@@ -105,7 +107,7 @@ export function Nav() {
             <Link
               key={link.href}
               to={link.href}
-              onClick={() => setOpen(false)}
+              onClick={() => { setOpen(false); window.scrollTo({ top: 0, behavior: 'auto' }) }}
               className="text-[0.7rem] font-medium tracking-[0.14em] uppercase text-ink-muted transition-colors duration-150 hover:text-ink"
             >
               {`[ ${link.label} ]`}
@@ -113,7 +115,7 @@ export function Nav() {
           ))}
           <Link
             to="/portal"
-            onClick={() => setOpen(false)}
+            onClick={() => { setOpen(false); window.scrollTo({ top: 0, behavior: 'auto' }) }}
             className="mt-2 inline-flex items-center gap-2 border border-[var(--color-border-strong)] px-4 py-3 text-[0.7rem] font-medium tracking-[0.1em] uppercase text-ink transition-all duration-150 hover:border-amber hover:text-amber w-fit"
           >
             [ Client Login ] <span className="text-amber">→</span>

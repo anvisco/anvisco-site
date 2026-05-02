@@ -18,6 +18,7 @@ export function Footer() {
           <div>
             <Link
               to="/portal"
+              onClick={() => window.scrollTo({ top: 0, behavior: 'auto' })}
               className="text-[0.68rem] font-medium tracking-[0.1em] uppercase text-ink-subtle transition-colors duration-150 hover:text-amber"
             >
               Client Login

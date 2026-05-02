@@ -172,7 +172,7 @@ export const BUILD_OFFERS: BuildOffer[] = [
 ]
 
 export const FOUNDING_RATE_NOTE =
-  'Founding rate: limited to the first few dental and local service builds, then prices return to public rates.'
+  'Founding rate: available for the first 3 clients, then prices return to public rates.'
 
 // ---------- Recurring ----------
 

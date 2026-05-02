@@ -4,10 +4,9 @@ import { BracketLabel } from '@/components/ui/BracketLabel'
 
 export function CustomBuild() {
   return (
-    <section id="build" className="scroll-mt-16 py-24 md:py-32 bg-[var(--color-bg)]">
-      <div className="max-w-screen-xl mx-auto px-6 lg:px-12">
-
-        <div className="flex items-center gap-4 mb-14 border-t border-[var(--color-border)] pt-7">
+    <section id="build" className="scroll-mt-16 bg-[var(--color-bg)] py-24 md:py-32">
+      <div className="mx-auto max-w-screen-xl px-6 lg:px-12">
+        <div className="mb-14 flex items-center gap-4 border-t border-[var(--color-border)] pt-7">
           <span className="text-[0.7rem] tabular-nums text-amber font-medium tracking-[0.08em]">05</span>
           <motion.div
             initial={{ opacity: 0 }}
@@ -25,7 +24,7 @@ export function CustomBuild() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5, ease: 'easeOut' }}
-            className="text-[2rem] md:text-[2.5rem] font-medium tracking-[-0.02em] text-ink leading-[1.1]"
+            className="max-w-[18ch] text-[2rem] font-medium leading-[1.08] tracking-[-0.02em] text-ink md:text-[2.5rem]"
           >
             For businesses ready to rebuild properly.
           </motion.h2>
@@ -36,7 +35,7 @@ export function CustomBuild() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.5, ease: 'easeOut', delay: 0.1 }}
-              className="mb-6 text-[1.125rem] leading-relaxed text-ink"
+              className="mb-6 max-w-[58ch] text-[1.125rem] leading-relaxed text-ink"
             >
               A custom website gives more control over structure, speed, design, content architecture, search readiness, and the full path from discovery to booking.
             </motion.p>
@@ -46,9 +45,9 @@ export function CustomBuild() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.5, ease: 'easeOut', delay: 0.16 }}
-              className="mb-10 border-l border-amber/50 pl-6 text-[1.0625rem] leading-relaxed text-ink-muted"
+              className="mb-10 max-w-[58ch] border-l border-amber/50 pl-6 text-[1.0625rem] leading-relaxed text-ink-muted"
             >
-              Built around how your business actually operates, not around a template. Three tiers: Essentials, Standard, Premium. Public rates start at $2,200, with founding rates available for the first few dental and local service clients.
+              Built around how your business actually operates, not around a template. Public rates start at $2,200, with founding rates available for the first 3 clients.
             </motion.div>
 
             <motion.div
@@ -67,7 +66,6 @@ export function CustomBuild() {
             </motion.div>
           </div>
         </div>
-
       </div>
     </section>
   )

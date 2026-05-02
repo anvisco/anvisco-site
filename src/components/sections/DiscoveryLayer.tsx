@@ -3,10 +3,9 @@ import { BracketLabel } from '@/components/ui/BracketLabel'
 
 export function DiscoveryLayer() {
   return (
-    <section className="py-24 md:py-32 bg-[var(--color-surface)]">
-      <div className="max-w-screen-xl mx-auto px-6 lg:px-12">
-
-        <div className="flex items-center gap-4 mb-14 border-t border-[var(--color-border)] pt-7">
+    <section className="bg-[var(--color-surface)] py-24 md:py-32">
+      <div className="mx-auto max-w-screen-xl px-6 lg:px-12">
+        <div className="mb-14 flex items-center gap-4 border-t border-[var(--color-border)] pt-7">
           <span className="text-[0.7rem] tabular-nums text-amber font-medium tracking-[0.08em]">02</span>
           <motion.div
             initial={{ opacity: 0 }}
@@ -23,13 +22,13 @@ export function DiscoveryLayer() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6, ease: 'easeOut' }}
-          className="mb-8 text-[2rem] md:text-[2.5rem] font-medium tracking-[-0.02em] text-ink leading-[1.1] max-w-2xl"
+          className="mb-8 max-w-[22ch] text-[2rem] font-medium leading-[1.1] tracking-[-0.02em] text-ink md:text-[2.5rem]"
         >
-          Now it also needs to be built for{' '}
-          <span className="text-amber">how people search.</span>
+          <span className="block text-ink">Now websites also need to be</span>
+          <span className="block text-amber">built for how people search.</span>
         </motion.h2>
 
-        <div className="max-w-[68ch] space-y-5">
+        <div className="max-w-[60ch] space-y-5">
           <motion.p
             initial={{ opacity: 0, y: 16 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -37,7 +36,8 @@ export function DiscoveryLayer() {
             transition={{ duration: 0.5, ease: 'easeOut', delay: 0.1 }}
             className="text-[1.125rem] leading-relaxed text-ink-muted"
           >
-            People do not only type short keywords into Google anymore. They ask <span className="text-amber">Google, AI tools, Maps, and local recommendations</span> direct questions.
+            People no longer search with short keywords alone. They ask direct questions through{' '}
+            <span className="text-amber">Google, AI tools, Maps, and local recommendations</span>.
           </motion.p>
 
           <motion.div
@@ -69,12 +69,14 @@ export function DiscoveryLayer() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5, ease: 'easeOut', delay: 0.24 }}
-            className="text-[1.125rem] leading-relaxed text-ink-muted"
+            className="border-l-0 text-[0.9375rem] font-medium leading-relaxed tracking-[-0.005em] text-ink-subtle"
           >
-            This is <span className="text-amber">not a replacement for SEO</span>. It is a <span className="text-amber">layer on top</span> of it.
+            This is{' '}
+            <span className="text-amber">not a replacement for SEO.</span>{' '}
+            It is a{' '}
+            <span className="text-amber">layer on top of it.</span>
           </motion.p>
         </div>
-
       </div>
     </section>
   )

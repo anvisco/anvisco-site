@@ -8,10 +8,9 @@ export function Modules() {
   const featuredModules = modules.slice(0, 3)
 
   return (
-    <section id="modules" className="scroll-mt-16 py-24 md:py-32 bg-[var(--color-surface)]">
-      <div className="max-w-screen-xl mx-auto px-6 lg:px-12">
-
-        <div className="flex items-center gap-4 mb-14 border-t border-[var(--color-border)] pt-7">
+    <section id="modules" className="scroll-mt-16 bg-[var(--color-surface)] py-24 md:py-32">
+      <div className="mx-auto max-w-screen-xl px-6 lg:px-12">
+        <div className="mb-14 flex items-center gap-4 border-t border-[var(--color-border)] pt-7">
           <span className="text-[0.7rem] tabular-nums text-amber font-medium tracking-[0.08em]">04</span>
           <motion.div
             initial={{ opacity: 0 }}
@@ -28,7 +27,7 @@ export function Modules() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.5, ease: 'easeOut' }}
-          className="mb-4 text-[2rem] md:text-[2.5rem] font-medium tracking-[-0.02em] text-ink leading-[1.1] max-w-xl"
+          className="mb-4 max-w-[19ch] text-[2rem] font-medium leading-[1.08] tracking-[-0.02em] text-ink md:text-[2.5rem]"
         >
           Targeted upgrades without a full rebuild.
         </motion.h2>
@@ -38,7 +37,7 @@ export function Modules() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.5, ease: 'easeOut', delay: 0.08 }}
-          className="mb-14 text-[1.0625rem] leading-relaxed text-ink-muted max-w-[52ch]"
+          className="mb-14 max-w-[52ch] text-[1.0625rem] leading-relaxed text-ink-muted"
         >
           Start with the layer holding the site back, then view the full module menu when you need pricing and scope.
         </motion.p>
@@ -56,7 +55,6 @@ export function Modules() {
           Choose Your Upgrades
           <span className="text-amber transition-transform duration-200 group-hover:translate-x-0.5">→</span>
         </Link>
-
       </div>
     </section>
   )

@@ -4,24 +4,22 @@ import { BracketLabel } from '@/components/ui/BracketLabel'
 
 export function Hero() {
   return (
-    <section className="relative min-h-[92vh] flex flex-col justify-end bg-[var(--color-bg)] overflow-hidden pt-16">
-
+    <section className="relative flex min-h-[92vh] flex-col justify-end overflow-hidden bg-[var(--color-bg)] pt-16">
       <HeroGrid />
-
-      <div className="max-w-screen-xl mx-auto px-6 lg:px-12 w-full pb-16 lg:pb-20 relative z-10">
-
-        <div className="grid lg:grid-cols-[1fr_300px] lg:gap-16 items-end">
-
+      <div className="relative z-10 mx-auto w-full max-w-screen-xl px-6 pb-16 lg:px-12 lg:pb-20">
+        <div className="grid items-end lg:grid-cols-[minmax(0,1fr)_300px] lg:gap-16">
           <div>
             <div>
               <div className="mb-10">
-                <BracketLabel>Local service websites</BracketLabel>
+                <BracketLabel>Local Businesses</BracketLabel>
               </div>
 
               <h1 className="mb-8 max-w-[12ch] text-[clamp(3rem,8vw,7rem)] font-medium leading-[0.98] tracking-[-0.035em] text-ink sm:max-w-[15ch] lg:max-w-[14ch]">
-                <span className="block font-sans text-[0.74em] tracking-[-0.025em]">Websites built to</span>
+                <span className="block font-sans text-[0.74em] tracking-[-0.025em]">
+                  Websites built to
+                </span>
                 <span
-                  className="mt-3 flex flex-wrap items-baseline gap-x-[0.18em] gap-y-[0.02em] font-serif italic leading-[0.96] text-amber"
+                  className="mt-4 flex max-w-[11ch] flex-wrap items-baseline gap-x-[0.18em] gap-y-[0.18em] font-serif italic leading-[0.96] text-amber sm:max-w-[12ch] lg:max-w-[10ch]"
                   style={{ fontFamily: '"Instrument Serif", Georgia, serif' }}
                 >
                   <span>run,</span>
@@ -30,10 +28,8 @@ export function Hero() {
                 </span>
               </h1>
 
-              <p
-                className="mb-10 max-w-[31ch] text-[1.125rem] leading-relaxed text-ink-muted tracking-[-0.005em] sm:max-w-[52ch]"
-              >
-                I build custom websites for local service businesses that improve operations, trust, and conversion. Now structured for how people search through Google, AI tools, Maps, and local recommendations.
+              <p className="mb-10 max-w-[56ch] text-[1.125rem] leading-relaxed tracking-[-0.005em] text-ink-muted">
+                I build custom websites for local service businesses that improve operations, trust, and conversion. Built for how people search through Google, AI tools, Maps, and local recommendations.
               </p>
 
               <div className="flex flex-col items-start gap-5 sm:flex-row sm:flex-wrap sm:items-center sm:gap-6">
@@ -46,10 +42,10 @@ export function Hero() {
                 </Link>
 
                 <Link
-                  to="/work"
+                  to="/checkout"
                   className="group relative text-sm text-ink-muted transition-colors duration-200 hover:text-ink"
                 >
-                  See Selected Work
+                  See Your Options
                   <span
                     aria-hidden="true"
                     className="absolute -bottom-0.5 left-0 h-px w-0 bg-amber transition-all duration-200 group-hover:w-full"
@@ -64,18 +60,16 @@ export function Hero() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.6, ease: 'easeOut', delay: 0.35 }}
-            className="hidden lg:flex flex-col gap-3 pb-2 text-right"
+            className="hidden flex-col gap-3 pb-2 text-right lg:flex"
           >
             <BracketLabel>strategy</BracketLabel>
             <BracketLabel>systems</BracketLabel>
             <BracketLabel>web</BracketLabel>
             <BracketLabel>conversion</BracketLabel>
           </motion.div>
-
         </div>
       </div>
-
-      <div aria-hidden="true" className="absolute bottom-0 inset-x-0 h-px bg-[var(--color-border)]" />
+      <div aria-hidden="true" className="absolute inset-x-0 bottom-0 h-px bg-[var(--color-border)]" />
     </section>
   )
 }

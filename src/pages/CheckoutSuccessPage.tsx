@@ -235,7 +235,7 @@ export function CheckoutSuccessPage() {
                 to="/checkout"
                 className="inline-flex items-center gap-2.5 border border-[var(--color-border)] px-5 py-3 text-[0.7rem] font-medium uppercase tracking-[0.1em] text-ink-muted transition-all duration-200 hover:border-amber hover:text-amber"
               >
-                Build Your Plan
+                Explore Offers
                 <span className="text-amber">→</span>
               </Link>
             </div>
