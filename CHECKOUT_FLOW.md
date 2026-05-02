@@ -66,8 +66,8 @@ On submit, `/checkout`:
 
 1. Sends the selected path and client details to the `create-checkout-session` Edge Function.
 2. The function recalculates the final subtotal, bundle discount, and charge amount server-side.
-3. The function creates or updates the client, package, module selections, and payment schedule.
-4. The function creates a Stripe Checkout Session and returns the hosted `session.url`.
+3. The function normalizes the checkout email, writes it to `public.clients.email`, then creates or updates the client, package, module selections, and payment schedule.
+4. The function creates a Stripe Checkout Session with the same normalized email prefilled in `customer_email` and returns the hosted `session.url`.
 5. Stripe returns the browser to `/checkout/success?session_id={CHECKOUT_SESSION_ID}`.
 6. The browser shows package-specific confirmation details after it loads the summary function.
 
@@ -117,6 +117,8 @@ matching `clients.email` value if it finds one.
 
 That means the checkout email and the auth email must match exactly. If they do not match, the
 portal stays in the pending state until an admin connects the record manually.
+The checkout email is the source of truth for the client record, and Stripe Checkout is
+prefilled with that same normalized email so portal auto-linking stays reliable.
 
 Supabase Auth email delivery is rate-limited by default, so repeated login-link tests can hit
 temporary limits. Production uses custom SMTP in Supabase with Resend for portal login emails.

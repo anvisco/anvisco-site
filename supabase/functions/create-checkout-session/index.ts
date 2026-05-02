@@ -34,6 +34,7 @@ type DbPaymentSchedule = { id: string }
 type CheckoutStep =
   | 'client_lookup'
   | 'clients_insert'
+  | 'clients_update'
   | 'client_packages_select'
   | 'client_packages_insert'
   | 'module_selections_insert'
@@ -47,6 +48,7 @@ type CheckoutErrorCode =
   | 'missing_supabase_url'
   | 'missing_stripe_secret'
   | 'missing_site_url'
+  | 'missing_client_email'
   | 'invalid_payload'
   | 'invalid_package_type'
   | 'stripe_session_create_failed'
@@ -341,7 +343,10 @@ Deno.serve(async (request) => {
     }
 
     let resolvedClientId = payload.client_id?.trim() || null
-    let clientEmail = payload.email?.trim().toLowerCase() || null
+    const clientEmail = payload.email?.trim().toLowerCase() || null
+    if (!clientEmail) {
+      return errorResponse(400, 'Email is required to build your plan.', 'missing_client_email')
+    }
     if (payload.package_id) {
       failureStep = 'client_packages_select'
       const { data: existingPackage, error: existingPackageError } = await supabase
@@ -367,7 +372,7 @@ Deno.serve(async (request) => {
       resolvedClientId = existingPackage.client_id
     }
 
-    if (!clientEmail && resolvedClientId) {
+    if (resolvedClientId) {
       const { data: existingClient, error: existingClientError } = await supabase
         .from('clients')
         .select('id, email')
@@ -383,10 +388,32 @@ Deno.serve(async (request) => {
         )
       }
 
-      clientEmail = existingClient?.email?.trim().toLowerCase() ?? null
-      logStep('resolved client email', {
+      if (!existingClient) {
+        return errorResponse(404, 'Invalid checkout selection.', 'invalid_payload')
+      }
+
+      const existingClientEmail = existingClient.email?.trim().toLowerCase() ?? null
+      if (!existingClientEmail || existingClientEmail !== clientEmail) {
+        failureStep = 'clients_update'
+        const { error: clientUpdateError } = await supabase
+          .from('clients')
+          .update({ email: clientEmail })
+          .eq('id', resolvedClientId)
+
+        if (clientUpdateError) {
+          logSupabaseFailure('clients_update', clientUpdateError)
+          throw checkoutFailure(
+            clientUpdateError.message || 'Supabase client email update failed.',
+            'supabase_update_failed',
+            'clients_update',
+          )
+        }
+      }
+
+      logStep('normalized client email persisted', {
         client_id: resolvedClientId,
-        has_client_email: Boolean(clientEmail),
+        normalized_email: clientEmail,
+        existing_email_matched: existingClientEmail === clientEmail,
       })
     }
 
@@ -431,9 +458,7 @@ Deno.serve(async (request) => {
     sessionParams.set('mode', payload.package_type === 'recurring' ? 'subscription' : 'payment')
     sessionParams.set('success_url', successUrl)
     sessionParams.set('cancel_url', cancelUrl)
-    if (clientEmail) {
-      sessionParams.set('customer_email', clientEmail)
-    }
+    sessionParams.set('customer_email', clientEmail)
     sessionParams.set('client_reference_id', clientId)
     sessionParams.set('metadata[client_id]', clientId)
     sessionParams.set('metadata[package_id]', packageId)
@@ -465,6 +490,11 @@ Deno.serve(async (request) => {
 
     pricing.line_items.forEach((item, index) => appendLineItem(sessionParams, index, item))
     logStep('prepared line items', { count: pricing.line_items.length })
+    logStep('stripe customer email configured', {
+      client_id: clientId,
+      normalized_email: clientEmail,
+      customer_email_passed: Boolean(clientEmail),
+    })
 
     logStep('creating Stripe session')
     const stripeRes = await stripeApi(STRIPE_SECRET_KEY, '/checkout/sessions', sessionParams)
