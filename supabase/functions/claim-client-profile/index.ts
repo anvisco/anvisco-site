@@ -10,6 +10,12 @@ type ClaimResponse =
   | { linked: false; reason: 'no_matching_client'; auth_email: string }
   | { linked: false; reason: 'insert_failed'; auth_email: string; error: string; code?: string }
 
+type ClientCandidateRow = {
+  id: string
+  email: string
+  created_at: string
+}
+
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
@@ -30,6 +36,10 @@ function jsonResponse(body: unknown, status = 200) {
 function getRequiredEnv(name: string): string | null {
   const value = Deno.env.get(name)
   return value && value.trim() ? value.trim() : null
+}
+
+function normalizeEmail(value: string): string {
+  return value.trim().toLowerCase()
 }
 
 function unauthorized(message = 'Unauthorized') {
@@ -86,7 +96,7 @@ Deno.serve(async (request) => {
     return unauthorized('Invalid or expired session.')
   }
 
-  const normalizedEmail = user.email.trim().toLowerCase()
+  const normalizedEmail = normalizeEmail(user.email)
 
   const { data: existingLink, error: existingLinkError } = await supabase
     .from('client_users')
@@ -118,21 +128,58 @@ Deno.serve(async (request) => {
       alreadyLinked: true,
       client_id: existingLink.client_id,
       auth_email: normalizedEmail,
-      matched_client_email: existingClient?.email?.trim().toLowerCase() ?? normalizedEmail,
+      matched_client_email: existingClient?.email ?? normalizedEmail,
     }
     return jsonResponse(response)
   }
 
-  const { data: matchingClient, error: clientError } = await supabase
-    .from('clients')
-    .select('id, email, created_at')
-    .eq('email', normalizedEmail)
-    .maybeSingle<{ id: string; email: string; created_at: string }>()
+  async function findMatchingClientCandidates(pattern: string) {
+    const { data, error } = await supabase
+      .from('clients')
+      .select('id, email, created_at')
+      .ilike('email', pattern)
+      .order('created_at', { ascending: false })
+      .limit(25)
+
+    if (error) throw error
+    return (data as ClientCandidateRow[] | null) ?? []
+  }
+
+  let exactCandidates: ClientCandidateRow[] = []
+  let broadCandidates: ClientCandidateRow[] = []
+  let matchingClient: ClientCandidateRow | null = null
+  let clientError: { code?: string; message?: string; details?: string; hint?: string } | null = null
+
+  try {
+    exactCandidates = await findMatchingClientCandidates(normalizedEmail)
+    matchingClient =
+      exactCandidates.find((client) => normalizeEmail(client.email) === normalizedEmail) ?? null
+
+    if (!matchingClient) {
+      broadCandidates = await findMatchingClientCandidates(`%${normalizedEmail}%`)
+      matchingClient =
+        broadCandidates.find((client) => normalizeEmail(client.email) === normalizedEmail) ?? null
+    }
+  } catch (error) {
+    clientError = error as { code?: string; message?: string; details?: string; hint?: string }
+  }
 
   if (clientError) {
     console.error('claim-client-profile client lookup failed', clientError)
     return jsonResponse({ error: 'Could not look up your client profile.' }, 500)
   }
+
+  const matchingClientsFound = (exactCandidates.length > 0 ? exactCandidates : broadCandidates).filter(
+    (client) => normalizeEmail(client.email) === normalizedEmail,
+  )
+
+  console.log('claim-client-profile email match scan', {
+    auth_email: normalizedEmail,
+    exact_candidates: exactCandidates.length,
+    broad_candidates: broadCandidates.length,
+    matching_clients_found: matchingClientsFound.length,
+    selected_client_id: matchingClient?.id ?? null,
+  })
 
   if (!matchingClient?.id) {
     const response: ClaimResponse = { linked: false, reason: 'no_matching_client', auth_email: normalizedEmail }
@@ -171,7 +218,7 @@ Deno.serve(async (request) => {
           alreadyLinked: true,
           client_id: conflictedLink.client_id,
           auth_email: normalizedEmail,
-          matched_client_email: conflictedClient?.email?.trim().toLowerCase() ?? normalizedEmail,
+          matched_client_email: conflictedClient?.email ?? normalizedEmail,
         }
         return jsonResponse(response)
       }
@@ -192,7 +239,7 @@ Deno.serve(async (request) => {
     linked: true,
     client_id: matchingClient.id,
     auth_email: normalizedEmail,
-    matched_client_email: matchingClient.email.trim().toLowerCase(),
+    matched_client_email: matchingClient.email,
   }
   return jsonResponse(response)
 })
