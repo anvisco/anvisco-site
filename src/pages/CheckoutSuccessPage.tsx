@@ -193,10 +193,6 @@ export function CheckoutSuccessPage() {
                   ))}
                 </ul>
               </Step>
-              <Step n="03" title="Portal access">
-                Use the same email you used at checkout. We’ll send you a secure login link so you
-                can view your project stage, payment status, next due date, and updates.
-              </Step>
             </div>
 
             <section className="mb-10 border border-[var(--color-border)] bg-[var(--color-surface)] p-6">

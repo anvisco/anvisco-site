@@ -113,7 +113,7 @@ export function ServicesPage() {
 
         <section className="py-20 md:py-28 bg-[var(--color-surface)]">
           <div className="max-w-screen-xl mx-auto px-6 lg:px-12">
-            <SectionHeader number="01" label="The ladder" title="The ladder." />
+            <SectionHeader number="01" label="How it works" title="The ladder." />
             <p className="max-w-[30ch] break-words text-base leading-relaxed text-ink-muted sm:max-w-[62ch] sm:text-[1.0625rem]">
               Most agencies sell one thing: a full rebuild, whether or not it is the right move. Anvis is structured differently.
             </p>

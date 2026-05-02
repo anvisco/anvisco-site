@@ -19,7 +19,7 @@ export function Modules() {
             viewport={{ once: true }}
             transition={{ duration: 0.4 }}
           >
-            <BracketLabel>Module teaser</BracketLabel>
+            <BracketLabel>Improvements</BracketLabel>
           </motion.div>
         </div>
 

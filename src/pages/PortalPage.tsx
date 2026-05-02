@@ -573,13 +573,13 @@ export function PortalPage() {
                 <div className="mb-5 flex flex-wrap items-start justify-between gap-4">
                   <div>
                     <p className="mb-1 text-[0.7rem] uppercase tracking-[0.08em] text-ink-subtle">
-                      Welcome
+                      Project overview
                     </p>
                     <h2 className="text-xl font-medium tracking-[-0.01em] text-ink">
-                      Welcome, {getClientDisplayName(portal.client)}.
+                      {getClientDisplayName(portal.client)}
                     </h2>
                     <p className="mt-1 max-w-[56ch] text-sm leading-relaxed text-ink-muted">
-                      Your project portal shows your current package, stage, payments, and updates.
+                      Your current package, stage, payments, and updates.
                     </p>
                   </div>
                 </div>
@@ -600,50 +600,6 @@ export function PortalPage() {
                   <InfoTile label="Current stage" value={currentStageLabel} />
                 </div>
 
-                <div className="mt-6">
-                  <div className="mb-3 flex items-center justify-between gap-4">
-                    <p className="text-[0.7rem] uppercase tracking-[0.08em] text-ink-subtle">
-                      Stage tracker
-                    </p>
-                    <span className="text-sm text-ink-muted">Current stage: {currentStageLabel}</span>
-                  </div>
-                  <div className="overflow-x-auto pb-2">
-                    <div className="flex min-w-max gap-3">
-                      {STAGES.map((stage, index) => {
-                        const active = currentStageIndex === index
-                        const complete = currentStageIndex > index
-                        const upcoming = currentStageIndex === -1 || index > currentStageIndex
-                        return (
-                          <div
-                            key={stage.key}
-                            className={`min-w-[150px] border px-4 py-3 transition-colors ${
-                              active
-                                ? 'border-amber/60 bg-[var(--color-bg)]'
-                                : complete
-                                  ? 'border-[var(--color-border)] bg-[var(--color-surface)]'
-                                  : 'border-[var(--color-border)] bg-[var(--color-bg)] opacity-80'
-                            }`}
-                          >
-                            <div className="mb-3 flex items-center justify-between gap-3">
-                              <span className="text-[0.65rem] uppercase tracking-[0.08em] text-ink-subtle">
-                                {String(index + 1).padStart(2, '0')}
-                              </span>
-                              {active && <StatusBadge status="active" />}
-                              {!active && complete && <StatusBadge status="complete" />}
-                              {!active && upcoming && (
-                                <span className="text-[0.65rem] uppercase tracking-[0.08em] text-ink-subtle">
-                                  Upcoming
-                                </span>
-                              )}
-                            </div>
-                            <p className="mb-2 text-sm font-medium text-ink">{stage.title}</p>
-                            <p className="text-sm leading-relaxed text-ink-muted">{stage.hint}</p>
-                          </div>
-                        )
-                      })}
-                    </div>
-                  </div>
-                </div>
               </section>
 
               <section className="grid gap-6 xl:grid-cols-2">

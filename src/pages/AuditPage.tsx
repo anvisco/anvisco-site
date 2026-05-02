@@ -52,13 +52,13 @@ export function AuditPage() {
               <AuditOption
                 title="Free AI-Ready Website Snapshot"
                 items={snapshotItems}
-                bestFor="Practices wanting a quick second opinion before committing to anything."
+                bestFor="Businesses wanting a quick second opinion before committing to anything."
                 cta="Get Free Audit"
               />
               <AuditOption
                 title="Full Website Audit"
                 items={fullAuditItems}
-                bestFor="Practices that want depth and a clear plan before deciding what to invest in."
+                bestFor="Businesses that want a clear, ranked plan before deciding what to invest in."
                 cta="Start Your Audit"
                 to="/checkout?path=audit"
               />

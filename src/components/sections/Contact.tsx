@@ -43,7 +43,7 @@ export function Contact() {
             transition={{ duration: 0.5, ease: 'easeOut', delay: 0.1 }}
             className="mb-10 text-[1.125rem] leading-relaxed text-ink-muted max-w-[52ch]"
           >
-            Start with a simple request. Choose whether you need an audit, targeted improvements, a full build, or ongoing support. No instant payment, just a clear next step.
+            Start with a simple request. Choose whether you need an audit, targeted improvements, a full build, or ongoing support.
           </motion.p>
 
           {/* CTAs */}

@@ -650,6 +650,9 @@ function ClientDetailsSection({
             onChange={(e) => update('email', e.target.value)}
             className={INPUT_CLASS}
           />
+          <span className="text-[0.65rem] leading-normal text-ink-subtle">
+            Use the email you want connected to your client portal.
+          </span>
         </Field>
         <Field label="Phone (optional)">
           <input
@@ -818,7 +821,7 @@ function Summary(props: {
       </button>
 
       <p className="mt-4 text-[0.7rem] leading-relaxed text-ink-subtle">
-        Secure Stripe checkout. Build Your Plan and continue through Stripe.
+        You'll be redirected to Stripe to complete secure payment.
       </p>
 
       {!isSupabaseConfigured && (
