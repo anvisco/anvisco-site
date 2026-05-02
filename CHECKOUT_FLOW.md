@@ -126,6 +126,9 @@ paid-client welcome email through the Resend API. That webhook email is separate
 Auth email delivery and uses `RESEND_API_KEY`, `RESEND_FROM_EMAIL`, `ANVIS_SUPPORT_EMAIL`, and
 `PORTAL_URL`.
 
+Stripe customer email is synced back onto the client record after payment, so client portal
+auto-linking requires the user to log in with the same email used during Stripe checkout.
+
 The admin cleanup tool can safely remove matching test clients and related checkout records by
 email after you have finished testing the flow.
 

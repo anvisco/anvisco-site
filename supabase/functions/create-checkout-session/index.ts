@@ -28,6 +28,7 @@ type CheckoutPayload = {
 }
 
 type DbClient = { id: string }
+type DbClientRow = { id: string; email: string }
 type DbPackage = { id: string; client_id: string }
 type DbPaymentSchedule = { id: string }
 type CheckoutStep =
@@ -340,6 +341,7 @@ Deno.serve(async (request) => {
     }
 
     let resolvedClientId = payload.client_id?.trim() || null
+    let clientEmail = payload.email?.trim().toLowerCase() || null
     if (payload.package_id) {
       failureStep = 'client_packages_select'
       const { data: existingPackage, error: existingPackageError } = await supabase
@@ -363,6 +365,29 @@ Deno.serve(async (request) => {
         return errorResponse(400, 'Invalid checkout selection.', 'invalid_payload')
       }
       resolvedClientId = existingPackage.client_id
+    }
+
+    if (!clientEmail && resolvedClientId) {
+      const { data: existingClient, error: existingClientError } = await supabase
+        .from('clients')
+        .select('id, email')
+        .eq('id', resolvedClientId)
+        .maybeSingle<DbClientRow>()
+
+      if (existingClientError) {
+        logSupabaseFailure('client_lookup', existingClientError)
+        throw checkoutFailure(
+          existingClientError.message || 'Supabase client lookup failed.',
+          'supabase_insert_failed',
+          'client_lookup',
+        )
+      }
+
+      clientEmail = existingClient?.email?.trim().toLowerCase() ?? null
+      logStep('resolved client email', {
+        client_id: resolvedClientId,
+        has_client_email: Boolean(clientEmail),
+      })
     }
 
     createdRecords = {
@@ -406,8 +431,8 @@ Deno.serve(async (request) => {
     sessionParams.set('mode', payload.package_type === 'recurring' ? 'subscription' : 'payment')
     sessionParams.set('success_url', successUrl)
     sessionParams.set('cancel_url', cancelUrl)
-    if (payload.email?.trim()) {
-      sessionParams.set('customer_email', payload.email.trim().toLowerCase())
+    if (clientEmail) {
+      sessionParams.set('customer_email', clientEmail)
     }
     sessionParams.set('client_reference_id', clientId)
     sessionParams.set('metadata[client_id]', clientId)

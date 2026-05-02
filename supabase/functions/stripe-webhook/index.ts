@@ -441,6 +441,7 @@ async function handleCheckoutSessionCompleted(
   const sessionSubscription = getString(session.subscription)
   const sessionPaymentIntent = getString(session.payment_intent)
   const sessionPaymentStatus = getString(session.payment_status)
+  const stripeCustomerEmail = getStripeSessionEmail(session)
   const subscription = sessionSubscription ? await stripeGet(`/subscriptions/${sessionSubscription}`, stripeSecretKey) : null
   const subscriptionPeriodEnd = subscription ? toDateStringFromUnix(subscription.current_period_end) : null
 
@@ -469,6 +470,33 @@ async function handleCheckoutSessionCompleted(
     update.next_payment_due_at = subscriptionPeriodEnd
   }
   await supabase.from('client_packages').update(update).eq('id', packageId)
+
+  let clientsEmailUpdated = false
+  if (stripeCustomerEmail) {
+    const { error: clientEmailUpdateError } = await supabase
+      .from('clients')
+      .update({ email: stripeCustomerEmail })
+      .eq('id', clientId)
+
+    if (clientEmailUpdateError) {
+      console.error('stripe-webhook client email sync failed', {
+        client_id: clientId,
+        has_stripe_customer_email: true,
+        message: clientEmailUpdateError.message,
+        code: clientEmailUpdateError.code,
+        details: clientEmailUpdateError.details,
+        hint: clientEmailUpdateError.hint,
+      })
+    } else {
+      clientsEmailUpdated = true
+    }
+  }
+
+  console.log('stripe-webhook checkout email sync', {
+    client_id: clientId,
+    has_stripe_customer_email: Boolean(stripeCustomerEmail),
+    clients_email_updated: clientsEmailUpdated,
+  })
 
   if (sessionPaymentStatus === 'paid') {
     await sendPaidClientWelcomeEmail(supabase, packageId, session)
