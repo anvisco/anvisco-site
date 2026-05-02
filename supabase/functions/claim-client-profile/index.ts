@@ -7,8 +7,8 @@ type ClientUserRow = {
 
 type ClaimResponse =
   | { linked: true; client_id: string; auth_email: string; matched_client_email: string; alreadyLinked?: boolean }
-  | { linked: false; reason: 'no_matching_client'; auth_email: string }
-  | { linked: false; reason: 'insert_failed'; auth_email: string; error: string; code?: string }
+  | { linked: false; reason: 'no_matching_client'; auth_email: string; candidate_count: number }
+  | { linked: false; reason: 'insert_failed'; auth_email: string; client_id: string; error: string; code?: string }
 
 type ClientCandidateRow = {
   id: string
@@ -97,6 +97,11 @@ Deno.serve(async (request) => {
   }
 
   const normalizedEmail = normalizeEmail(user.email)
+  console.log('claim-client-profile auth context', {
+    auth_user_id: user.id,
+    auth_email: user.email,
+    normalized_email: normalizedEmail,
+  })
 
   const { data: existingLink, error: existingLinkError } = await supabase
     .from('client_users')
@@ -133,33 +138,24 @@ Deno.serve(async (request) => {
     return jsonResponse(response)
   }
 
-  async function findMatchingClientCandidates(pattern: string) {
+  async function findRecentClientCandidates() {
     const { data, error } = await supabase
       .from('clients')
       .select('id, email, created_at')
-      .ilike('email', pattern)
       .order('created_at', { ascending: false })
-      .limit(25)
+      .limit(100)
 
     if (error) throw error
     return (data as ClientCandidateRow[] | null) ?? []
   }
 
-  let exactCandidates: ClientCandidateRow[] = []
-  let broadCandidates: ClientCandidateRow[] = []
+  let candidates: ClientCandidateRow[] = []
   let matchingClient: ClientCandidateRow | null = null
   let clientError: { code?: string; message?: string; details?: string; hint?: string } | null = null
 
   try {
-    exactCandidates = await findMatchingClientCandidates(normalizedEmail)
-    matchingClient =
-      exactCandidates.find((client) => normalizeEmail(client.email) === normalizedEmail) ?? null
-
-    if (!matchingClient) {
-      broadCandidates = await findMatchingClientCandidates(`%${normalizedEmail}%`)
-      matchingClient =
-        broadCandidates.find((client) => normalizeEmail(client.email) === normalizedEmail) ?? null
-    }
+    candidates = await findRecentClientCandidates()
+    matchingClient = candidates.find((client) => normalizeEmail(client.email) === normalizedEmail) ?? null
   } catch (error) {
     clientError = error as { code?: string; message?: string; details?: string; hint?: string }
   }
@@ -169,26 +165,35 @@ Deno.serve(async (request) => {
     return jsonResponse({ error: 'Could not look up your client profile.' }, 500)
   }
 
-  const matchingClientsFound = (exactCandidates.length > 0 ? exactCandidates : broadCandidates).filter(
-    (client) => normalizeEmail(client.email) === normalizedEmail,
-  )
+  const matchingClientsFound = candidates.filter((client) => normalizeEmail(client.email) === normalizedEmail)
 
   console.log('claim-client-profile email match scan', {
     auth_email: normalizedEmail,
-    exact_candidates: exactCandidates.length,
-    broad_candidates: broadCandidates.length,
+    candidate_count: candidates.length,
     matching_clients_found: matchingClientsFound.length,
     selected_client_id: matchingClient?.id ?? null,
   })
 
   if (!matchingClient?.id) {
-    const response: ClaimResponse = { linked: false, reason: 'no_matching_client', auth_email: normalizedEmail }
+    const response: ClaimResponse = {
+      linked: false,
+      reason: 'no_matching_client',
+      auth_email: normalizedEmail,
+      candidate_count: candidates.length,
+    }
     return jsonResponse(response)
   }
 
   const { error: insertError } = await supabase.from('client_users').insert({
     user_id: user.id,
     client_id: matchingClient.id,
+  })
+
+  console.log('claim-client-profile insert attempt', {
+    auth_user_id: user.id,
+    auth_email: normalizedEmail,
+    client_id: matchingClient.id,
+    insert_error: insertError ? insertError.code ?? insertError.message ?? 'unknown' : null,
   })
 
   if (insertError) {
@@ -229,6 +234,7 @@ Deno.serve(async (request) => {
       linked: false,
       reason: 'insert_failed',
       auth_email: normalizedEmail,
+      client_id: matchingClient.id,
       error: 'Could not connect your client profile.',
       code: insertError.code,
     }
