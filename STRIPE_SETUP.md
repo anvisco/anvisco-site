@@ -53,10 +53,22 @@ Supabase Auth magic-link emails are separate from Stripe. The default Supabase s
 rate-limited for testing, so production uses custom SMTP in Supabase with Resend for portal login
 links.
 
+Paid-client welcome emails are sent from the `stripe-webhook` Edge Function through the Resend
+API after Stripe confirms a successful checkout payment. That flow requires these Supabase
+secrets:
+
+- `RESEND_API_KEY`
+- `RESEND_FROM_EMAIL`
+- `ANVIS_SUPPORT_EMAIL`
+- `PORTAL_URL`
+
 Edge Functions do not automatically read frontend `.env.local` `VITE_` variables. If a function
 needs a base URL for `success_url` / `cancel_url`, set it as the `SITE_URL` Supabase secret.
 The `claim-client-profile` function also uses `ANVIS_SUPABASE_SECRET_KEY` server-side to look up
 and insert the matching client link safely.
+
+The webhook welcome-email send is best-effort. If Resend returns an error, the payment update
+still commits and the webhook returns success after logging the failure safely.
 
 The checkout function now returns Stripe to:
 

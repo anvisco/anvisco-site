@@ -55,4 +55,12 @@ export const EMAIL_TEMPLATES: EmailTemplateDefinition[] = [
       'Hi {{client_name}},\n\nHere’s the monthly care update for {{business_name}}.\nCurrent stage: {{stage}}.\n\nThis check keeps small issues from growing and keeps the site moving in the right direction.\n\nBrian',
     placeholders: COMMON_PLACEHOLDERS,
   },
+  {
+    key: 'paid_client_welcome',
+    name: 'Paid client welcome',
+    subject: 'Welcome to Anvis — your client portal',
+    body:
+      'Hi {{client_name}},\n\nYour payment is confirmed.\n\nYour client portal is where you’ll be able to view your project stage, payment status, next due date, and client-visible updates.\n\nClient portal:\n{{portal_url}}\n\nUse the same email address you used at checkout. We’ll send you a secure login link so your portal can connect to the right project.\n\nNext steps:\n1. Open the client portal.\n2. Enter the same email used at checkout.\n3. Click the secure login link in your inbox.\n4. Your project profile will connect automatically.\n\nIf anything does not connect, contact {{support_email}}.\n\nBrian\nAnvis',
+    placeholders: ['{{client_name}}', '{{portal_url}}', '{{support_email}}'],
+  },
 ]

@@ -99,6 +99,15 @@ Supabase's default Auth email sender is rate-limited and intended for testing. T
 custom SMTP provider in Supabase with Resend for production portal login emails, so magic links
 are not throttled during normal use.
 
+Paid-client welcome emails are separate from Supabase Auth. They are sent from the
+`stripe-webhook` Edge Function through the Resend API after a successful Stripe checkout event.
+Those emails use the following Supabase secrets:
+
+- `RESEND_API_KEY`
+- `RESEND_FROM_EMAIL`
+- `ANVIS_SUPPORT_EMAIL`
+- `PORTAL_URL`
+
 ## 3. Run the migration
 
 Pick one:
@@ -209,6 +218,10 @@ server-side pricing, validation, and Stripe signature checks.
 The success-page summary function must also stay public because the browser calls it after Stripe
 redirects back with the `session_id` query param.
 
+The `stripe-webhook` function also sends a paid-client welcome email through Resend API after a
+successful checkout payment. If that send fails, payment processing still succeeds and the webhook
+does not roll back the payment updates.
+
 In Stripe, point the webhook endpoint at the deployed `stripe-webhook` function URL and listen for:
 
 - `checkout.session.completed`
@@ -297,6 +310,9 @@ future maintenance pass adds a separate, audited cleanup path for them.
   you still want a manual reset path for internal use.
 - If Supabase env vars are missing, the portal shows a setup message instead of crashing.
 - The portal never exposes other clients, email logs, or internal-only updates.
+
+Welcome emails are sent only after Stripe confirms payment. The webhook uses the Resend API and
+the `client_packages.welcome_email_sent_at` column to avoid duplicate messages on webhook retries.
 
 Manual inserts into `client_users` are only needed for special cases, such as an email mismatch or
 an intentionally hand-managed client record. Normal portal signup should self-link by email match

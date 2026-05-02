@@ -121,6 +121,11 @@ portal stays in the pending state until an admin connects the record manually.
 Supabase Auth email delivery is rate-limited by default, so repeated login-link tests can hit
 temporary limits. Production uses custom SMTP in Supabase with Resend for portal login emails.
 
+After Stripe confirms a successful checkout payment, the `stripe-webhook` Edge Function sends a
+paid-client welcome email through the Resend API. That webhook email is separate from Supabase
+Auth email delivery and uses `RESEND_API_KEY`, `RESEND_FROM_EMAIL`, `ANVIS_SUPPORT_EMAIL`, and
+`PORTAL_URL`.
+
 The admin cleanup tool can safely remove matching test clients and related checkout records by
 email after you have finished testing the flow.
 

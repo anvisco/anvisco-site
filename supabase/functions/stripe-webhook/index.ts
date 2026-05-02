@@ -10,6 +10,21 @@ type StripeEvent = {
 
 type StripeObject = Record<string, unknown>
 
+type ClientPackageRow = {
+  id: string
+  client_id: string
+  welcome_email_sent_at: string | null
+  stripe_customer_id: string | null
+  stripe_subscription_id: string | null
+}
+
+type ClientRow = {
+  id: string
+  name: string
+  business_name: string | null
+  email: string
+}
+
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, stripe-signature',
@@ -37,6 +52,217 @@ function getMetadata(obj: StripeObject): Record<string, string> {
   return Object.fromEntries(
     Object.entries(metadata).filter(([, value]) => typeof value === 'string') as [string, string][],
   )
+}
+
+function getRequiredEnv(name: string): string | null {
+  const value = Deno.env.get(name)
+  return value && value.trim() ? value.trim() : null
+}
+
+function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+}
+
+function getStripeSessionEmail(session: StripeObject): string | null {
+  const directEmail = getString(session.customer_email)
+  if (directEmail) return directEmail.toLowerCase()
+
+  const customerDetails = session.customer_details
+  if (customerDetails && typeof customerDetails === 'object') {
+    const nestedEmail = getString((customerDetails as Record<string, unknown>).email)
+    if (nestedEmail) return nestedEmail.toLowerCase()
+  }
+
+  return null
+}
+
+function toWelcomeEmailText({
+  clientName,
+  portalUrl,
+  supportEmail,
+}: {
+  clientName: string
+  portalUrl: string
+  supportEmail: string
+}) {
+  return [
+    `Hi ${clientName},`,
+    '',
+    'Your payment is confirmed.',
+    '',
+    'Your client portal is where you’ll be able to view your project stage, payment status, next due date, and client-visible updates.',
+    '',
+    'Client portal:',
+    portalUrl,
+    '',
+    'Use the same email address you used at checkout. We’ll send you a secure login link so your portal can connect to the right project.',
+    '',
+    'Next steps:',
+    '1. Open the client portal.',
+    '2. Enter the same email used at checkout.',
+    '3. Click the secure login link in your inbox.',
+    '4. Your project profile will connect automatically.',
+    '',
+    `If anything does not connect, contact ${supportEmail}.`,
+    '',
+    'Brian',
+    'Anvis',
+  ].join('\n')
+}
+
+function toWelcomeEmailHtml({
+  clientName,
+  portalUrl,
+  supportEmail,
+}: {
+  clientName: string
+  portalUrl: string
+  supportEmail: string
+}) {
+  const escapedPortalUrl = escapeHtml(portalUrl)
+  const escapedClientName = escapeHtml(clientName)
+  const escapedSupportEmail = escapeHtml(supportEmail)
+
+  return [
+    `<p>Hi ${escapedClientName},</p>`,
+    '<p>Your payment is confirmed.</p>',
+    '<p>Your client portal is where you’ll be able to view your project stage, payment status, next due date, and client-visible updates.</p>',
+    `<p><strong>Client portal:</strong><br />${escapedPortalUrl}</p>`,
+    '<p>Use the same email address you used at checkout. We’ll send you a secure login link so your portal can connect to the right project.</p>',
+    '<p><strong>Next steps:</strong></p>',
+    '<ol>',
+    '<li>Open the client portal.</li>',
+    '<li>Enter the same email used at checkout.</li>',
+    '<li>Click the secure login link in your inbox.</li>',
+    '<li>Your project profile will connect automatically.</li>',
+    '</ol>',
+    `<p>If anything does not connect, contact ${escapedSupportEmail}.</p>`,
+    '<p>Brian<br />Anvis</p>',
+  ].join('')
+}
+
+async function sendPaidClientWelcomeEmail(
+  supabase: ReturnType<typeof createClient>,
+  packageId: string,
+  session: StripeObject,
+) {
+  const RESEND_API_KEY = getRequiredEnv('RESEND_API_KEY')
+  const RESEND_FROM_EMAIL = getRequiredEnv('RESEND_FROM_EMAIL')
+  const ANVIS_SUPPORT_EMAIL = getRequiredEnv('ANVIS_SUPPORT_EMAIL')
+  const PORTAL_URL = getRequiredEnv('PORTAL_URL')
+
+  if (!RESEND_API_KEY || !RESEND_FROM_EMAIL || !ANVIS_SUPPORT_EMAIL || !PORTAL_URL) {
+    console.error('stripe-webhook welcome email skipped', { reason: 'missing_resend_configuration' })
+    return
+  }
+
+  const { data: packageRow, error: packageError } = await supabase
+    .from('client_packages')
+    .select('id, client_id, welcome_email_sent_at, stripe_customer_id, stripe_subscription_id')
+    .eq('id', packageId)
+    .maybeSingle<ClientPackageRow>()
+
+  if (packageError) {
+    console.error('stripe-webhook welcome email package lookup failed', {
+      code: packageError.code,
+      message: packageError.message,
+      details: packageError.details,
+      hint: packageError.hint,
+    })
+    return
+  }
+
+  if (!packageRow?.id || packageRow.welcome_email_sent_at) {
+    return
+  }
+
+  const { data: clientRow, error: clientError } = await supabase
+    .from('clients')
+    .select('id, name, business_name, email')
+    .eq('id', packageRow.client_id)
+    .maybeSingle<ClientRow>()
+
+  if (clientError) {
+    console.error('stripe-webhook welcome email client lookup failed', {
+      code: clientError.code,
+      message: clientError.message,
+      details: clientError.details,
+      hint: clientError.hint,
+    })
+    return
+  }
+
+  const toEmail = getStripeSessionEmail(session) ?? clientRow?.email?.trim().toLowerCase() ?? null
+  if (!toEmail) return
+
+  const clientName = clientRow?.name?.trim() || clientRow?.business_name?.trim() || 'there'
+  const subject = 'Welcome to Anvis — your client portal'
+  const text = toWelcomeEmailText({
+    clientName,
+    portalUrl: PORTAL_URL,
+    supportEmail: ANVIS_SUPPORT_EMAIL,
+  })
+  const html = toWelcomeEmailHtml({
+    clientName,
+    portalUrl: PORTAL_URL,
+    supportEmail: ANVIS_SUPPORT_EMAIL,
+  })
+
+  try {
+    const response = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${RESEND_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        from: RESEND_FROM_EMAIL,
+        to: [toEmail],
+        subject,
+        text,
+        html,
+      }),
+    })
+
+    if (!response.ok) {
+      const errorText = await response.text().catch(() => '')
+      console.error('stripe-webhook welcome email resend failed', {
+        status: response.status,
+        body: errorText.slice(0, 500),
+        to_email: toEmail,
+        package_id: packageRow.id,
+      })
+      return
+    }
+
+    const { error: updateError } = await supabase
+      .from('client_packages')
+      .update({ welcome_email_sent_at: new Date().toISOString() })
+      .eq('id', packageRow.id)
+      .is('welcome_email_sent_at', null)
+
+    if (updateError) {
+      console.error('stripe-webhook welcome email timestamp update failed', {
+        code: updateError.code,
+        message: updateError.message,
+        details: updateError.details,
+        hint: updateError.hint,
+        package_id: packageRow.id,
+        to_email: toEmail,
+      })
+    }
+  } catch (error) {
+    console.error('stripe-webhook welcome email send failed', {
+      message: error instanceof Error ? error.message : String(error),
+      package_id: packageRow.id,
+      to_email: toEmail,
+    })
+  }
 }
 
 function toDateStringFromUnix(value: unknown): string | null {
@@ -214,6 +440,7 @@ async function handleCheckoutSessionCompleted(
   const sessionCustomer = getString(session.customer)
   const sessionSubscription = getString(session.subscription)
   const sessionPaymentIntent = getString(session.payment_intent)
+  const sessionPaymentStatus = getString(session.payment_status)
   const subscription = sessionSubscription ? await stripeGet(`/subscriptions/${sessionSubscription}`, stripeSecretKey) : null
   const subscriptionPeriodEnd = subscription ? toDateStringFromUnix(subscription.current_period_end) : null
 
@@ -242,6 +469,10 @@ async function handleCheckoutSessionCompleted(
     update.next_payment_due_at = subscriptionPeriodEnd
   }
   await supabase.from('client_packages').update(update).eq('id', packageId)
+
+  if (sessionPaymentStatus === 'paid') {
+    await sendPaidClientWelcomeEmail(supabase, packageId, session)
+  }
 }
 
 async function handleInvoicePaid(
