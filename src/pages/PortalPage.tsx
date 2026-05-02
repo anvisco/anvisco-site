@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { FunctionsFetchError, FunctionsHttpError } from '@supabase/supabase-js'
 import { Nav } from '@/components/layout/Nav'
 import { Footer } from '@/components/layout/Footer'
@@ -96,8 +96,9 @@ interface PortalData {
 
 type PortalMappingState = 'idle' | 'loading' | 'claiming' | 'ready' | 'missing' | 'error'
 type ClaimClientProfileResponse =
-  | { linked: true; client_id: string; alreadyLinked?: boolean }
-  | { linked: false; reason: 'no_matching_client' }
+  | { linked: true; client_id: string; auth_email: string; matched_client_email: string; alreadyLinked?: boolean }
+  | { linked: false; reason: 'no_matching_client'; auth_email: string }
+  | { linked: false; reason: 'insert_failed'; auth_email: string; error: string; code?: string }
 
 const STAGES: { key: ProjectStage; title: string; hint: string }[] = [
   { key: 'audit', title: 'Audit', hint: 'What needs attention' },
@@ -125,6 +126,8 @@ const PAYMENT_STATUSES: PaymentStatus[] = ['not_started', 'pending', 'overdue']
 
 export function PortalPage() {
   const { loading: authLoading, session, sendMagicLink, signOut } = useClientPortal()
+  const sessionUserId = session?.user.id ?? null
+  const sessionEmail = session?.user.email?.trim().toLowerCase() ?? null
   const [portal, setPortal] = useState<PortalData>({
     client: null,
     packages: [],
@@ -135,14 +138,50 @@ export function PortalPage() {
     error: null,
   })
   const [portalState, setPortalState] = useState<PortalMappingState>('idle')
+  const claimedUserIdRef = useRef<string | null>(null)
+  const activeLoadIdRef = useRef(0)
 
   useEffect(() => {
     if (!isSupabaseConfigured || !supabase) return
 
+    let alive = true
+    const currentUserId = sessionUserId
+    const currentEmail = sessionEmail
+
+    if (!currentUserId) {
+      claimedUserIdRef.current = null
+      activeLoadIdRef.current += 1
+      void Promise.resolve().then(() => {
+        if (!alive) return
+        setPortal({
+          client: null,
+          packages: [],
+          moduleSelections: [],
+          payments: [],
+          updates: [],
+          loading: false,
+          error: null,
+        })
+        setPortalState('idle')
+      })
+      return () => {
+        alive = false
+      }
+    }
+
+    const portalLoadId = ++activeLoadIdRef.current
+    const canClaimThisUser = claimedUserIdRef.current !== currentUserId
     const client = supabase
 
-  if (!session) {
-    void Promise.resolve().then(() => {
+    if (import.meta.env.DEV) {
+      console.debug('[portal] session check', {
+        email: currentEmail,
+        canClaimThisUser,
+      })
+    }
+
+    function safeSetMissing(message?: string) {
+      if (!alive || portalLoadId !== activeLoadIdRef.current) return
       setPortal({
         client: null,
         packages: [],
@@ -150,20 +189,36 @@ export function PortalPage() {
         payments: [],
         updates: [],
         loading: false,
-        error: null,
+        error: message ?? null,
       })
-      setPortalState('idle')
-    })
-    return
-  }
+      setPortalState('missing')
+    }
 
-    const currentSession = session
-    let alive = true
+    async function getAccessToken(): Promise<string | null> {
+      const { data } = await client.auth.getSession()
+      return data.session?.access_token ?? null
+    }
 
-    async function claimClientProfile() {
+    async function invokeClaimClientProfile() {
+      const token = await getAccessToken()
+      if (!token) {
+        throw new Error('Missing session token.')
+      }
+
+      if (import.meta.env.DEV) {
+        console.debug('[portal] claim-client-profile invoked', {
+          email: currentEmail,
+        })
+      }
+
       const { data, error } = await client.functions.invoke<ClaimClientProfileResponse>(
         'claim-client-profile',
-        { method: 'POST' },
+        {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        },
       )
 
       if (error) {
@@ -185,22 +240,32 @@ export function PortalPage() {
         throw new Error(error.message || 'We could not connect your client profile.')
       }
 
+      if (import.meta.env.DEV) {
+        console.debug('[portal] claim-client-profile result', data)
+      }
+
       return data ?? null
     }
 
-    async function loadPortal({ allowAutoClaim }: { allowAutoClaim: boolean }) {
+    async function loadPortal() {
+      if (!alive || portalLoadId !== activeLoadIdRef.current) return
       setPortal((prev) => ({ ...prev, loading: true, error: null }))
       setPortalState('loading')
 
       const { data: linkRow, error: linkError } = await client
         .from('client_users')
         .select('client_id')
-        .eq('user_id', currentSession.user.id)
-        .order('created_at', { ascending: false })
-        .limit(1)
+        .eq('user_id', currentUserId)
         .maybeSingle()
 
-      if (!alive) return
+      if (!alive || portalLoadId !== activeLoadIdRef.current) return
+
+      if (import.meta.env.DEV) {
+        console.debug('[portal] client_users lookup', {
+          email: currentEmail,
+          hasMapping: Boolean(linkRow?.client_id),
+        })
+      }
 
       if (linkError) {
         setPortal({
@@ -217,61 +282,83 @@ export function PortalPage() {
       }
 
       if (!linkRow?.client_id) {
-        if (allowAutoClaim) {
-          setPortal((prev) => ({ ...prev, loading: false, error: null }))
-          setPortalState('claiming')
+        if (!canClaimThisUser) {
+          safeSetMissing(currentEmail ? `You are signed in as ${currentEmail}. No matching client profile was found for this email.` : 'No matching client profile was found for this email.')
+          return
+        }
 
-          try {
-            const claimResult = await claimClientProfile()
-            if (!alive) return
+        claimedUserIdRef.current = currentUserId
+        setPortalState('claiming')
 
-            if (claimResult?.linked) {
-              await loadPortal({ allowAutoClaim: false })
+        try {
+          const claimResult = await invokeClaimClientProfile()
+          if (!alive || portalLoadId !== activeLoadIdRef.current) return
+
+          if (claimResult?.linked) {
+            if (import.meta.env.DEV) {
+              console.debug('[portal] claim linked, refetching portal', {
+                email: currentEmail,
+              })
+            }
+
+            const { data: refreshedLink, error: refreshedError } = await client
+              .from('client_users')
+              .select('client_id')
+              .eq('user_id', currentUserId)
+              .maybeSingle()
+
+            if (!alive || portalLoadId !== activeLoadIdRef.current) return
+
+            if (refreshedError) {
+              setPortal({
+                client: null,
+                packages: [],
+                moduleSelections: [],
+                payments: [],
+                updates: [],
+                loading: false,
+                error: refreshedError.message,
+              })
+              setPortalState('error')
               return
             }
 
-            setPortal({
-              client: null,
-              packages: [],
-              moduleSelections: [],
-              payments: [],
-              updates: [],
-              loading: false,
-              error: null,
-            })
-            setPortalState('missing')
-            return
-          } catch (claimError) {
-            if (!alive) return
-            setPortal({
-              client: null,
-              packages: [],
-              moduleSelections: [],
-              payments: [],
-              updates: [],
-              loading: false,
-              error: claimError instanceof Error ? claimError.message : 'Could not connect your client profile.',
-            })
-            setPortalState('error')
+            if (!refreshedLink?.client_id) {
+              safeSetMissing(currentEmail ? `You are signed in as ${currentEmail}. No matching client profile was found for this email.` : 'No matching client profile was found for this email.')
+              return
+            }
+
+            await loadPortalData(refreshedLink.client_id)
             return
           }
-        }
 
-        setPortal({
-          client: null,
-          packages: [],
-          moduleSelections: [],
-          payments: [],
-          updates: [],
-          loading: false,
-          error: null,
-        })
-        setPortalState('missing')
-        return
+          claimedUserIdRef.current = currentUserId
+          safeSetMissing(
+            currentEmail
+              ? `You are signed in as ${currentEmail}. No matching client profile was found for this email.`
+              : 'No matching client profile was found for this email.',
+          )
+          return
+        } catch (claimError) {
+          if (!alive || portalLoadId !== activeLoadIdRef.current) return
+          setPortal({
+            client: null,
+            packages: [],
+            moduleSelections: [],
+            payments: [],
+            updates: [],
+            loading: false,
+            error: claimError instanceof Error ? claimError.message : 'Could not connect your client profile.',
+          })
+          setPortalState('error')
+          return
+        }
       }
 
-      const clientId = linkRow.client_id
+      await loadPortalData(linkRow.client_id)
+    }
 
+    async function loadPortalData(clientId: string) {
       const [clientRes, packagesRes, paymentsRes, updatesRes] = await Promise.all([
         client.from('clients').select('*').eq('id', clientId).maybeSingle(),
         client
@@ -292,7 +379,7 @@ export function PortalPage() {
           .order('created_at', { ascending: false }),
       ])
 
-      if (!alive) return
+      if (!alive || portalLoadId !== activeLoadIdRef.current) return
 
       if (clientRes.error) {
         setPortal({
@@ -322,7 +409,7 @@ export function PortalPage() {
           ) ?? []
         : []
 
-      if (!alive) return
+      if (!alive || portalLoadId !== activeLoadIdRef.current) return
 
       setPortal({
         client: clientRes.data as DbClient,
@@ -336,8 +423,8 @@ export function PortalPage() {
       setPortalState('ready')
     }
 
-    void loadPortal({ allowAutoClaim: true }).catch((error) => {
-      if (!alive) return
+    void loadPortal().catch((error) => {
+      if (!alive || portalLoadId !== activeLoadIdRef.current) return
       setPortal({
         client: null,
         packages: [],
@@ -353,7 +440,7 @@ export function PortalPage() {
     return () => {
       alive = false
     }
-  }, [session])
+  }, [sessionUserId, sessionEmail])
 
   const activePackage = useMemo(() => selectActivePackage(portal.packages), [portal.packages])
   const otherPackages = useMemo(

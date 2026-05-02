@@ -6,8 +6,9 @@ type ClientUserRow = {
 }
 
 type ClaimResponse =
-  | { linked: true; client_id: string; alreadyLinked?: boolean }
-  | { linked: false; reason: 'no_matching_client' }
+  | { linked: true; client_id: string; auth_email: string; matched_client_email: string; alreadyLinked?: boolean }
+  | { linked: false; reason: 'no_matching_client'; auth_email: string }
+  | { linked: false; reason: 'insert_failed'; auth_email: string; error: string; code?: string }
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -101,7 +102,24 @@ Deno.serve(async (request) => {
   }
 
   if (existingLink?.client_id) {
-    const response: ClaimResponse = { linked: true, alreadyLinked: true, client_id: existingLink.client_id }
+    const { data: existingClient, error: existingClientError } = await supabase
+      .from('clients')
+      .select('email')
+      .eq('id', existingLink.client_id)
+      .maybeSingle<{ email: string }>()
+
+    if (existingClientError) {
+      console.error('claim-client-profile existing client lookup failed', existingClientError)
+      return jsonResponse({ error: 'Could not verify portal linkage.' }, 500)
+    }
+
+    const response: ClaimResponse = {
+      linked: true,
+      alreadyLinked: true,
+      client_id: existingLink.client_id,
+      auth_email: normalizedEmail,
+      matched_client_email: existingClient?.email?.trim().toLowerCase() ?? normalizedEmail,
+    }
     return jsonResponse(response)
   }
 
@@ -117,7 +135,7 @@ Deno.serve(async (request) => {
   }
 
   if (!matchingClient?.id) {
-    const response: ClaimResponse = { linked: false, reason: 'no_matching_client' }
+    const response: ClaimResponse = { linked: false, reason: 'no_matching_client', auth_email: normalizedEmail }
     return jsonResponse(response)
   }
 
@@ -137,19 +155,44 @@ Deno.serve(async (request) => {
         .maybeSingle<ClientUserRow>()
 
       if (conflictedLink?.client_id) {
+        const { data: conflictedClient, error: conflictedClientError } = await supabase
+          .from('clients')
+          .select('email')
+          .eq('id', conflictedLink.client_id)
+          .maybeSingle<{ email: string }>()
+
+        if (conflictedClientError) {
+          console.error('claim-client-profile conflicted client lookup failed', conflictedClientError)
+          return jsonResponse({ error: 'Could not connect your client profile.' }, 500)
+        }
+
         const response: ClaimResponse = {
           linked: true,
           alreadyLinked: true,
           client_id: conflictedLink.client_id,
+          auth_email: normalizedEmail,
+          matched_client_email: conflictedClient?.email?.trim().toLowerCase() ?? normalizedEmail,
         }
         return jsonResponse(response)
       }
     }
 
     console.error('claim-client-profile insert failed', insertError)
-    return jsonResponse({ error: 'Could not connect your client profile.' }, 500)
+    const response: ClaimResponse = {
+      linked: false,
+      reason: 'insert_failed',
+      auth_email: normalizedEmail,
+      error: 'Could not connect your client profile.',
+      code: insertError.code,
+    }
+    return jsonResponse(response, 500)
   }
 
-  const response: ClaimResponse = { linked: true, client_id: matchingClient.id }
+  const response: ClaimResponse = {
+    linked: true,
+    client_id: matchingClient.id,
+    auth_email: normalizedEmail,
+    matched_client_email: matchingClient.email.trim().toLowerCase(),
+  }
   return jsonResponse(response)
 })
