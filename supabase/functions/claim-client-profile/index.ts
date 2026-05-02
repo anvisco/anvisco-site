@@ -80,7 +80,7 @@ Deno.serve(async (request) => {
     return jsonResponse({ error: 'Supabase service secret is not configured.' }, 500)
   }
 
-  const supabase = createClient(SUPABASE_URL, ANVIS_SUPABASE_SECRET_KEY, {
+  const authSupabase = createClient(SUPABASE_URL, ANVIS_SUPABASE_SECRET_KEY, {
     auth: { persistSession: false, autoRefreshToken: false },
     global: {
       headers: {
@@ -89,7 +89,15 @@ Deno.serve(async (request) => {
     },
   })
 
-  const { data: userData, error: userError } = await supabase.auth.getUser(accessToken)
+  const adminSupabase = createClient(SUPABASE_URL, ANVIS_SUPABASE_SECRET_KEY, {
+    auth: { persistSession: false, autoRefreshToken: false },
+  })
+
+  console.log('claim-client-profile admin context', {
+    auth_secret_present: Boolean(ANVIS_SUPABASE_SECRET_KEY),
+  })
+
+  const { data: userData, error: userError } = await authSupabase.auth.getUser(accessToken)
   const user = userData?.user ?? null
 
   if (userError || !user?.id || !user.email) {
@@ -103,7 +111,7 @@ Deno.serve(async (request) => {
     normalized_email: normalizedEmail,
   })
 
-  const { data: existingLink, error: existingLinkError } = await supabase
+  const { data: existingLink, error: existingLinkError } = await adminSupabase
     .from('client_users')
     .select('client_id, user_id')
     .eq('user_id', user.id)
@@ -117,7 +125,7 @@ Deno.serve(async (request) => {
   }
 
   if (existingLink?.client_id) {
-    const { data: existingClient, error: existingClientError } = await supabase
+    const { data: existingClient, error: existingClientError } = await adminSupabase
       .from('clients')
       .select('email')
       .eq('id', existingLink.client_id)
@@ -139,7 +147,7 @@ Deno.serve(async (request) => {
   }
 
   async function findRecentClientCandidates() {
-    const { data, error } = await supabase
+    const { data, error } = await adminSupabase
       .from('clients')
       .select('id, email, created_at')
       .order('created_at', { ascending: false })
@@ -184,7 +192,7 @@ Deno.serve(async (request) => {
     return jsonResponse(response)
   }
 
-  const { error: insertError } = await supabase.from('client_users').insert({
+  const { error: insertError } = await adminSupabase.from('client_users').insert({
     user_id: user.id,
     client_id: matchingClient.id,
   })
@@ -198,7 +206,7 @@ Deno.serve(async (request) => {
 
   if (insertError) {
     if (insertError.code === '23505') {
-      const { data: conflictedLink } = await supabase
+      const { data: conflictedLink } = await adminSupabase
         .from('client_users')
         .select('client_id, user_id')
         .eq('user_id', user.id)
@@ -207,7 +215,7 @@ Deno.serve(async (request) => {
         .maybeSingle<ClientUserRow>()
 
       if (conflictedLink?.client_id) {
-        const { data: conflictedClient, error: conflictedClientError } = await supabase
+        const { data: conflictedClient, error: conflictedClientError } = await adminSupabase
           .from('clients')
           .select('email')
           .eq('id', conflictedLink.client_id)
