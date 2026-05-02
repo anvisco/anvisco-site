@@ -290,6 +290,12 @@ The cleanup flow deletes `project_updates`, `payment_schedules`, `client_module_
 `client_packages`, `client_users`, and then `clients`. Stripe test events are left alone unless a
 future maintenance pass adds a separate, audited cleanup path for them.
 
+### SQL Editor note
+
+Saved queries in the Supabase SQL Editor can be deleted if they are only temporary test or debug
+snippets. Do not delete migration files in `supabase/migrations`, and do not delete tables or
+data unless you are intentionally using the admin cleanup workflow.
+
 ## 8. Client portal
 
 - `/portal` is authenticated with Supabase Auth using magic-link login.
@@ -306,8 +312,8 @@ future maintenance pass adds a separate, audited cleanup path for them.
   module selections, payment schedules, and client-visible project updates.
 - If a login has not been mapped yet, the portal shows a clean connection-pending state until the
   matching email is connected.
-- `/set-password` is not part of the primary client portal flow. Keep it only as a fallback if
-  you still want a manual reset path for internal use.
+- `/set-password` is not part of the primary client portal flow. Keep it only as an internal
+  fallback if you still need a manual support reset path.
 - If Supabase env vars are missing, the portal shows a setup message instead of crashing.
 - The portal never exposes other clients, email logs, or internal-only updates.
 

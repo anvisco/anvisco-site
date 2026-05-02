@@ -42,9 +42,7 @@ export function Nav() {
           : 'bg-transparent border-b border-transparent'
       }`}
     >
-      <div className="max-w-screen-xl mx-auto px-6 lg:px-12 h-16 flex items-center justify-between">
-
-        {/* Wordmark */}
+      <div className="mx-auto grid h-16 max-w-screen-2xl grid-cols-[auto_1fr_auto] items-center gap-4 px-6 lg:px-12">
         <Link
           to="/"
           onClick={() => setOpen(false)}
@@ -53,8 +51,7 @@ export function Nav() {
           Anvis
         </Link>
 
-        {/* Desktop nav: bracket style */}
-        <nav className="hidden md:flex items-center gap-6 lg:gap-7">
+        <nav className="hidden md:flex items-center justify-center gap-6 lg:gap-8 justify-self-center">
           {links.map((link) => {
             const hashIndex = link.href.indexOf('#')
             const hash = hashIndex >= 0 ? link.href.slice(hashIndex) : ''
@@ -84,19 +81,17 @@ export function Nav() {
           })}
         </nav>
 
-        {/* Contact CTA: outlined */}
         <Link
-          to="/audit"
-          className="hidden md:inline-flex items-center gap-2 border border-[var(--color-border-strong)] px-4 py-2 text-[0.68rem] font-medium tracking-[0.1em] uppercase text-ink transition-all duration-200 hover:border-amber hover:text-amber group"
+          to="/portal"
+          className="hidden md:inline-flex items-center gap-2 justify-self-end border border-[var(--color-border-strong)] px-4 py-2 text-[0.68rem] font-medium tracking-[0.1em] uppercase text-ink transition-all duration-200 hover:border-amber hover:text-amber group"
         >
-          <span>[ Get Free Audit ]</span>
+          <span>[ Client Login ]</span>
           <span className="text-amber transition-transform duration-200 group-hover:translate-x-0.5">→</span>
         </Link>
 
-        {/* Mobile hamburger */}
         <button
           onClick={() => setOpen((v) => !v)}
-          className="-mr-2 p-2 text-ink-muted transition-colors duration-200 hover:text-amber md:hidden"
+          className="-mr-2 justify-self-end p-2 text-ink-muted transition-colors duration-200 hover:text-amber md:hidden"
           aria-label={open ? 'Close menu' : 'Open menu'}
         >
           {open ? <X size={18} /> : <Menu size={18} />}
@@ -117,11 +112,11 @@ export function Nav() {
             </Link>
           ))}
           <Link
-            to="/audit"
+            to="/portal"
             onClick={() => setOpen(false)}
             className="mt-2 inline-flex items-center gap-2 border border-[var(--color-border-strong)] px-4 py-3 text-[0.7rem] font-medium tracking-[0.1em] uppercase text-ink transition-all duration-150 hover:border-amber hover:text-amber w-fit"
           >
-            [ Get Free Audit ] <span className="text-amber">→</span>
+            [ Client Login ] <span className="text-amber">→</span>
           </Link>
         </div>
       )}

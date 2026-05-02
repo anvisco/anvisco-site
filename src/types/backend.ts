@@ -1,5 +1,5 @@
 /**
- * Shared backend types for the Anvisco client portal / admin system.
+ * Shared backend types for the Anvis client portal / admin system.
  *
  * Mirrors the Supabase tables in supabase/migrations/001_initial_anvisco_backend.sql.
  * Money fields are stored in cents in the DB.

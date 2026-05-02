@@ -68,7 +68,7 @@ function AuthGate({ children, title }: AdminShellProps) {
             Not authorized
           </p>
           <p className="mb-4 text-sm leading-relaxed text-ink-muted">
-            This account does not have admin access. Sign in with the Anvisco admin account.
+            This account does not have admin access. Sign in with the Anvis admin account.
           </p>
           <button onClick={signOut} className={A_BTN_GHOST}>
             Sign out
@@ -111,7 +111,7 @@ export function AdminHeader({
             to="/"
             className="shrink-0 text-sm font-medium text-ink hover:text-amber transition-colors"
           >
-            anvisco
+            Anvis
           </Link>
           <span className="text-ink-subtle text-sm">/</span>
           <Link

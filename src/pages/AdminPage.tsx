@@ -10,6 +10,11 @@ import {
 } from '@/components/admin/AdminShell'
 import { StatusBadge, Field } from '@/lib/adminUtils'
 import { fmtDate, fmtCents } from '@/lib/adminFormatters'
+import {
+  deleteAdminClient,
+  loadAdminClientDeletePreview,
+  type AdminClientDeletePreview,
+} from '@/lib/adminClientDeletion'
 import { supabase } from '@/lib/supabase'
 import type { ClientStatus } from '@/types/backend'
 
@@ -163,6 +168,10 @@ function Dashboard() {
   const [statusFilter, setStatusFilter] = useState<string>('all')
   const [showAdd, setShowAdd] = useState(false)
   const [refreshKey, setRefreshKey] = useState(0)
+  const [deletePreview, setDeletePreview] = useState<AdminClientDeletePreview | null>(null)
+  const [deleteLoading, setDeleteLoading] = useState(false)
+  const [deleteError, setDeleteError] = useState<string | null>(null)
+  const [deleteMessage, setDeleteMessage] = useState<string | null>(null)
   const refresh = () => setRefreshKey((k) => k + 1)
 
   useEffect(() => {
@@ -199,6 +208,40 @@ function Dashboard() {
     ? clients
     : clients.filter((c) => c.status === statusFilter)
 
+  async function openDeleteClient(clientId: string) {
+    setDeleteLoading(true)
+    setDeleteError(null)
+    setDeleteMessage(null)
+    try {
+      const preview = await loadAdminClientDeletePreview(clientId)
+      setDeletePreview(preview)
+    } catch (thrownError) {
+      setDeletePreview(null)
+      setDeleteError(thrownError instanceof Error ? thrownError.message : 'Could not load client details.')
+    } finally {
+      setDeleteLoading(false)
+    }
+  }
+
+  async function confirmDeleteClient() {
+    if (!deletePreview) return
+    setDeleteLoading(true)
+    setDeleteError(null)
+    setDeleteMessage(null)
+    try {
+      await deleteAdminClient(deletePreview.client.id)
+      setDeletePreview(null)
+      setDeleteMessage(
+        `Deleted ${deletePreview.client.business_name || deletePreview.client.name} and related records.`,
+      )
+      refresh()
+    } catch (thrownError) {
+      setDeleteError(thrownError instanceof Error ? thrownError.message : 'Could not delete client.')
+    } finally {
+      setDeleteLoading(false)
+    }
+  }
+
   return (
     <div>
       <div className="mb-8 flex items-baseline justify-between gap-4">
@@ -216,6 +259,16 @@ function Dashboard() {
       {error && (
         <p className="mb-6 border border-amber/60 bg-amber/5 px-3 py-2 text-sm text-amber">
           {error}
+        </p>
+      )}
+      {deleteError && (
+        <p className="mb-6 border border-amber/60 bg-amber/5 px-3 py-2 text-sm text-amber">
+          {deleteError}
+        </p>
+      )}
+      {deleteMessage && (
+        <p className="mb-6 border border-amber/60 bg-amber/5 px-3 py-2 text-sm text-amber">
+          {deleteMessage}
         </p>
       )}
 
@@ -254,9 +307,21 @@ function Dashboard() {
             </button>
           </div>
         ) : (
-          <ClientsTable clients={filtered} />
+          <ClientsTable clients={filtered} onDelete={openDeleteClient} deleting={deleteLoading} />
         )}
       </div>
+
+      {deletePreview && (
+        <DeleteClientModal
+          preview={deletePreview}
+          loading={deleteLoading}
+          onClose={() => {
+            setDeletePreview(null)
+            setDeleteError(null)
+          }}
+          onConfirm={() => void confirmDeleteClient()}
+        />
+      )}
 
       {showAdd && (
         <AddClientModal
@@ -469,15 +534,16 @@ function TestDataCleanupPanel({ onDeleted }: { onDeleted: () => void }) {
     <section className="mt-8 border border-[var(--color-border)] bg-[var(--color-surface)] p-6">
       <div className="mb-4 border-t border-[var(--color-border)] pt-5">
         <p className="mb-2 text-[0.7rem] uppercase tracking-[0.08em] text-ink-subtle">
-          Admin utility
+          Advanced cleanup
         </p>
-        <h2 className="text-lg font-medium tracking-[-0.01em] text-ink">Test Data Cleanup</h2>
+        <h2 className="text-lg font-medium tracking-[-0.01em] text-ink">Email cleanup</h2>
       </div>
 
       <p className="max-w-[68ch] text-sm leading-relaxed text-ink-muted">
-        Preview matching client records by email before deleting. This removes project updates,
-        payment schedules, module selections, packages, client-user links, and the client record
-        itself. Stripe test events and email logs are left untouched for audit history.
+        Optional fallback for exact-email cleanup when you need to remove a test client by email.
+        This removes project updates, payment schedules, module selections, packages, client-user
+        links, and the client record itself. Stripe test events and email logs are left untouched
+        for audit history.
       </p>
 
       <div className="mt-5 grid gap-4 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
@@ -660,13 +726,21 @@ function PreviewList({ title, items }: { title: string; items: string[] }) {
   )
 }
 
-function ClientsTable({ clients }: { clients: DbClient[] }) {
+function ClientsTable({
+  clients,
+  onDelete,
+  deleting,
+}: {
+  clients: DbClient[]
+  onDelete: (clientId: string) => Promise<void>
+  deleting: boolean
+}) {
   return (
     <div className="overflow-x-auto border border-[var(--color-border)]">
       <table className="w-full min-w-[760px] text-sm">
         <thead>
           <tr className="border-b border-[var(--color-border)] bg-[var(--color-surface)]">
-            {['Business', 'Name', 'Email', 'Status', 'Package', 'Pkg status', 'Next payment'].map(
+            {['Business', 'Name', 'Email', 'Status', 'Package', 'Pkg status', 'Next payment', ''].map(
               (h) => (
                 <th
                   key={h}
@@ -721,18 +795,110 @@ function ClientsTable({ clients }: { clients: DbClient[] }) {
                   {fmtDate(pkg?.next_payment_due_at ?? null)}
                 </td>
                 <td className="px-4 py-3">
-                  <Link
-                    to={`/admin/clients/${c.id}`}
-                    className="text-[0.7rem] uppercase tracking-[0.08em] text-amber hover:underline"
-                  >
-                    View →
-                  </Link>
+                  <div className="flex items-center gap-3">
+                    <Link
+                      to={`/admin/clients/${c.id}`}
+                      className="text-[0.7rem] uppercase tracking-[0.08em] text-amber hover:underline"
+                    >
+                      View →
+                    </Link>
+                    <button
+                      type="button"
+                      onClick={() => void onDelete(c.id)}
+                      disabled={deleting}
+                      className="text-[0.7rem] uppercase tracking-[0.08em] text-ink-subtle transition-colors hover:text-amber disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      Delete Client
+                    </button>
+                  </div>
                 </td>
               </tr>
             )
           })}
         </tbody>
       </table>
+    </div>
+  )
+}
+
+function DeleteClientModal({
+  preview,
+  loading,
+  onClose,
+  onConfirm,
+}: {
+  preview: AdminClientDeletePreview
+  loading: boolean
+  onClose: () => void
+  onConfirm: () => void
+}) {
+  const name = preview.client.business_name || preview.client.name
+  const counts = [
+    { label: 'Packages', value: preview.packages.length },
+    { label: 'Payments', value: preview.payments.length },
+    { label: 'Updates', value: preview.updates.length },
+    { label: 'Module rows', value: preview.moduleSelections.length },
+    { label: 'Links', value: preview.clientUsers.length },
+  ]
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4 py-10"
+      onClick={onClose}
+    >
+      <div
+        className="w-full max-w-xl border border-[var(--color-border)] bg-[var(--color-surface)] p-6 shadow-xl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="mb-5 border-t border-[var(--color-border)] pt-5">
+          <p className="mb-2 text-[0.7rem] uppercase tracking-[0.08em] text-ink-subtle">
+            Confirm delete
+          </p>
+          <h2 className="text-lg font-medium tracking-[-0.01em] text-ink">Delete Client</h2>
+        </div>
+
+        <p className="max-w-[60ch] text-sm leading-relaxed text-ink-muted">
+          This will delete the selected client and related test/project records. This cannot be
+          undone.
+        </p>
+
+        <div className="mt-5 border border-[var(--color-border)] p-4">
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <p className="text-sm font-medium text-ink">{name}</p>
+              <p className="mt-1 text-xs text-ink-subtle">{preview.client.email}</p>
+            </div>
+            <p className="text-xs uppercase tracking-[0.08em] text-ink-subtle">
+              Created {fmtDate(preview.client.created_at)}
+            </p>
+          </div>
+
+          <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {counts.map((item) => (
+              <div key={item.label} className="border border-[var(--color-border)] p-3">
+                <p className="text-[0.65rem] uppercase tracking-[0.08em] text-ink-subtle">
+                  {item.label}
+                </p>
+                <p className="mt-2 text-xl font-medium tabular-nums text-ink">{item.value}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="mt-5 flex flex-wrap gap-3">
+          <button
+            type="button"
+            onClick={onConfirm}
+            disabled={loading}
+            className={A_BTN_DANGER}
+          >
+            {loading ? 'Deleting…' : 'Delete Client'}
+          </button>
+          <button type="button" onClick={onClose} className={A_BTN_GHOST}>
+            Cancel
+          </button>
+        </div>
+      </div>
     </div>
   )
 }
