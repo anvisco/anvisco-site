@@ -8,12 +8,11 @@ interface ClientPortalState {
 }
 
 interface UseClientPortalReturn extends ClientPortalState {
-  signIn: (email: string, password: string) => Promise<string | null>
-  sendPasswordSetupLink: (email: string) => Promise<string | null>
+  sendMagicLink: (email: string) => Promise<string | null>
   signOut: () => Promise<void>
 }
 
-export function normalizePasswordEmailError(message: string | null): string | null {
+export function normalizePortalEmailError(message: string | null): string | null {
   if (!message) return null
 
   const normalized = message.toLowerCase()
@@ -25,7 +24,7 @@ export function normalizePasswordEmailError(message: string | null): string | nu
     normalized.includes('email send rate limit') ||
     normalized.includes('security')
   ) {
-    return 'Supabase has temporarily rate-limited password emails. Try again later or contact brian@anvisco.com.'
+    return 'Email sending is temporarily rate-limited. Try again later or contact brian@anvisco.com.'
   }
 
   return message
@@ -56,18 +55,16 @@ export function useClientPortal(): UseClientPortalReturn {
     return () => subscription.unsubscribe()
   }, [])
 
-  async function signIn(email: string, password: string): Promise<string | null> {
+  async function sendMagicLink(email: string): Promise<string | null> {
     if (!supabase) return 'Supabase not configured.'
-    const { error } = await supabase.auth.signInWithPassword({ email, password })
-    return error?.message ?? null
-  }
-
-  async function sendPasswordSetupLink(email: string): Promise<string | null> {
-    if (!supabase) return 'Supabase not configured.'
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/set-password`,
+    const normalizedEmail = email.trim().toLowerCase()
+    const { error } = await supabase.auth.signInWithOtp({
+      email: normalizedEmail,
+      options: {
+        emailRedirectTo: `${window.location.origin}/portal`,
+      },
     })
-    return normalizePasswordEmailError(error?.message ?? null)
+    return normalizePortalEmailError(error?.message ?? null)
   }
 
   async function signOut(): Promise<void> {
@@ -75,5 +72,5 @@ export function useClientPortal(): UseClientPortalReturn {
     setState({ loading: false, session: null })
   }
 
-  return { ...state, signIn, sendPasswordSetupLink, signOut }
+  return { ...state, sendMagicLink, signOut }
 }

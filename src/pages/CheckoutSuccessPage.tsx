@@ -194,9 +194,8 @@ export function CheckoutSuccessPage() {
                 </ul>
               </Step>
               <Step n="03" title="Portal access">
-                Use the same email you used at checkout to create your portal password. Once you
-                log in, Anvis will automatically connect your portal if the email matches your
-                checkout record.
+                Use the same email you used at checkout. We’ll send you a secure login link so you
+                can view your project stage, payment status, next due date, and updates.
               </Step>
             </div>
 
@@ -205,21 +204,18 @@ export function CheckoutSuccessPage() {
                 <BracketLabel>Client portal access</BracketLabel>
               </div>
               <h3 className="text-lg font-medium tracking-[-0.01em] text-ink">
-                Set up your client portal
+                Access your client portal
               </h3>
               <p className="mt-3 max-w-[62ch] text-sm leading-relaxed text-ink-muted">
-                Use the same email you used at checkout. Create your password to access project
-                stages, payment status, next due dates, and updates.
-              </p>
-              <p className="mt-3 max-w-[62ch] text-sm leading-relaxed text-ink-muted">
-                If you have already created a password, log in through the client portal.
+                Use the same email you used at checkout. We’ll send you a secure login link so you
+                can view your project stage, payment status, next due date, and updates.
               </p>
               <div className="mt-5 flex flex-wrap gap-3">
                 <Link
                   to="/portal"
                   className="inline-flex items-center gap-2.5 border border-amber px-5 py-3 text-[0.7rem] font-medium uppercase tracking-[0.1em] text-amber transition-all duration-200 hover:bg-amber/10"
                 >
-                  Set Up Client Portal
+                  Open Client Portal
                   <span className="text-amber">→</span>
                 </Link>
                 <a

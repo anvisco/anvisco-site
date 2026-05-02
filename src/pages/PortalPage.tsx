@@ -124,7 +124,7 @@ const STATUS_PRIORITY: PackageStatus[] = ['active', 'in_progress', 'scoped', 're
 const PAYMENT_STATUSES: PaymentStatus[] = ['not_started', 'pending', 'overdue']
 
 export function PortalPage() {
-  const { loading: authLoading, session, signIn, sendPasswordSetupLink, signOut } = useClientPortal()
+  const { loading: authLoading, session, sendMagicLink, signOut } = useClientPortal()
   const [portal, setPortal] = useState<PortalData>({
     client: null,
     packages: [],
@@ -407,20 +407,15 @@ export function PortalPage() {
                 Client portal login.
               </h1>
               <p className="max-w-[62ch] text-base leading-relaxed text-ink-muted md:text-[1.0625rem]">
-                Log in to view your active package, project stage, payment status, next due date,
-                and client-visible updates.
-              </p>
-              <p className="mt-4 max-w-[62ch] text-sm leading-relaxed text-ink-muted">
-                Use the same email you used at checkout to log in. If you need a password link,
-                open the setup form below.
+                Log in with the same email you used at checkout. We’ll send you a secure link to
+                access your portal.
               </p>
             </div>
 
             <AuthPanel
               authLoading={authLoading}
               session={session}
-              signIn={signIn}
-              sendPasswordSetupLink={sendPasswordSetupLink}
+              sendMagicLink={sendMagicLink}
               signOut={signOut}
               portalState={portalState}
               clientConnected={Boolean(portal.client)}
@@ -736,10 +731,11 @@ export function PortalPage() {
                   <PortalPreview label="Updates" value="Only notes marked visible to the client." />
                 </div>
               </Card>
-              <Card title="Connect your login" eyebrow="Private data">
+              <Card title="Portal access" eyebrow="Private data">
                 <p className="max-w-[54ch] text-sm leading-relaxed text-ink-muted">
-                  Sign in with the email and password that Brian connected to your client profile.
-                  If your login has not been mapped yet, Brian will connect it on the admin side.
+                  Use the same checkout email, then sign in with the secure link Supabase sends.
+                  If the portal does not find a matching client profile, Brian can connect it
+                  manually after verifying the email.
                 </p>
               </Card>
             </section>
@@ -754,16 +750,14 @@ export function PortalPage() {
 function AuthPanel({
   authLoading,
   session,
-  signIn,
-  sendPasswordSetupLink,
+  sendMagicLink,
   signOut,
   portalState,
   clientConnected,
 }: {
   authLoading: boolean
   session: { user: { email?: string | null } } | null
-  signIn: (email: string, password: string) => Promise<string | null>
-  sendPasswordSetupLink: (email: string) => Promise<string | null>
+  sendMagicLink: (email: string) => Promise<string | null>
   signOut: () => Promise<void>
   portalState: PortalMappingState
   clientConnected: boolean
@@ -777,7 +771,7 @@ function AuthPanel({
   }
 
   if (!session) {
-    return <LoginCard signIn={signIn} sendPasswordSetupLink={sendPasswordSetupLink} />
+    return <LoginCard sendMagicLink={sendMagicLink} />
   }
 
   return (
@@ -789,13 +783,13 @@ function AuthPanel({
         <p className="text-sm text-ink-muted">
           {clientConnected
             ? 'Your client data is connected and ready.'
-              : portalState === 'loading'
+            : portalState === 'loading'
               ? 'Loading your client portal…'
               : portalState === 'claiming'
-                  ? 'Looking for your client profile...'
-                  : portalState === 'missing'
-                    ? 'Your account is active, but no client profile is connected yet. Make sure you are using the same email from checkout. If it still does not connect, contact brian@anvisco.com.'
-                    : 'Your account is active, but no client profile is connected yet. Make sure you are using the same email from checkout. If it still does not connect, contact brian@anvisco.com.'}
+                ? 'Checking your checkout email against your client profile.'
+                : portalState === 'missing'
+                  ? 'No matching client profile found.'
+                  : 'No matching client profile found.'}
         </p>
         <button
           onClick={signOut}
@@ -810,49 +804,36 @@ function AuthPanel({
 }
 
 function LoginCard({
-  signIn,
-  sendPasswordSetupLink,
+  sendMagicLink,
 }: {
-  signIn: (email: string, password: string) => Promise<string | null>
-  sendPasswordSetupLink: (email: string) => Promise<string | null>
+  sendMagicLink: (email: string) => Promise<string | null>
 }) {
   const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [loading, setLoading] = useState(false)
   const [sendingLink, setSendingLink] = useState(false)
-  const [showSetupForm, setShowSetupForm] = useState(false)
-  const [setupSuccess, setSetupSuccess] = useState<string | null>(null)
+  const [success, setSuccess] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
 
-  async function handleSubmit(e: React.FormEvent) {
+  async function handleSendMagicLink(e: React.FormEvent) {
     e.preventDefault()
     setError(null)
-    setLoading(true)
-    const err = await signIn(email, password)
-    setLoading(false)
-    if (err) setError(err)
-  }
-
-  async function handleSendSetupLink() {
-    setError(null)
-    setSetupSuccess(null)
+    setSuccess(null)
     setSendingLink(true)
-    const err = await sendPasswordSetupLink(email)
+    const err = await sendMagicLink(email)
     setSendingLink(false)
     if (err) {
       setError(err)
       return
     }
-    setSetupSuccess('Check your email for a secure password setup link.')
+    setSuccess('Check your email for a secure login link.')
   }
 
   return (
     <Card title="Client portal login" eyebrow="Client access">
       <p className="mb-5 text-sm leading-relaxed text-ink-muted">
-        Use the same email you used at checkout. If your password is ready, sign in below.
-        If you still need one, open the setup form.
+        Log in with the same email you used at checkout. We’ll send you a secure login link to
+        access your portal.
       </p>
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSendMagicLink} className="space-y-4">
         <Field label="Email" required>
           <input
             type="email"
@@ -863,56 +844,20 @@ function LoginCard({
             className={INPUT_CLASS}
           />
         </Field>
-        <Field label="Password" required>
-          <input
-            type="password"
-            required
-            autoComplete="current-password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className={INPUT_CLASS}
-          />
-        </Field>
-        {error && <p className="border border-amber/60 bg-amber/5 px-3 py-2 text-sm text-amber">{error}</p>}
+        {error && (
+          <p className="border border-amber/60 bg-amber/5 px-3 py-2 text-sm text-amber">
+            {error}
+          </p>
+        )}
         <button
           type="submit"
-          disabled={loading}
+          disabled={sendingLink || !email.trim()}
           className="inline-flex items-center gap-2 border border-amber px-5 py-3 text-[0.7rem] font-medium uppercase tracking-[0.1em] text-amber transition-all duration-200 hover:bg-amber/10 disabled:opacity-60"
         >
-          {loading ? 'Signing in…' : 'Sign in'}
+          {sendingLink ? 'Sending…' : 'Send secure login link'}
           <span className="text-amber">→</span>
         </button>
-        <div className="border-t border-[var(--color-border)] pt-4">
-          <button
-            type="button"
-            onClick={() => setShowSetupForm((value) => !value)}
-            className="inline-flex items-center gap-2 text-[0.7rem] font-medium uppercase tracking-[0.1em] text-ink-muted transition-colors hover:text-amber"
-          >
-            {showSetupForm ? 'Hide password setup form' : 'Create or reset your password'}
-            <span className="text-amber">→</span>
-          </button>
-          {showSetupForm && (
-            <div className="mt-4 space-y-3 border border-[var(--color-border)] bg-[var(--color-bg)] p-4">
-              <p className="text-sm leading-relaxed text-ink-muted">
-                Use the same email you used at checkout. We will send a secure link to set up or
-                reset your portal password.
-              </p>
-              <p className="text-xs text-ink-subtle">
-                The link will be sent to <span className="text-ink">{email || 'the email above'}</span>.
-              </p>
-              <button
-                type="button"
-                onClick={() => void handleSendSetupLink()}
-                disabled={sendingLink || !email.trim()}
-                className="inline-flex items-center gap-2 border border-[var(--color-border-strong)] px-5 py-3 text-[0.7rem] font-medium uppercase tracking-[0.1em] text-ink-muted transition-all duration-200 hover:border-amber hover:text-amber disabled:opacity-60"
-              >
-                {sendingLink ? 'Sending…' : 'Send password setup link'}
-                <span className="text-amber">→</span>
-              </button>
-              {setupSuccess && <p className="text-sm text-amber">{setupSuccess}</p>}
-            </div>
-          )}
-        </div>
+        {success && <p className="text-sm text-amber">{success}</p>}
       </form>
     </Card>
   )
@@ -1003,9 +948,12 @@ function EmptyConnectionState() {
       <p className="mb-2 text-[0.7rem] uppercase tracking-[0.1em] text-ink-subtle">
         Connection pending
       </p>
+      <h2 className="text-xl font-medium tracking-[-0.01em] text-ink">
+        No matching client profile found.
+      </h2>
       <p className="mb-4 max-w-[62ch] text-sm leading-relaxed text-ink-muted">
-        Your account is active, but no client profile is connected yet. Make sure you are using
-        the same email from checkout. If it still does not connect, contact brian@anvisco.com.
+        Make sure you used the same email from checkout. If you paid with a different email,
+        contact brian@anvisco.com so Anvis can connect your account.
       </p>
       <a
         href="mailto:brian@anvisco.com"

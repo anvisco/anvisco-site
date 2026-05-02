@@ -108,9 +108,7 @@ Deno.serve(async (request) => {
   const { data: matchingClient, error: clientError } = await supabase
     .from('clients')
     .select('id, email, created_at')
-    .ilike('email', normalizedEmail)
-    .order('created_at', { ascending: false })
-    .limit(1)
+    .eq('email', normalizedEmail)
     .maybeSingle<{ id: string; email: string; created_at: string }>()
 
   if (clientError) {

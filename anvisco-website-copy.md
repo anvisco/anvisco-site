@@ -351,8 +351,8 @@ Show the package name, payment status, amount paid if available, and a `Client p
 
 Portal CTA:
 - Title: `Client portal`
-- Body: `Your client portal is where project stages, payment status, next due dates, and updates will live. If your login is not active yet, Anvis will connect it after setup.`
-- Button: `Go to Client Portal -> /portal`
+- Body: `Your client portal is where project stages, payment status, next due dates, and updates will live. If the portal shows connection pending, Anvis will connect it after verifying the checkout email.`
+- Button: `Open Client Portal -> /portal`
 
 The page should make it clear the payment has been received and the client is moving into the next stage. Do not fall back to a generic plan received message.
 
@@ -372,5 +372,7 @@ The page should make it clear the payment has been received and the client is mo
 - Final homepage CTA routes to `/checkout` and reads `Build Your Plan`.
 - `/checkout/success` is session-aware and shows package-specific confirmation plus the portal CTA.
 - `/portal` is the official client login directory and login entry point.
+- The client portal uses magic-link login with the same checkout email. The portal email is the
+  verification step, and the secure link replaces the older password/setup flow.
 - The public site should read plainly and stay conversion-focused.
 - Avoid quote boxes, request-checkout wording, and generic filler language.

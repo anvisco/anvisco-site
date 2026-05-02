@@ -80,18 +80,17 @@ through as Supabase secrets.
 
 ## Supabase Auth redirects
 
-Supabase Auth must allow password setup and portal login redirects to these URLs:
+Supabase Auth must allow portal login redirects to these URLs:
 
-- `http://localhost:5173/set-password`
-- `https://anvisco.com/set-password`
 - `http://localhost:5173/portal`
 - `https://anvisco.com/portal`
 
-Those redirects are required for the client password setup flow and the client portal login
-flow.
+Those redirects are required for the client portal login flow.
 
 `/checkout/success` calls the `checkout-session-summary` Edge Function with the Stripe
 `session_id` query param. That function returns only safe confirmation data for the success page.
+The success page now routes clients to `/portal` with a secure-login CTA instead of any password
+setup language.
 
 If Stripe or Supabase returns an error, the page surfaces the message in the summary and keeps
 the form filled in.
@@ -108,18 +107,19 @@ Once the mapping exists, the client signs into `/portal` to see:
 - stage and visible updates
 - support contact details
 
-`/portal` is the official client login page, uses email/password authentication, and should be
-linked from the success page as the primary post-payment destination for returning clients.
-New clients open the password setup form on `/portal`, receive a secure email link, and finish
-password creation on `/set-password` through Supabase email recovery. After login, the portal
-calls `claim-client-profile` to link the signed-in auth user to the matching `clients.email`
-value if it finds one.
+`/portal` is the official client login page, uses magic-link authentication, and should be linked
+from the success page as the primary post-payment destination for returning clients. New clients
+enter the same email used at checkout and receive a secure login link through Supabase Auth.
+Magic-link login can create the matching `auth.users` row automatically, so checkout clients do
+not need to exist in auth before they can sign in.
+After login, the portal calls `claim-client-profile` to link the signed-in auth user to the
+matching `clients.email` value if it finds one.
 
 That means the checkout email and the auth email must match exactly. If they do not match, the
 portal stays in the pending state until an admin connects the record manually.
 
-Supabase Auth email delivery is rate-limited by default, so repeated password setup tests can hit
-temporary limits. For production use, configure custom SMTP in Supabase.
+Supabase Auth email delivery is rate-limited by default, so repeated login-link tests can hit
+temporary limits. Production uses custom SMTP in Supabase with Resend for portal login emails.
 
 The admin cleanup tool can safely remove matching test clients and related checkout records by
 email after you have finished testing the flow.

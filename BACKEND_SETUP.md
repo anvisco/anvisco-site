@@ -86,21 +86,18 @@ unless you pass them explicitly as Supabase secrets.
 
 ## 2c. Configure Supabase Auth redirect URLs
 
-Supabase Auth must allow the browser to return to both the portal login page and the password
-setup page after email links:
+Supabase Auth must allow the browser to return to the portal login page after magic links:
 
-- `http://localhost:5173/set-password`
-- `https://anvisco.com/set-password`
 - `http://localhost:5173/portal`
 - `https://anvisco.com/portal`
 
-These URLs are required for the client password setup flow and the client portal login flow.
+These URLs are required for the client portal login flow.
 
 ## 2d. Supabase Auth email delivery notes
 
-Supabase's default Auth email sender is rate-limited and intended for testing. If you expect to
-send multiple portal password emails in production, configure a custom SMTP provider in Supabase
-so password setup links are not throttled during normal use.
+Supabase's default Auth email sender is rate-limited and intended for testing. This project uses a
+custom SMTP provider in Supabase with Resend for production portal login emails, so magic links
+are not throttled during normal use.
 
 ## 3. Run the migration
 
@@ -282,12 +279,11 @@ future maintenance pass adds a separate, audited cleanup path for them.
 
 ## 8. Client portal
 
-- `/portal` is authenticated with Supabase Auth using email and password.
+- `/portal` is authenticated with Supabase Auth using magic-link login.
 - `/portal` is the official client login directory and login entry point.
-- Clients who do not have a password yet use the password setup link on `/portal` to reach
-  `/set-password`.
-- `/set-password` requires the Supabase recovery session from the email link and updates the
-  authenticated user's password with `supabase.auth.updateUser({ password })`.
+- Clients enter the same email they used at checkout and receive a secure login link.
+- Email ownership is the verification step. Supabase can create the auth user during magic-link
+  login if the email does not already exist in `auth.users`.
 - After login, the portal can automatically link the signed-in auth user to a `clients` row when
   the authenticated email matches `clients.email`.
 - That claim flow runs through the `claim-client-profile` Edge Function and inserts into
@@ -295,8 +291,10 @@ future maintenance pass adds a separate, audited cleanup path for them.
 - The portal looks up the signed-in user in `client_users` using `auth.uid()`.
 - That mapping resolves the related client record, then loads only that client’s packages,
   module selections, payment schedules, and client-visible project updates.
-- If a login has not been mapped yet, the portal shows a clean "No client profile is connected to
-  this login yet." state.
+- If a login has not been mapped yet, the portal shows a clean connection-pending state until the
+  matching email is connected.
+- `/set-password` is not part of the primary client portal flow. Keep it only as a fallback if
+  you still want a manual reset path for internal use.
 - If Supabase env vars are missing, the portal shows a setup message instead of crashing.
 - The portal never exposes other clients, email logs, or internal-only updates.
 
