@@ -186,7 +186,7 @@ export function ServicesPage() {
                   key={tier.name}
                   {...tier}
                   index={i}
-                  ctaLabel="Plan Your Build"
+                  ctaLabel="Choose Your Build"
                   onCta={goToBuild}
                 />
               ))}

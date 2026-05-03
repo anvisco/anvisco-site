@@ -18,7 +18,7 @@ const paths = [
   {
     name: 'Rebuild',
     description: 'A full custom-coded website built around your business.',
-    cta: 'Plan Your Build',
+    cta: 'Choose Your Build',
     to: '/checkout?path=build',
   },
 ]

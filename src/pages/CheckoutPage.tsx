@@ -842,7 +842,7 @@ function Summary(props: {
 function submitLabel(path: Path) {
   if (path === 'audit') return 'Start Your Audit'
   if (path === 'modules') return 'Choose Your Upgrades'
-  if (path === 'build') return 'Plan Your Build'
+  if (path === 'build') return 'Choose Your Build'
   if (path === 'recurring') return 'Choose a Care Plan'
   return 'Build Your Plan'
 }

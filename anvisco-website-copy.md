@@ -20,7 +20,7 @@ CTA routing:
 - Audit -> `Start Your Audit`
 - Free audit -> `Get Free Audit`
 - Modules -> `Choose Your Upgrades`
-- Full build -> `Plan Your Build`
+- Full build -> `Choose Your Build`
 - Recurring plans -> `Choose a Care Plan`
 - Final homepage CTA -> `Build Your Plan`
 - Secondary homepage CTA -> `Compare Services`
@@ -116,7 +116,7 @@ Upgrade specific parts of your existing website.
 
 **Rebuild**
 A full custom-coded website built around your business.
-→ Plan Your Build
+→ Choose Your Build
 
 ---
 
@@ -148,7 +148,7 @@ A custom website gives more control over structure, speed, design, content archi
 
 Three tiers: Essentials, Standard, Premium. Public rates start at $2,200, with founding rates available for the first few dental and local service clients.
 
-**CTA:** Plan Your Build
+**CTA:** Choose Your Build
 
 ---
 
@@ -286,7 +286,7 @@ CTA language:
 - Free snapshot -> `Get Free Audit`
 - Full audit -> `Start Your Audit`
 - Modules -> `Choose Your Upgrades`
-- Full build -> `Plan Your Build`
+- Full build -> `Choose Your Build`
 - Recurring -> `Choose a Care Plan`
 
 ---
@@ -328,7 +328,7 @@ Path labels:
 Path-specific submit labels:
 - audit selected: `Start Your Audit`
 - modules selected: `Choose Your Upgrades`
-- build selected: `Plan Your Build`
+- build selected: `Choose Your Build`
 - recurring selected: `Choose a Care Plan`
 - fallback: `Build Your Plan`
 

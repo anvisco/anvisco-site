@@ -124,76 +124,76 @@ export function CheckoutSuccessPage() {
       <main className="min-h-screen pt-16 bg-[var(--color-bg)]">
         <div className="mx-auto max-w-screen-xl px-6 py-20 lg:px-12 lg:py-24">
           <div className="max-w-3xl border-t border-[var(--color-border)] pt-7">
+
             <div className="mb-6 flex items-center gap-4">
-              <span className="text-[0.7rem] tabular-nums text-amber font-medium tracking-[0.08em]">
-                /
-              </span>
-              <BracketLabel>Payment received</BracketLabel>
+              <BracketLabel>Checkout complete</BracketLabel>
             </div>
 
-            <h1 className="mb-4 text-[2.5rem] font-medium leading-[1.04] tracking-[-0.03em] text-ink md:text-[3.5rem]">
+            <h1 className="mb-6 text-[2.5rem] font-medium leading-[1.04] tracking-[-0.03em] text-ink md:text-[3.5rem]">
               Payment received.
             </h1>
 
-            <h2 className="mb-4 max-w-[26ch] text-2xl font-medium leading-tight tracking-[-0.02em] text-ink md:text-[2.4rem]">
-              {copy.heading}
-            </h2>
+            {loading ? (
+              <p className="mb-8 text-sm text-ink-muted">Loading your confirmation details…</p>
+            ) : (
+              <>
+                <h2 className="mb-4 max-w-[26ch] text-2xl font-medium leading-tight tracking-[-0.02em] text-ink md:text-[2.4rem]">
+                  {copy.heading}
+                </h2>
 
-            <p className="mb-6 max-w-[62ch] text-base leading-relaxed text-ink-muted md:text-[1.0625rem]">
-              {copy.body}
-            </p>
+                <p className="mb-6 max-w-[62ch] text-base leading-relaxed text-ink-muted md:text-[1.0625rem]">
+                  {copy.body}
+                </p>
 
-            {sessionId && loading && (
-              <p className="mb-6 text-sm text-ink-muted">Loading your confirmation details…</p>
-            )}
+                {error && (
+                  <div className="mb-6 border border-amber/60 bg-amber/5 px-5 py-4 text-sm text-amber">
+                    {error}
+                  </div>
+                )}
 
-            {error && (
-              <div className="mb-6 border border-amber/60 bg-amber/5 px-5 py-4 text-sm text-amber">
-                {error}
-              </div>
-            )}
-
-            <div className="mb-10 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-              <Fact label="Package" value={summary?.package_name ?? 'Checkout complete'} />
-              <Fact label="Payment status" value={summary?.payment_status ?? 'paid'} />
-              <Fact label="Amount paid" value={amountDisplay ?? '—'} />
-              <Fact label="Portal" value="Client portal ready" />
-            </div>
-
-            {hasModules && summary && (
-              <section className="mb-10 border border-[var(--color-border)] bg-[var(--color-surface)] p-6">
-                <div className="mb-4 flex items-center gap-3">
-                  <BracketLabel>Selected modules</BracketLabel>
+                <div className="mb-10 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                  <Fact label="Package" value={summary?.package_name ?? 'Checkout complete'} />
+                  <Fact label="Payment status" value={summary?.payment_status ?? 'paid'} />
+                  <Fact label="Amount paid" value={amountDisplay ?? '—'} />
+                  <Fact label="Portal" value="Client portal ready" />
                 </div>
-                <div className="space-y-3">
-                  {summary.selected_modules.map((module) => (
-                    <div key={`${module.module_name}-${module.quantity}`} className="flex items-center justify-between gap-4 border-b border-[var(--color-border)] pb-2 text-sm last:border-b-0 last:pb-0">
-                      <span className="text-ink-muted">
-                        {module.module_name}
-                        {module.quantity > 1 ? ` × ${module.quantity}` : ''}
-                      </span>
-                      <span className="tabular-nums text-ink">{fmtCents(module.total_cents)}</span>
+
+                {hasModules && summary && (
+                  <section className="mb-10 border border-[var(--color-border)] bg-[var(--color-surface)] p-6">
+                    <div className="mb-4 flex items-center gap-3">
+                      <BracketLabel>Selected modules</BracketLabel>
                     </div>
-                  ))}
-                </div>
-              </section>
-            )}
+                    <div className="space-y-3">
+                      {summary.selected_modules.map((module) => (
+                        <div key={`${module.module_name}-${module.quantity}`} className="flex items-center justify-between gap-4 border-b border-[var(--color-border)] pb-2 text-sm last:border-b-0 last:pb-0">
+                          <span className="text-ink-muted">
+                            {module.module_name}
+                            {module.quantity > 1 ? ` × ${module.quantity}` : ''}
+                          </span>
+                          <span className="tabular-nums text-ink">{fmtCents(module.total_cents)}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </section>
+                )}
 
-            <div className="mb-10 grid gap-6 border-y border-[var(--color-border)] py-8">
-              <Step n="01" title={copy.nextStepTitle}>
-                {copy.nextStepBody}
-              </Step>
-              <Step n="02" title="Next steps">
-                <ul className="space-y-2">
-                  {nextSteps.map((step) => (
-                    <li key={step} className="flex gap-2">
-                      <span className="mt-2 h-1 w-1 shrink-0 bg-amber" />
-                      <span>{step}</span>
-                    </li>
-                  ))}
-                </ul>
-              </Step>
-            </div>
+                <div className="mb-10 grid gap-6 border-y border-[var(--color-border)] py-8">
+                  <Step n="01" title={copy.nextStepTitle}>
+                    {copy.nextStepBody}
+                  </Step>
+                  <Step n="02" title="Next steps">
+                    <ul className="space-y-2">
+                      {nextSteps.map((step) => (
+                        <li key={step} className="flex gap-2">
+                          <span className="mt-2 h-1 w-1 shrink-0 bg-amber" />
+                          <span>{step}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </Step>
+                </div>
+              </>
+            )}
 
             <section className="mb-10 border border-[var(--color-border)] bg-[var(--color-surface)] p-6">
               <div className="mb-4 flex items-center gap-3">
@@ -203,7 +203,7 @@ export function CheckoutSuccessPage() {
                 Access your client portal
               </h3>
               <p className="mt-3 max-w-[62ch] text-sm leading-relaxed text-ink-muted">
-                Use the same email you used at checkout. We’ll send you a secure login link so you
+                Use the same email you used at checkout. We'll send you a secure login link so you
                 can view your project stage, payment status, next due date, and updates.
               </p>
               <div className="mt-5 flex flex-wrap gap-3">
