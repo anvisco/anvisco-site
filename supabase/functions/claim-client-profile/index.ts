@@ -146,39 +146,59 @@ Deno.serve(async (request) => {
     return jsonResponse(response)
   }
 
-  async function findRecentClientCandidates() {
-    const { data, error } = await adminSupabase
-      .from('clients')
-      .select('id, email, created_at')
-      .order('created_at', { ascending: false })
-      .limit(100)
+  async function findMatchingClientByEmail() {
+    const pageSize = 200
+    let candidateCount = 0
+    let offset = 0
 
-    if (error) throw error
-    return (data as ClientCandidateRow[] | null) ?? []
+    while (true) {
+      const { data, error } = await adminSupabase
+        .from('clients')
+        .select('id, email, created_at')
+        .order('created_at', { ascending: false })
+        .range(offset, offset + pageSize - 1)
+
+      if (error) throw error
+
+      const candidates = (data as ClientCandidateRow[] | null) ?? []
+      candidateCount += candidates.length
+
+      const matchingClient = candidates.find((client) => normalizeEmail(client.email) === normalizedEmail) ?? null
+      if (matchingClient || candidates.length < pageSize) {
+        return { candidateCount, matchingClient }
+      }
+
+      offset += pageSize
+    }
   }
 
-  let candidates: ClientCandidateRow[] = []
+  let candidateCount = 0
   let matchingClient: ClientCandidateRow | null = null
   let clientError: { code?: string; message?: string; details?: string; hint?: string } | null = null
 
   try {
-    candidates = await findRecentClientCandidates()
-    matchingClient = candidates.find((client) => normalizeEmail(client.email) === normalizedEmail) ?? null
+    const result = await findMatchingClientByEmail()
+    candidateCount = result.candidateCount
+    matchingClient = result.matchingClient
   } catch (error) {
     clientError = error as { code?: string; message?: string; details?: string; hint?: string }
   }
 
   if (clientError) {
     console.error('claim-client-profile client lookup failed', clientError)
-    return jsonResponse({ error: 'Could not look up your client profile.' }, 500)
+    return jsonResponse({
+      error: 'Could not look up your client profile.',
+      reason: clientError.code ?? clientError.message ?? 'client_lookup_failed',
+      auth_email: normalizedEmail,
+    }, 500)
   }
 
-  const matchingClientsFound = candidates.filter((client) => normalizeEmail(client.email) === normalizedEmail)
+  const matchingClientsFound = matchingClient ? 1 : 0
 
   console.log('claim-client-profile email match scan', {
     auth_email: normalizedEmail,
-    candidate_count: candidates.length,
-    matching_clients_found: matchingClientsFound.length,
+    candidate_count: candidateCount,
+    matching_clients_found: matchingClientsFound,
     selected_client_id: matchingClient?.id ?? null,
   })
 
@@ -187,7 +207,7 @@ Deno.serve(async (request) => {
       linked: false,
       reason: 'no_matching_client',
       auth_email: normalizedEmail,
-      candidate_count: candidates.length,
+      candidate_count: candidateCount,
     }
     return jsonResponse(response)
   }

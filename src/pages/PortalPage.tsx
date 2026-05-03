@@ -97,7 +97,7 @@ interface PortalData {
 type PortalMappingState = 'idle' | 'loading' | 'claiming' | 'ready' | 'missing' | 'error'
 type ClaimClientProfileResponse =
   | { linked: true; client_id: string; auth_email: string; matched_client_email: string; alreadyLinked?: boolean }
-  | { linked: false; reason: 'no_matching_client'; auth_email: string }
+  | { linked: false; reason: 'no_matching_client'; auth_email: string; candidate_count: number }
   | { linked: false; reason: 'insert_failed'; auth_email: string; error: string; code?: string }
 
 const STAGES: { key: ProjectStage; title: string; hint: string }[] = [
