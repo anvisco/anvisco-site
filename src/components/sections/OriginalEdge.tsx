@@ -39,7 +39,7 @@ export function OriginalEdge() {
             transition={{ duration: 0.5, ease: 'easeOut', delay: 0.1 }}
             className="space-y-5"
           >
-            <p className="text-[1.25rem] leading-relaxed text-ink">
+            <p className="text-[1.0625rem] leading-relaxed text-ink">
               A good website should support the way your business actually works.
             </p>
             <p className="max-w-[56ch] text-[1.0625rem] leading-relaxed text-ink-muted">

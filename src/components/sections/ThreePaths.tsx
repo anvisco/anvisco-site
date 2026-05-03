@@ -58,7 +58,7 @@ export function ThreePaths() {
           className="mb-14 max-w-[52ch] text-[1.0625rem] leading-relaxed text-ink-muted"
         >
           Not every business needs a full rebuild. Some need clearer content, a better booking
-          flow, or stronger visuals. Choose the right upgrade for the job.
+          flow, or stronger visuals.
         </motion.p>
 
         <div className="grid grid-cols-1 border-t border-[var(--color-border)] md:grid-cols-3">

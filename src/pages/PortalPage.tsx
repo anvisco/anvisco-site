@@ -520,12 +520,9 @@ export function PortalPage() {
           <section className="grid gap-8 lg:grid-cols-[minmax(0,1.15fr)_minmax(340px,420px)] lg:items-start">
             <div className="border-t border-[var(--color-border)] pt-7">
               <div className="mb-6 flex items-center gap-4">
-                <span className="text-[0.7rem] tabular-nums text-amber font-medium tracking-[0.08em]">
-                  /portal
-                </span>
                 <BracketLabel>CLIENT PORTAL</BracketLabel>
               </div>
-              <h1 className="mb-5 max-w-[16ch] text-[2.5rem] font-medium leading-[1.04] tracking-[-0.03em] text-ink md:text-[4rem]">
+              <h1 className="mb-5 text-[2.5rem] font-medium leading-[1.04] tracking-[-0.03em] text-ink md:text-[3rem]">
                 Welcome to your client portal.
               </h1>
               <p className="max-w-[62ch] text-base leading-relaxed text-ink-muted md:text-[1.0625rem]">
