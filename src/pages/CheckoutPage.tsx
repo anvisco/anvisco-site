@@ -29,6 +29,7 @@ import {
   supabase,
   SUPABASE_NOT_CONFIGURED_MESSAGE,
 } from '@/lib/supabase'
+import { FREE_AUDIT_URL } from '@/data/contact'
 
 type Path = 'audit' | 'modules' | 'build' | 'recurring'
 
@@ -390,9 +391,9 @@ function AuditSection() {
       </div>
       <p className="mt-4 text-sm text-ink-muted">
         Want the free Snapshot instead?{' '}
-        <Link to="/audit" className="text-amber hover:underline">
-          Get Free Audit →
-        </Link>
+        <a href={FREE_AUDIT_URL} target="_blank" rel="noopener noreferrer" className="text-amber hover:underline">
+          Request the free snapshot →
+        </a>
       </p>
     </section>
   )

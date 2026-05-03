@@ -1,6 +1,7 @@
 import { motion, useReducedMotion } from 'motion/react'
 import { Link } from 'react-router-dom'
 import { BracketLabel } from '@/components/ui/BracketLabel'
+import { FREE_AUDIT_URL } from '@/data/contact'
 
 export function Hero() {
   return (
@@ -35,13 +36,15 @@ export function Hero() {
               </p>
 
               <div className="flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:items-center sm:gap-6">
-                <Link
-                  to="/audit"
+                <a
+                  href={FREE_AUDIT_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="group inline-flex w-full items-center justify-center gap-2.5 border-[1.5px] border-ink px-6 py-3.5 text-sm font-medium text-ink tracking-[-0.005em] transition-all duration-200 hover:border-amber hover:text-amber sm:w-auto sm:justify-start sm:py-3"
                 >
                   Get Free Audit
                   <span className="text-amber transition-transform duration-200 group-hover:translate-x-0.5">→</span>
-                </Link>
+                </a>
 
                 <Link
                   to="/checkout"

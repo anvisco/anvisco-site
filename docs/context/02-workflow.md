@@ -4,7 +4,8 @@
 
 1. The user visits the public site.
 2. CTA routes are:
-   - `Get Free Audit` -> `/audit`
+   - `Get Free Audit` / `Free Snapshot` -> `https://forms.gle/2wc94jkNKUVGWnLH8` (Google Form, opens in new tab)
+   - `Discovery call` / `Book a call` -> Calendly (https://calendly.com/nducanhnguyenn/15-minute-discovery-call)
    - offers and build paths -> `/checkout`
    - `Client Login` -> `/portal`
 3. The user selects an offer in `/checkout`.

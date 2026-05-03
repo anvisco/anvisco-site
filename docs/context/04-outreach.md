@@ -19,9 +19,16 @@
 
 ## Offer path
 
-- Lead wants a quick look: send the free snapshot.
+- Lead wants a quick look: send the free snapshot — https://forms.gle/2wc94jkNKUVGWnLH8
 - Lead wants to buy: send them to `/checkout`.
 - Paid client: send them to `/portal`.
+
+## CTA routing rules
+
+- Free audit / snapshot: https://forms.gle/2wc94jkNKUVGWnLH8
+- Discovery call / book a call: Calendly (https://calendly.com/nducanhnguyenn/15-minute-discovery-call)
+- Paid audit / modules / build / growth plan: /checkout
+- Client portal: /portal
 
 ## Copy rules
 

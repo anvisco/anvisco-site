@@ -22,6 +22,8 @@
 - Do not promise rankings or bookings.
 - Do not mention Supabase, Stripe, or Resend to prospects.
 - Do not send manual payment links.
+- Free audit / snapshot path: https://forms.gle/2wc94jkNKUVGWnLH8 (Google Form).
+- Discovery call path: Calendly only.
 - Paid path points to `/checkout`.
 - Portal path points to `/portal` after payment.
 - The client must use the same email used at checkout.

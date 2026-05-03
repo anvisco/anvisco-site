@@ -1,7 +1,7 @@
 import { Nav } from '@/components/layout/Nav'
 import { Footer } from '@/components/layout/Footer'
 import { BracketLabel } from '@/components/ui/BracketLabel'
-import { CONTACT_URL } from '@/data/contact'
+import { FREE_AUDIT_URL } from '@/data/contact'
 import { Link } from 'react-router-dom'
 
 const reviewAreas = [
@@ -184,7 +184,9 @@ function AuditCta({ label, to, subtle, compact }: { label: string; to?: string; 
     </Link>
   ) : (
     <a
-      href={CONTACT_URL}
+      href={FREE_AUDIT_URL}
+      target="_blank"
+      rel="noopener noreferrer"
       className={className}
     >
       {content}

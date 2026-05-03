@@ -1,5 +1,6 @@
 import { motion } from 'motion/react'
 import { Link, useNavigate } from 'react-router-dom'
+import { FREE_AUDIT_URL } from '@/data/contact'
 import { Nav } from '@/components/layout/Nav'
 import { Footer } from '@/components/layout/Footer'
 import { BracketLabel } from '@/components/ui/BracketLabel'
@@ -140,7 +141,7 @@ export function ServicesPage() {
                 title="Free AI-Ready Website Snapshot"
                 body="Three to five priority findings. A quick first look at where the site may be losing visibility, trust, or bookings."
                 cta="Get Free Audit"
-                to="/audit"
+                to={FREE_AUDIT_URL}
               />
               <OptionCard
                 title="Full Website Audit"
@@ -249,13 +250,23 @@ function OptionCard({ title, body, footnote, cta, to }: { title: string; body: s
 }
 
 function ContactLink({ label, to }: { label: string; to: string }) {
+  const className =
+    'group mt-8 inline-flex w-full items-center justify-center gap-2.5 border border-[var(--color-border-strong)] px-5 py-3 text-[0.7rem] font-medium uppercase tracking-[0.1em] text-ink transition-all duration-200 hover:border-amber hover:text-amber sm:w-auto sm:justify-start'
+  const arrow = (
+    <span className="text-amber transition-transform duration-200 group-hover:translate-x-0.5">→</span>
+  )
+  if (to.startsWith('http')) {
+    return (
+      <a href={to} target="_blank" rel="noopener noreferrer" className={className}>
+        {label}
+        {arrow}
+      </a>
+    )
+  }
   return (
-    <Link
-      to={to}
-      className="group mt-8 inline-flex w-full items-center justify-center gap-2.5 border border-[var(--color-border-strong)] px-5 py-3 text-[0.7rem] font-medium uppercase tracking-[0.1em] text-ink transition-all duration-200 hover:border-amber hover:text-amber sm:w-auto sm:justify-start"
-    >
+    <Link to={to} className={className}>
       {label}
-      <span className="text-amber transition-transform duration-200 group-hover:translate-x-0.5">→</span>
+      {arrow}
     </Link>
   )
 }

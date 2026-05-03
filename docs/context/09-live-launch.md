@@ -35,8 +35,9 @@ npx supabase functions deploy claim-client-profile --project-ref evvozwtspivyumb
 ## Live smoke test
 
 1. Open the public site.
-2. Visit `/audit`.
-3. Test `/checkout` with Stripe live or test mode as appropriate.
+2. Click "Get Free Audit" on the homepage — confirm it opens the Google Form (https://forms.gle/2wc94jkNKUVGWnLH8) in a new tab.
+3. Visit `/audit` — confirm the "Get Free Audit" CTA opens the Google Form, not Calendly.
+4. Test `/checkout` with Stripe live or test mode as appropriate.
 4. Confirm `/checkout/success?session_id=...` shows package-specific confirmation.
 5. Confirm the webhook updates Supabase rows.
 6. Confirm the welcome email sends.
