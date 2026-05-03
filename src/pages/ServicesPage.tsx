@@ -90,10 +90,10 @@ export function ServicesPage() {
     <>
       <Nav />
       <main className="pt-16">
-        <section className="bg-[var(--color-bg)] py-24 md:py-32">
+        <section className="bg-[var(--color-bg)] py-16 md:py-24 lg:py-32">
           <div className="mx-auto max-w-screen-xl px-6 lg:px-12">
             <BracketLabel>Services</BracketLabel>
-            <h1 className="mb-8 mt-10 max-w-[14ch] text-[2.35rem] font-medium leading-[1.04] tracking-[-0.02em] text-ink sm:max-w-[15ch] sm:text-[3.5rem] md:max-w-4xl md:leading-[0.98] md:tracking-[-0.04em] md:text-[5rem]">
+            <h1 className="mb-8 mt-10 max-w-[14ch] text-[1.875rem] font-medium leading-[1.06] tracking-[-0.02em] text-ink sm:text-[3rem] md:max-w-4xl md:leading-[0.98] md:tracking-[-0.04em] md:text-[5rem]">
               <span className="block">Built modular.</span>
               <span className="block">Buy only the layer</span>
               <span className="block">your business needs.</span>
@@ -103,7 +103,7 @@ export function ServicesPage() {
             </p>
             <Link
               to="/checkout"
-              className="group mt-8 inline-flex items-center gap-2.5 border border-ink px-6 py-3 text-sm font-medium text-ink transition-all duration-200 hover:border-amber hover:text-amber"
+              className="group mt-8 inline-flex w-full items-center justify-center gap-2.5 border border-ink px-6 py-3 text-sm font-medium text-ink transition-all duration-200 hover:border-amber hover:text-amber sm:w-auto sm:justify-start"
             >
               Build Your Plan
               <span className="text-amber transition-transform duration-200 group-hover:translate-x-0.5">→</span>
@@ -111,7 +111,7 @@ export function ServicesPage() {
           </div>
         </section>
 
-        <section className="py-20 md:py-28 bg-[var(--color-surface)]">
+        <section className="py-14 md:py-20 lg:py-28 bg-[var(--color-surface)]">
           <div className="max-w-screen-xl mx-auto px-6 lg:px-12">
             <SectionHeader number="01" label="How it works" title="The ladder." />
             <p className="max-w-[62ch] text-base leading-relaxed text-ink-muted sm:text-[1.0625rem]">
@@ -132,7 +132,7 @@ export function ServicesPage() {
           </div>
         </section>
 
-        <section id="audit" className="scroll-mt-16 bg-[var(--color-bg)] py-20 md:py-28">
+        <section id="audit" className="scroll-mt-16 bg-[var(--color-bg)] py-14 md:py-20 lg:py-28">
           <div className="max-w-screen-xl mx-auto px-6 lg:px-12">
             <SectionHeader number="02" label="Audit" title="Audit" />
             <div className="grid gap-px bg-[var(--color-border)] md:grid-cols-2">
@@ -152,7 +152,7 @@ export function ServicesPage() {
           </div>
         </section>
 
-        <section id="modules" className="scroll-mt-16 bg-[var(--color-surface)] py-20 md:py-28">
+        <section id="modules" className="scroll-mt-16 bg-[var(--color-surface)] py-14 md:py-20 lg:py-28">
           <div className="max-w-screen-xl mx-auto px-6 lg:px-12">
             <SectionHeader number="03" label="Modules" title="Improvement Modules" />
             <p className="mb-12 max-w-[62ch] text-[1.0625rem] leading-relaxed text-ink-muted">
@@ -174,7 +174,7 @@ export function ServicesPage() {
           </div>
         </section>
 
-        <section id="build" className="scroll-mt-16 bg-[var(--color-bg)] py-20 md:py-28">
+        <section id="build" className="scroll-mt-16 bg-[var(--color-bg)] py-14 md:py-20 lg:py-28">
           <div className="max-w-screen-xl mx-auto px-6 lg:px-12">
             <SectionHeader number="04" label="Full custom build" title="Full Custom Build" />
             <p className="mb-12 max-w-[62ch] text-[1.0625rem] leading-relaxed text-ink-muted">
@@ -195,9 +195,9 @@ export function ServicesPage() {
           </div>
         </section>
 
-        <section id="recurring" className="scroll-mt-16 bg-[var(--color-surface)] py-20 md:py-28">
+        <section id="recurring" className="scroll-mt-16 bg-[var(--color-surface)] py-14 md:py-20 lg:py-28">
           <div className="max-w-screen-xl mx-auto px-6 lg:px-12">
-            <SectionHeader number="05" label="Recurring plans" title="Recurring Plans" />
+            <SectionHeader number="05" label="Monthly plans" title="Monthly Plans" />
             <p className="mb-12 max-w-[62ch] text-[1.0625rem] leading-relaxed text-ink-muted">
               Two plans depending on whether the goal is ongoing care or active growth.
             </p>
@@ -218,7 +218,7 @@ export function ServicesPage() {
 function SectionHeader({ number, label, title }: { number: string; label: string; title: string }) {
   return (
     <>
-      <div className="mb-12 flex items-center gap-4 border-t border-[var(--color-border)] pt-7">
+      <div className="mb-8 flex items-center gap-4 border-t border-[var(--color-border)] pt-7 md:mb-12">
         <span className="text-[0.7rem] tabular-nums text-amber font-medium tracking-[0.08em]">{number}</span>
         <BracketLabel>{label}</BracketLabel>
       </div>
@@ -252,7 +252,7 @@ function ContactLink({ label, to }: { label: string; to: string }) {
   return (
     <Link
       to={to}
-      className="group mt-8 inline-flex items-center gap-2.5 border border-[var(--color-border-strong)] px-5 py-3 text-[0.7rem] font-medium uppercase tracking-[0.1em] text-ink transition-all duration-200 hover:border-amber hover:text-amber"
+      className="group mt-8 inline-flex w-full items-center justify-center gap-2.5 border border-[var(--color-border-strong)] px-5 py-3 text-[0.7rem] font-medium uppercase tracking-[0.1em] text-ink transition-all duration-200 hover:border-amber hover:text-amber sm:w-auto sm:justify-start"
     >
       {label}
       <span className="text-amber transition-transform duration-200 group-hover:translate-x-0.5">→</span>

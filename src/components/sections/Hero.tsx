@@ -4,38 +4,40 @@ import { BracketLabel } from '@/components/ui/BracketLabel'
 
 export function Hero() {
   return (
-    <section className="relative flex min-h-[92vh] flex-col justify-end overflow-hidden bg-[var(--color-bg)] pt-16">
+    <section className="relative flex flex-col justify-start overflow-hidden bg-[var(--color-bg)] pt-14 md:min-h-[92vh] md:justify-end md:pt-16">
       <HeroGrid />
-      <div className="relative z-10 mx-auto w-full max-w-screen-xl px-6 pb-16 lg:px-12 lg:pb-20">
+      <div className="relative z-10 mx-auto w-full max-w-screen-xl px-6 pt-10 pb-14 md:pt-0 md:pb-16 lg:px-12 lg:pb-20">
         <div className="grid items-end lg:grid-cols-[minmax(0,1fr)_300px] lg:gap-16">
           <div>
             <div>
-              <div className="mb-10">
+              <div className="mb-5 md:mb-10">
                 <BracketLabel>Local Businesses</BracketLabel>
               </div>
 
-              <h1 className="mb-8 max-w-[12ch] text-[clamp(3rem,8vw,7rem)] font-medium leading-[0.98] tracking-[-0.035em] text-ink sm:max-w-[15ch] lg:max-w-[14ch]">
+              <h1 className="mb-5 max-w-[14ch] text-[clamp(2.5rem,8vw,7rem)] font-medium leading-[0.98] tracking-[-0.035em] text-ink sm:max-w-[15ch] md:mb-8 lg:max-w-[14ch]">
                 <span className="block font-sans text-[0.74em] tracking-[-0.025em]">
                   Websites built to
                 </span>
                 <span
-                  className="mt-4 flex max-w-[11ch] flex-wrap items-baseline gap-x-[0.18em] gap-y-[0.18em] font-serif italic leading-[0.96] text-amber sm:max-w-[12ch] lg:max-w-[10ch]"
+                  className="mt-4 flex max-w-none flex-wrap items-baseline gap-x-[0.18em] gap-y-[0.18em] font-serif italic leading-[0.96] text-amber sm:max-w-[12ch] lg:max-w-[10ch]"
                   style={{ fontFamily: '"Instrument Serif", Georgia, serif' }}
                 >
                   <span>run,</span>
                   <span>grow,</span>
-                  <span className="whitespace-nowrap">and get discovered.</span>
+                  <span>and</span>
+                  <span>get</span>
+                  <span>discovered.</span>
                 </span>
               </h1>
 
-              <p className="mb-10 max-w-[56ch] text-[1.125rem] leading-relaxed tracking-[-0.005em] text-ink-muted">
+              <p className="mb-7 max-w-[56ch] text-base leading-relaxed tracking-[-0.005em] text-ink-muted md:mb-10 md:text-[1.125rem]">
                 I build custom websites for local service businesses that improve operations, trust, and conversion. Built for how people search through Google, AI tools, Maps, and local recommendations.
               </p>
 
-              <div className="flex flex-col items-start gap-5 sm:flex-row sm:flex-wrap sm:items-center sm:gap-6">
+              <div className="flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:items-center sm:gap-6">
                 <Link
                   to="/audit"
-                  className="group inline-flex items-center gap-2.5 border-[1.5px] border-ink px-6 py-3 text-sm font-medium text-ink tracking-[-0.005em] transition-all duration-200 hover:border-amber hover:text-amber"
+                  className="group inline-flex w-full items-center justify-center gap-2.5 border-[1.5px] border-ink px-6 py-3.5 text-sm font-medium text-ink tracking-[-0.005em] transition-all duration-200 hover:border-amber hover:text-amber sm:w-auto sm:justify-start sm:py-3"
                 >
                   Get Free Audit
                   <span className="text-amber transition-transform duration-200 group-hover:translate-x-0.5">→</span>

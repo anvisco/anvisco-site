@@ -94,12 +94,14 @@
   body {
     background-color: var(--color-bg);
     color: var(--color-ink);
+    overflow-x: hidden;
     @apply font-sans;
   }
 
   html {
     @apply font-sans scroll-smooth;
     scroll-padding-top: 5rem;
+    overflow-x: hidden;
   }
 
   [id] {

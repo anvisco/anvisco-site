@@ -34,9 +34,9 @@ const steps = [
 
 export function Process() {
   return (
-    <section id="process" className="scroll-mt-16 bg-[var(--color-bg)] py-24 md:py-32">
+    <section id="process" className="scroll-mt-16 bg-[var(--color-bg)] py-16 md:py-24 lg:py-32">
       <div className="mx-auto max-w-screen-xl px-6 lg:px-12">
-        <div className="mb-16 flex items-center gap-4 border-t border-[var(--color-border)] pt-7">
+        <div className="mb-10 flex items-center gap-4 border-t border-[var(--color-border)] pt-7 md:mb-16">
           <span className="text-[0.7rem] tabular-nums text-amber font-medium tracking-[0.08em]">06</span>
           <motion.div
             initial={{ opacity: 0 }}

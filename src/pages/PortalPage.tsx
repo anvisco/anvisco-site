@@ -486,13 +486,13 @@ export function PortalPage() {
     <>
       <Nav />
       <main className="min-h-screen pt-16 bg-[var(--color-bg)]">
-        <div className="mx-auto max-w-screen-2xl px-6 py-20 lg:px-12 lg:py-24">
+        <div className="mx-auto max-w-screen-2xl px-6 py-12 md:py-20 lg:px-12 lg:py-24">
           <section className="grid gap-8 lg:grid-cols-[minmax(0,1.15fr)_minmax(340px,420px)] lg:items-start">
             <div className="border-t border-[var(--color-border)] pt-7">
               <div className="mb-6 flex items-center gap-4">
                 <BracketLabel>CLIENT PORTAL</BracketLabel>
               </div>
-              <h1 className="mb-5 text-[2.5rem] font-medium leading-[1.04] tracking-[-0.03em] text-ink md:text-[3rem]">
+              <h1 className="mb-5 text-[1.875rem] font-medium leading-[1.04] tracking-[-0.03em] text-ink sm:text-[2.25rem] md:text-[3rem]">
                 Welcome to your client portal.
               </h1>
               <p className="max-w-[62ch] text-base leading-relaxed text-ink-muted md:text-[1.0625rem]">
@@ -552,7 +552,7 @@ export function PortalPage() {
                   </div>
                 </div>
 
-                <div className="grid gap-px bg-[var(--color-border)] sm:grid-cols-2 xl:grid-cols-4">
+                <div className="grid gap-px bg-[var(--color-border)] grid-cols-2 xl:grid-cols-4">
                   <InfoTile
                     label="Active package"
                     value={activePackage ? activePackage.package_name : 'No active package'}
@@ -709,7 +709,7 @@ export function PortalPage() {
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+                  <div className="grid grid-cols-3 gap-2 sm:grid-cols-3 lg:grid-cols-6 lg:gap-3">
                     {STAGES.map((stage, index) => {
                       const active = stage.key === currentStage
                       const past = currentStageIndex > -1 && index < currentStageIndex
@@ -786,7 +786,7 @@ export function PortalPage() {
                       href={CONTACT_URL}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-2 border border-[var(--color-border-strong)] px-5 py-3 text-[0.7rem] font-medium uppercase tracking-[0.1em] text-ink transition-all duration-200 hover:border-amber hover:text-amber"
+                      className="inline-flex w-full items-center justify-center gap-2 border border-[var(--color-border-strong)] px-5 py-3 text-[0.7rem] font-medium uppercase tracking-[0.1em] text-ink transition-all duration-200 hover:border-amber hover:text-amber sm:w-auto sm:justify-start"
                     >
                       Book a quick call
                       <span className="text-amber">→</span>
@@ -864,7 +864,7 @@ function AuthPanel({
         </div>
         <button
           onClick={signOut}
-          className="inline-flex items-center gap-2 border border-[var(--color-border-strong)] px-5 py-3 text-[0.7rem] font-medium uppercase tracking-[0.1em] text-ink-muted transition-all duration-200 hover:border-amber hover:text-amber"
+          className="inline-flex w-full items-center justify-center gap-2 border border-[var(--color-border-strong)] px-5 py-3 text-[0.7rem] font-medium uppercase tracking-[0.1em] text-ink-muted transition-all duration-200 hover:border-amber hover:text-amber sm:w-auto sm:justify-start"
         >
           Sign out
           <span className="text-amber">→</span>
@@ -923,7 +923,7 @@ function LoginCard({
         <button
           type="submit"
           disabled={sendingLink || !email.trim()}
-          className="inline-flex items-center gap-2 border border-amber px-5 py-3 text-[0.7rem] font-medium uppercase tracking-[0.1em] text-amber transition-all duration-200 hover:bg-amber/10 disabled:opacity-60"
+          className="inline-flex w-full items-center justify-center gap-2 border border-amber px-5 py-3 text-[0.7rem] font-medium uppercase tracking-[0.1em] text-amber transition-all duration-200 hover:bg-amber/10 disabled:opacity-60 sm:w-auto sm:justify-start"
         >
           {sendingLink ? 'Sending…' : 'Send secure login link'}
           <span className="text-amber">→</span>
@@ -972,7 +972,7 @@ function InfoTile({
   sub?: string
 }) {
   return (
-    <div className="min-h-[122px] bg-[var(--color-bg)] p-4">
+    <div className="bg-[var(--color-bg)] p-4">
       <p className="mb-2 text-[0.65rem] uppercase tracking-[0.08em] text-ink-subtle">
         {label}
       </p>

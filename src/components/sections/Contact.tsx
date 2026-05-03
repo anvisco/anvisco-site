@@ -6,10 +6,10 @@ export function Contact() {
   return (
     <section
       id="contact"
-      className="bg-[var(--color-bg)] py-24 md:py-32"
+      className="bg-[var(--color-bg)] py-16 md:py-24 lg:py-32"
     >
       <div className="mx-auto max-w-screen-xl px-6 lg:px-12">
-        <div className="mb-14 flex items-center gap-4 border-t border-[var(--color-border)] pt-7">
+        <div className="mb-10 flex items-center gap-4 border-t border-[var(--color-border)] pt-7 md:mb-14">
           <span className="text-[0.7rem] tabular-nums text-amber font-medium tracking-[0.08em]">07</span>
           <motion.div
             initial={{ opacity: 0 }}
@@ -27,7 +27,7 @@ export function Contact() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6, ease: 'easeOut' }}
-            className="mb-6 text-[2.5rem] font-medium leading-[1.05] tracking-[-0.03em] text-ink md:text-[3rem]"
+            className="mb-6 text-[1.875rem] font-medium leading-[1.05] tracking-[-0.03em] text-ink sm:text-[2.25rem] md:text-[2.5rem] lg:text-[3rem]"
           >
             Ready to choose the right path for your website?
           </motion.h2>
@@ -37,7 +37,7 @@ export function Contact() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5, ease: 'easeOut', delay: 0.1 }}
-            className="mb-12 max-w-[52ch] text-[1.125rem] leading-relaxed text-ink-muted"
+            className="mb-8 max-w-[52ch] text-base leading-relaxed text-ink-muted md:mb-12 md:text-[1.125rem]"
           >
             Start with a simple request. Choose whether you need an audit, targeted improvements, a full build, or ongoing support.
           </motion.p>
@@ -47,12 +47,12 @@ export function Contact() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5, ease: 'easeOut', delay: 0.18 }}
-            className="flex flex-col items-start gap-6"
+            className="flex flex-col gap-5 md:gap-6"
           >
-            <div className="flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:items-stretch">
+            <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-stretch sm:gap-4">
               <Link
                 to="/checkout"
-                className="group inline-flex items-center gap-2.5 border-[1.5px] border-ink px-8 py-4 text-sm font-medium tracking-[-0.005em] text-ink transition-all duration-200 hover:border-amber hover:text-amber"
+                className="group inline-flex w-full items-center justify-center gap-2.5 border-[1.5px] border-ink px-8 py-4 text-sm font-medium tracking-[-0.005em] text-ink transition-all duration-200 hover:border-amber hover:text-amber sm:w-auto sm:justify-start"
               >
                 Build Your Plan
                 <span className="text-amber transition-transform duration-200 group-hover:translate-x-0.5">→</span>
@@ -60,7 +60,7 @@ export function Contact() {
 
               <Link
                 to="/services"
-                className="group inline-flex items-center gap-2.5 border-[1.5px] border-[var(--color-border-strong)] px-8 py-4 text-sm font-medium tracking-[-0.005em] text-ink-muted transition-all duration-200 hover:border-amber hover:text-ink"
+                className="group inline-flex w-full items-center justify-center gap-2.5 border-[1.5px] border-[var(--color-border-strong)] px-8 py-4 text-sm font-medium tracking-[-0.005em] text-ink-muted transition-all duration-200 hover:border-amber hover:text-ink sm:w-auto sm:justify-start"
               >
                 Compare Services
                 <span className="text-amber opacity-60 transition-all duration-200 group-hover:translate-x-0.5 group-hover:opacity-100">→</span>

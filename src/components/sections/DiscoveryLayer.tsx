@@ -3,9 +3,9 @@ import { BracketLabel } from '@/components/ui/BracketLabel'
 
 export function DiscoveryLayer() {
   return (
-    <section className="bg-[var(--color-surface)] py-24 md:py-32">
+    <section className="bg-[var(--color-surface)] py-16 md:py-24 lg:py-32">
       <div className="mx-auto max-w-screen-xl px-6 lg:px-12">
-        <div className="mb-14 flex items-center gap-4 border-t border-[var(--color-border)] pt-7">
+        <div className="mb-10 flex items-center gap-4 border-t border-[var(--color-border)] pt-7 md:mb-14">
           <span className="text-[0.7rem] tabular-nums text-amber font-medium tracking-[0.08em]">02</span>
           <motion.div
             initial={{ opacity: 0 }}
@@ -22,7 +22,7 @@ export function DiscoveryLayer() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6, ease: 'easeOut' }}
-          className="mb-8 max-w-[22ch] text-[2rem] font-medium leading-[1.1] tracking-[-0.02em] text-ink md:text-[2.5rem]"
+          className="mb-6 max-w-[22ch] text-[1.75rem] font-medium leading-[1.1] tracking-[-0.02em] text-ink md:mb-8 md:text-[2rem] lg:text-[2.5rem]"
         >
           <span className="block text-ink">Now websites also need to be</span>
           <span className="block text-amber">built for how people search.</span>
@@ -34,7 +34,7 @@ export function DiscoveryLayer() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5, ease: 'easeOut', delay: 0.1 }}
-            className="text-[1.125rem] leading-relaxed text-ink-muted"
+            className="text-base leading-relaxed text-ink-muted md:text-[1.125rem]"
           >
             People no longer search with short keywords alone. They ask direct questions through{' '}
             <span className="text-amber">Google, AI tools, Maps, and local recommendations</span>.
@@ -59,7 +59,7 @@ export function DiscoveryLayer() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5, ease: 'easeOut', delay: 0.18 }}
-            className="text-[1.125rem] leading-relaxed text-ink-muted"
+            className="text-base leading-relaxed text-ink-muted md:text-[1.125rem]"
           >
             Your website needs to clearly explain who you are, what you offer, where you serve, and why people should trust you.
           </motion.p>

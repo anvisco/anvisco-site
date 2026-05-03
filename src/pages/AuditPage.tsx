@@ -29,23 +29,23 @@ export function AuditPage() {
     <>
       <Nav />
       <main className="pt-16">
-        <section className="py-24 md:py-32 bg-[var(--color-bg)]">
+        <section className="py-16 md:py-24 lg:py-32 bg-[var(--color-bg)]">
           <div className="max-w-screen-xl mx-auto px-6 lg:px-12">
             <BracketLabel>Audit</BracketLabel>
-            <h1 className="mt-10 mb-8 max-w-4xl break-words text-[2.35rem] sm:text-[3.5rem] md:text-[5rem] font-medium leading-[1.04] md:leading-[0.98] tracking-[-0.02em] md:tracking-[-0.04em] text-ink">
+            <h1 className="mt-8 mb-5 max-w-4xl break-words text-[2.35rem] sm:text-[3.5rem] md:mb-8 md:mt-10 md:text-[5rem] font-medium leading-[1.04] md:leading-[0.98] tracking-[-0.02em] md:tracking-[-0.04em] text-ink">
               Find out what your website is missing.
             </h1>
-            <p className="mb-10 max-w-[30ch] break-words text-base leading-relaxed text-ink-muted sm:max-w-[62ch] sm:text-[1.125rem]">
+            <p className="mb-7 max-w-[30ch] break-words text-base leading-relaxed text-ink-muted sm:max-w-[62ch] sm:text-[1.125rem] md:mb-10">
               A focused review of how your site performs on visibility, trust, conversion, and AI-search readiness, so you know exactly where to invest before spending on a rebuild.
             </p>
-            <div className="flex flex-wrap gap-4">
+            <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:gap-4">
               <AuditCta label="Get Free Audit" />
               <AuditCta label="Start Your Audit" to="/checkout?path=audit" subtle />
             </div>
           </div>
         </section>
 
-        <section className="py-20 md:py-28 bg-[var(--color-surface)]">
+        <section className="py-14 md:py-20 lg:py-28 bg-[var(--color-surface)]">
           <div className="max-w-screen-xl mx-auto px-6 lg:px-12">
             <SectionHeader number="01" label="Two ways" title="Two ways to start." />
             <div className="grid items-stretch gap-4 md:grid-cols-2">
@@ -66,7 +66,7 @@ export function AuditPage() {
           </div>
         </section>
 
-        <section className="py-20 md:py-28 bg-[var(--color-bg)]">
+        <section className="py-14 md:py-20 lg:py-28 bg-[var(--color-bg)]">
           <div className="max-w-screen-xl mx-auto px-6 lg:px-12">
             <SectionHeader number="02" label="Review areas" title="What gets reviewed." />
             <p className="mb-12 max-w-[62ch] text-[1.0625rem] leading-relaxed text-ink-muted">
@@ -83,10 +83,10 @@ export function AuditPage() {
           </div>
         </section>
 
-        <section className="py-20 md:py-28 bg-[var(--color-surface)]">
+        <section className="py-14 md:py-20 lg:py-28 bg-[var(--color-surface)]">
           <div className="max-w-screen-xl mx-auto px-6 lg:px-12">
             <SectionHeader number="03" label="Outcome" title="What you walk away with." />
-            <div className="max-w-[68ch] space-y-5 text-[1.0625rem] leading-relaxed text-ink-muted">
+            <div className="max-w-[68ch] space-y-5 text-base leading-relaxed text-ink-muted md:text-[1.0625rem]">
               <p>
                 A clear, ranked list of fixes. Not a redesign pitch. Not a sales document. A practical breakdown of where the site is leaking visibility, trust, or bookings, and what the highest-leverage moves are.
               </p>
@@ -97,15 +97,15 @@ export function AuditPage() {
           </div>
         </section>
 
-        <section className="py-20 md:py-28 bg-[var(--color-bg)]">
+        <section className="py-14 md:py-20 lg:py-28 bg-[var(--color-bg)]">
           <div className="max-w-screen-xl mx-auto px-6 lg:px-12">
-            <h2 className="mb-6 text-[2.5rem] md:text-[3rem] font-medium tracking-[-0.03em] leading-[1.05] text-ink">
+            <h2 className="mb-5 text-[1.875rem] font-medium tracking-[-0.03em] leading-[1.05] text-ink md:mb-6 md:text-[2.5rem] lg:text-[3rem]">
               Start with the audit.
             </h2>
-            <p className="mb-10 max-w-[62ch] text-[1.125rem] leading-relaxed text-ink-muted">
+            <p className="mb-7 max-w-[62ch] text-base leading-relaxed text-ink-muted md:mb-10 md:text-[1.125rem]">
               Most practices spend money on the wrong fix because they never had a clear picture of what was actually broken. The audit fixes that.
             </p>
-            <div className="flex flex-wrap gap-4">
+            <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:gap-4">
               <AuditCta label="Get Free Audit" />
               <AuditCta label="Start Your Audit" to="/checkout?path=audit" subtle />
             </div>
@@ -120,11 +120,11 @@ export function AuditPage() {
 function SectionHeader({ number, label, title }: { number: string; label: string; title: string }) {
   return (
     <>
-      <div className="mb-12 flex items-center gap-4 border-t border-[var(--color-border)] pt-7">
+      <div className="mb-8 flex items-center gap-4 border-t border-[var(--color-border)] pt-7 md:mb-12">
         <span className="text-[0.7rem] tabular-nums text-amber font-medium tracking-[0.08em]">{number}</span>
         <BracketLabel>{label}</BracketLabel>
       </div>
-      <h2 className="mb-6 text-[2rem] md:text-[2.5rem] font-medium tracking-[-0.02em] text-ink leading-[1.1]">
+      <h2 className="mb-5 text-[2rem] md:mb-6 md:text-[2.5rem] font-medium tracking-[-0.02em] text-ink leading-[1.1]">
         {title}
       </h2>
     </>
@@ -167,7 +167,7 @@ function AuditOption({
 }
 
 function AuditCta({ label, to, subtle, compact }: { label: string; to?: string; subtle?: boolean; compact?: boolean }) {
-  const className = `group inline-flex items-center gap-2.5 border px-6 py-3 text-sm font-medium tracking-[-0.005em] transition-all duration-200 hover:border-amber hover:text-amber ${
+  const className = `group inline-flex w-full items-center justify-center gap-2.5 border px-6 py-3 text-sm font-medium tracking-[-0.005em] transition-all duration-200 hover:border-amber hover:text-amber sm:w-auto sm:justify-start ${
     compact ? 'mt-8' : ''
   } ${subtle ? 'border-[var(--color-border-strong)] text-ink-muted' : 'border-ink text-ink'}`
 

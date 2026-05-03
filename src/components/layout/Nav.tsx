@@ -42,7 +42,26 @@ export function Nav() {
           : 'bg-transparent border-b border-transparent'
       }`}
     >
-      <div className="mx-auto grid h-16 max-w-screen-2xl grid-cols-[minmax(140px,1fr)_auto_minmax(140px,1fr)] items-center gap-4 px-6 lg:px-12">
+      {/* Mobile header */}
+      <div className="flex h-14 items-center justify-between px-5 md:hidden">
+        <Link
+          to="/"
+          onClick={() => { setOpen(false); window.scrollTo({ top: 0, behavior: 'auto' }) }}
+          className="text-sm font-medium tracking-tight text-ink transition-colors duration-200 hover:text-amber"
+        >
+          Anvis
+        </Link>
+        <button
+          onClick={() => setOpen((v) => !v)}
+          className="flex h-9 w-9 items-center justify-center text-ink-muted transition-colors duration-200 hover:text-amber"
+          aria-label={open ? 'Close menu' : 'Open menu'}
+        >
+          {open ? <X size={20} /> : <Menu size={20} />}
+        </button>
+      </div>
+
+      {/* Desktop header */}
+      <div className="mx-auto hidden h-16 max-w-screen-2xl grid-cols-[minmax(140px,1fr)_auto_minmax(140px,1fr)] items-center gap-4 px-6 md:grid lg:px-12">
         <Link
           to="/"
           onClick={() => { setOpen(false); window.scrollTo({ top: 0, behavior: 'auto' }) }}
@@ -51,7 +70,7 @@ export function Nav() {
           Anvis
         </Link>
 
-        <nav className="hidden items-center justify-center gap-5 md:flex lg:gap-7">
+        <nav className="flex items-center justify-center gap-5 lg:gap-7">
           {links.map((link) => {
             const hashIndex = link.href.indexOf('#')
             const hash = hashIndex >= 0 ? link.href.slice(hashIndex) : ''
@@ -85,41 +104,36 @@ export function Nav() {
         <Link
           to="/portal"
           onClick={() => window.scrollTo({ top: 0, behavior: 'auto' })}
-          className="hidden items-center gap-2 justify-self-end border border-[var(--color-border-strong)] px-4 py-2 text-[0.68rem] font-medium tracking-[0.1em] uppercase text-ink transition-all duration-200 hover:border-amber hover:text-amber group md:inline-flex"
+          className="group inline-flex items-center gap-2 justify-self-end border border-[var(--color-border-strong)] px-4 py-2 text-[0.68rem] font-medium tracking-[0.1em] uppercase text-ink transition-all duration-200 hover:border-amber hover:text-amber"
         >
           <span>[ Client Login ]</span>
           <span className="text-amber transition-transform duration-200 group-hover:translate-x-0.5">→</span>
         </Link>
-
-        <button
-          onClick={() => setOpen((v) => !v)}
-          className="-mr-2 justify-self-end p-2 text-ink-muted transition-colors duration-200 hover:text-amber md:hidden"
-          aria-label={open ? 'Close menu' : 'Open menu'}
-        >
-          {open ? <X size={18} /> : <Menu size={18} />}
-        </button>
       </div>
 
       {/* Mobile menu */}
       {open && (
-        <div className="md:hidden border-t border-[var(--color-border)] bg-[var(--color-bg)] px-6 py-8 flex flex-col gap-6">
+        <div className="md:hidden border-t border-[var(--color-border)] bg-[var(--color-bg)] px-6 py-6 flex flex-col gap-1">
           {links.map((link) => (
             <Link
               key={link.href}
               to={link.href}
               onClick={() => { setOpen(false); window.scrollTo({ top: 0, behavior: 'auto' }) }}
-              className="text-[0.7rem] font-medium tracking-[0.14em] uppercase text-ink-muted transition-colors duration-150 hover:text-ink"
+              className="flex items-center py-3 text-sm font-medium tracking-[0.06em] text-ink-muted transition-colors duration-150 hover:text-ink"
             >
-              {`[ ${link.label} ]`}
+              {link.label}
             </Link>
           ))}
-          <Link
-            to="/portal"
-            onClick={() => { setOpen(false); window.scrollTo({ top: 0, behavior: 'auto' }) }}
-            className="mt-2 inline-flex items-center gap-2 border border-[var(--color-border-strong)] px-4 py-3 text-[0.7rem] font-medium tracking-[0.1em] uppercase text-ink transition-all duration-150 hover:border-amber hover:text-amber w-fit"
-          >
-            [ Client Login ] <span className="text-amber">→</span>
-          </Link>
+          <div className="mt-3 border-t border-[var(--color-border)] pt-4">
+            <Link
+              to="/portal"
+              onClick={() => { setOpen(false); window.scrollTo({ top: 0, behavior: 'auto' }) }}
+              className="flex w-full items-center justify-between gap-2 border border-[var(--color-border-strong)] px-4 py-3.5 text-[0.7rem] font-medium tracking-[0.1em] uppercase text-ink transition-all duration-150 hover:border-amber hover:text-amber"
+            >
+              <span>Client Login</span>
+              <span className="text-amber">→</span>
+            </Link>
+          </div>
         </div>
       )}
     </header>

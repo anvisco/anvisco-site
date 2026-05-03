@@ -10,10 +10,10 @@ export function PortfolioPage() {
     <>
       <Nav />
       <main className="pt-16">
-        <section className="bg-[var(--color-bg)] py-24 md:py-32">
+        <section className="bg-[var(--color-bg)] py-16 md:py-24 lg:py-32">
           <div className="mx-auto max-w-screen-xl px-6 lg:px-12">
             <BracketLabel>Work</BracketLabel>
-            <h1 className="mb-8 mt-10 max-w-4xl text-[2.75rem] font-medium leading-[1.02] tracking-[-0.03em] text-ink sm:text-[3.5rem] md:leading-[0.98] md:tracking-[-0.04em] md:text-[5rem]">
+            <h1 className="mb-8 mt-10 max-w-4xl text-[2rem] font-medium leading-[1.02] tracking-[-0.03em] text-ink sm:text-[2.75rem] md:leading-[0.98] md:tracking-[-0.04em] md:text-[5rem]">
               Selected work.
             </h1>
           </div>

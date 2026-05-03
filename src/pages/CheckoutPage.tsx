@@ -36,7 +36,7 @@ const PATHS: { id: Path; label: string; blurb: string }[] = [
   { id: 'audit', label: 'Audit', blurb: 'Start with a focused review or a free snapshot.' },
   { id: 'modules', label: 'Modules', blurb: 'Upgrade specific layers. 3+ modules save 15%.' },
   { id: 'build', label: 'Full Build', blurb: 'Custom-coded site, three tiers.' },
-  { id: 'recurring', label: 'Care Plan', blurb: 'Care or Growth, monthly.' },
+  { id: 'recurring', label: 'Monthly Plans', blurb: 'Care or Growth, monthly.' },
 ]
 
 interface ClientDetails {
@@ -256,20 +256,19 @@ export function CheckoutPage() {
     <>
       <Nav />
       <main className="min-h-screen pt-16 bg-[var(--color-bg)]">
-        <div className="mx-auto max-w-screen-xl px-6 py-20 lg:px-12 lg:py-24">
+        <div className="mx-auto max-w-screen-xl px-6 py-12 md:py-20 lg:px-12 lg:py-24">
           <Link
             to="/services"
-            className="mb-12 inline-flex items-center gap-2 text-[0.7rem] tracking-[0.1em] uppercase text-ink-muted transition-colors duration-150 hover:text-amber"
+            className="mb-10 inline-flex items-center gap-2 text-[0.7rem] tracking-[0.1em] uppercase text-ink-muted transition-colors duration-150 hover:text-amber"
           >
             ← Back to services
           </Link>
 
-          <div className="mb-14 border-t border-[var(--color-border)] pt-7">
-            <div className="mb-6 flex items-center gap-4">
-              <span className="text-[0.7rem] tabular-nums text-amber font-medium tracking-[0.08em]">/</span>
+          <div className="mb-10 border-t border-[var(--color-border)] pt-7 md:mb-14">
+            <div className="mb-5 flex items-center gap-4">
               <BracketLabel>Build your plan</BracketLabel>
             </div>
-            <h1 className="mb-5 max-w-[14ch] text-[2.5rem] font-medium leading-[1.04] tracking-[-0.03em] text-ink md:text-[4rem]">
+            <h1 className="mb-4 max-w-[14ch] text-[2rem] font-medium leading-[1.04] tracking-[-0.03em] text-ink sm:text-[2.5rem] md:text-[4rem]">
               Build your plan.
             </h1>
             <p className="max-w-[58ch] text-base leading-relaxed text-ink-muted md:text-[1.0625rem]">
@@ -278,7 +277,7 @@ export function CheckoutPage() {
           </div>
 
           <form onSubmit={handleSubmit} className="grid items-start gap-10 lg:grid-cols-[1fr_390px]">
-            <div className="space-y-10">
+            <div className="order-2 space-y-10 lg:order-1">
               <PathPicker path={path} setPath={setPath} />
 
               {path === 'audit' && <AuditSection />}
@@ -335,7 +334,7 @@ function PathPicker({ path, setPath }: { path: Path; setPath: (p: Path) => void 
       <div className="mb-5 flex items-center gap-3">
         <BracketLabel>1. Choose a path</BracketLabel>
       </div>
-      <div className="grid gap-3 sm:grid-cols-2">
+      <div className="grid gap-3 xs:grid-cols-2 sm:grid-cols-2">
         {PATHS.map((p) => {
           const selected = path === p.id
           return (
@@ -343,7 +342,7 @@ function PathPicker({ path, setPath }: { path: Path; setPath: (p: Path) => void 
               key={p.id}
               type="button"
               onClick={() => setPath(p.id)}
-              className={`min-h-[112px] border p-5 text-left transition-all duration-200 hover:-translate-y-0.5 hover:border-amber/55 ${
+              className={`min-h-[100px] border p-4 text-left transition-all duration-200 hover:-translate-y-0.5 hover:border-amber/55 sm:min-h-[112px] sm:p-5 ${
                 selected
                   ? 'border-amber/70 bg-[var(--color-surface)]'
                   : 'border-[var(--color-border)] bg-transparent'
@@ -424,7 +423,7 @@ function ModulesSection({
           return (
             <div
               key={offer.id}
-              className={`min-h-[200px] border p-5 transition-all duration-200 hover:border-amber/55 ${
+              className={`border p-4 transition-all duration-200 hover:border-amber/55 sm:min-h-[200px] sm:p-5 ${
                 selected
                   ? 'border-amber/70 bg-[var(--color-surface)]'
                   : 'border-[var(--color-border)] bg-transparent'
@@ -774,7 +773,7 @@ function Summary(props: {
   const submitDisabled = submit.kind === 'submitting'
 
   return (
-    <aside className="border border-[var(--color-border)] bg-[var(--color-surface)] p-6 lg:sticky lg:top-24">
+    <aside className="order-1 border border-[var(--color-border)] bg-[var(--color-surface)] p-6 lg:order-2 lg:sticky lg:top-24">
       <div className="mb-5">
         <BracketLabel>Summary</BracketLabel>
       </div>
@@ -785,7 +784,7 @@ function Summary(props: {
             ? 'Modules'
             : path === 'build'
               ? 'Full build'
-              : 'Recurring'}
+              : 'Monthly Plan'}
       </p>
       <h2 className="mb-5 text-lg font-medium tracking-[-0.01em] text-ink">{headline}</h2>
 
@@ -843,7 +842,7 @@ function submitLabel(path: Path) {
   if (path === 'audit') return 'Start Your Audit'
   if (path === 'modules') return 'Choose Your Upgrades'
   if (path === 'build') return 'Choose Your Build'
-  if (path === 'recurring') return 'Choose a Care Plan'
+  if (path === 'recurring') return 'Choose Monthly Plan'
   return 'Build Your Plan'
 }
 

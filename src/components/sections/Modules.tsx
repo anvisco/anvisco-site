@@ -8,9 +8,9 @@ export function Modules() {
   const featuredModules = modules.slice(0, 3)
 
   return (
-    <section id="modules" className="scroll-mt-16 bg-[var(--color-surface)] py-24 md:py-32">
+    <section id="modules" className="scroll-mt-16 bg-[var(--color-surface)] py-16 md:py-24 lg:py-32">
       <div className="mx-auto max-w-screen-xl px-6 lg:px-12">
-        <div className="mb-14 flex items-center gap-4 border-t border-[var(--color-border)] pt-7">
+        <div className="mb-10 flex items-center gap-4 border-t border-[var(--color-border)] pt-7 md:mb-14">
           <span className="text-[0.7rem] tabular-nums text-amber font-medium tracking-[0.08em]">04</span>
           <motion.div
             initial={{ opacity: 0 }}
@@ -37,7 +37,7 @@ export function Modules() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.5, ease: 'easeOut', delay: 0.08 }}
-          className="mb-14 max-w-[52ch] text-[1.0625rem] leading-relaxed text-ink-muted"
+          className="mb-8 max-w-[52ch] text-base leading-relaxed text-ink-muted md:mb-14 md:text-[1.0625rem]"
         >
           Start with the layer holding the site back, then view the full module menu when you need pricing and scope.
         </motion.p>
@@ -50,7 +50,7 @@ export function Modules() {
 
         <Link
           to="/services"
-          className="group mt-10 inline-flex items-center gap-2.5 border border-[var(--color-border-strong)] px-5 py-3 text-[0.7rem] font-medium uppercase tracking-[0.1em] text-ink transition-all duration-200 hover:border-amber hover:text-amber"
+          className="group mt-10 inline-flex w-full items-center justify-center gap-2.5 border border-[var(--color-border-strong)] px-5 py-3 text-[0.7rem] font-medium uppercase tracking-[0.1em] text-ink transition-all duration-200 hover:border-amber hover:text-amber sm:w-auto sm:justify-start"
         >
           Choose Your Upgrades
           <span className="text-amber transition-transform duration-200 group-hover:translate-x-0.5">→</span>

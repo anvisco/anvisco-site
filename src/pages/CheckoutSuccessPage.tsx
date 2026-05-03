@@ -122,14 +122,14 @@ export function CheckoutSuccessPage() {
     <>
       <Nav />
       <main className="min-h-screen pt-16 bg-[var(--color-bg)]">
-        <div className="mx-auto max-w-screen-xl px-6 py-20 lg:px-12 lg:py-24">
+        <div className="mx-auto max-w-screen-xl px-6 py-12 md:py-20 lg:px-12 lg:py-24">
           <div className="max-w-3xl border-t border-[var(--color-border)] pt-7">
 
             <div className="mb-6 flex items-center gap-4">
               <BracketLabel>Checkout complete</BracketLabel>
             </div>
 
-            <h1 className="mb-6 text-[2.5rem] font-medium leading-[1.04] tracking-[-0.03em] text-ink md:text-[3.5rem]">
+            <h1 className="mb-6 text-[1.875rem] font-medium leading-[1.04] tracking-[-0.03em] text-ink sm:text-[2.5rem] md:text-[3.5rem]">
               Payment received.
             </h1>
 
@@ -151,7 +151,7 @@ export function CheckoutSuccessPage() {
                   </div>
                 )}
 
-                <div className="mb-10 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                <div className="mb-10 grid grid-cols-2 gap-3 md:gap-4 xl:grid-cols-4">
                   <Fact label="Package" value={summary?.package_name ?? 'Checkout complete'} />
                   <Fact label="Payment status" value={summary?.payment_status ?? 'paid'} />
                   <Fact label="Amount paid" value={amountDisplay ?? '—'} />
@@ -206,34 +206,37 @@ export function CheckoutSuccessPage() {
                 Use the same email you used at checkout. We'll send you a secure login link so you
                 can view your project stage, payment status, next due date, and updates.
               </p>
-              <div className="mt-5 flex flex-wrap gap-3">
+              <div className="mt-5 flex flex-col gap-3">
                 <Link
                   to="/portal"
-                  className="inline-flex items-center gap-2.5 border border-amber px-5 py-3 text-[0.7rem] font-medium uppercase tracking-[0.1em] text-amber transition-all duration-200 hover:bg-amber/10"
+                  className="inline-flex w-full items-center justify-center gap-2.5 border border-amber px-5 py-3 text-[0.7rem] font-medium uppercase tracking-[0.1em] text-amber transition-all duration-200 hover:bg-amber/10 sm:w-auto sm:justify-start"
                 >
                   Open Client Portal
                   <span className="text-amber">→</span>
                 </Link>
-                <a
-                  href={`mailto:${summary?.support_email ?? EMAIL}`}
-                  className="inline-flex items-center gap-2.5 px-2 py-3 font-sans text-sm text-ink-muted transition-colors duration-150 hover:text-amber"
-                >
-                  Questions? {summary?.support_email ?? EMAIL}
-                </a>
+                <p className="text-center text-sm text-ink-muted sm:text-left">
+                  Questions?{' '}
+                  <a
+                    href={`mailto:${summary?.support_email ?? EMAIL}`}
+                    className="font-sans text-amber transition-colors duration-150 hover:text-ink"
+                  >
+                    {summary?.support_email ?? EMAIL}
+                  </a>
+                </p>
               </div>
             </section>
 
-            <div className="flex flex-wrap gap-3">
+            <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
               <Link
                 to="/"
-                className="inline-flex items-center gap-2.5 border border-[var(--color-border-strong)] px-5 py-3 text-[0.7rem] font-medium uppercase tracking-[0.1em] text-ink transition-all duration-200 hover:border-amber hover:text-amber"
+                className="inline-flex w-full items-center justify-center gap-2.5 border border-[var(--color-border-strong)] px-5 py-3 text-[0.7rem] font-medium uppercase tracking-[0.1em] text-ink transition-all duration-200 hover:border-amber hover:text-amber sm:w-auto sm:justify-start"
               >
                 Back to home
                 <span className="text-amber">→</span>
               </Link>
               <Link
                 to="/checkout"
-                className="inline-flex items-center gap-2.5 border border-[var(--color-border)] px-5 py-3 text-[0.7rem] font-medium uppercase tracking-[0.1em] text-ink-muted transition-all duration-200 hover:border-amber hover:text-amber"
+                className="inline-flex w-full items-center justify-center gap-2.5 border border-[var(--color-border)] px-5 py-3 text-[0.7rem] font-medium uppercase tracking-[0.1em] text-ink-muted transition-all duration-200 hover:border-amber hover:text-amber sm:w-auto sm:justify-start"
               >
                 Explore Offers
                 <span className="text-amber">→</span>

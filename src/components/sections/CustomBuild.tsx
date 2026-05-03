@@ -4,9 +4,9 @@ import { BracketLabel } from '@/components/ui/BracketLabel'
 
 export function CustomBuild() {
   return (
-    <section id="build" className="scroll-mt-16 bg-[var(--color-bg)] py-24 md:py-32">
+    <section id="build" className="scroll-mt-16 bg-[var(--color-bg)] py-16 md:py-24 lg:py-32">
       <div className="mx-auto max-w-screen-xl px-6 lg:px-12">
-        <div className="mb-14 flex items-center gap-4 border-t border-[var(--color-border)] pt-7">
+        <div className="mb-10 flex items-center gap-4 border-t border-[var(--color-border)] pt-7 md:mb-14">
           <span className="text-[0.7rem] tabular-nums text-amber font-medium tracking-[0.08em]">05</span>
           <motion.div
             initial={{ opacity: 0 }}
@@ -58,7 +58,7 @@ export function CustomBuild() {
             >
               <Link
                 to="/services"
-                className="group inline-flex items-center gap-2.5 border-[1.5px] border-ink px-6 py-3 text-sm font-medium text-ink tracking-[-0.005em] transition-all duration-200 hover:border-amber hover:text-amber"
+                className="group inline-flex w-full items-center justify-center gap-2.5 border-[1.5px] border-ink px-6 py-3 text-sm font-medium text-ink tracking-[-0.005em] transition-all duration-200 hover:border-amber hover:text-amber sm:w-auto sm:justify-start"
               >
                 Choose Your Build
                 <span className="text-amber transition-transform duration-200 group-hover:translate-x-0.5">→</span>

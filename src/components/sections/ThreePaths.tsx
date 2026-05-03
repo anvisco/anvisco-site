@@ -25,9 +25,9 @@ const paths = [
 
 export function ThreePaths() {
   return (
-    <section id="services" className="scroll-mt-16 bg-[var(--color-bg)] py-24 md:py-32">
+    <section id="services" className="scroll-mt-16 bg-[var(--color-bg)] py-16 md:py-24 lg:py-32">
       <div className="mx-auto max-w-screen-xl px-6 lg:px-12">
-        <div className="mb-14 flex items-center gap-4 border-t border-[var(--color-border)] pt-7">
+        <div className="mb-10 flex items-center gap-4 border-t border-[var(--color-border)] pt-7 md:mb-14">
           <span className="text-[0.7rem] tabular-nums text-amber font-medium tracking-[0.08em]">03</span>
           <motion.div
             initial={{ opacity: 0 }}
@@ -47,7 +47,7 @@ export function ThreePaths() {
           className="mb-5 text-[2rem] font-medium leading-[1.1] tracking-[-0.02em] md:text-[2.5rem]"
         >
           <span className="block text-ink">Choose the layer</span>
-          <span className="block whitespace-nowrap text-amber">your website needs most.</span>
+          <span className="block text-amber">your website needs most.</span>
         </motion.h2>
 
         <motion.p
@@ -55,7 +55,7 @@ export function ThreePaths() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.5, ease: 'easeOut', delay: 0.08 }}
-          className="mb-14 max-w-[52ch] text-[1.0625rem] leading-relaxed text-ink-muted"
+          className="mb-10 max-w-[52ch] text-[1.0625rem] leading-relaxed text-ink-muted md:mb-14"
         >
           Not every business needs a full rebuild. Some need clearer content, a better booking
           flow, or stronger visuals.
@@ -69,12 +69,12 @@ export function ThreePaths() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.45, ease: 'easeOut', delay: i * 0.08 }}
-              className={`group flex flex-col gap-5 border-b border-[var(--color-border)] pb-10 pt-8 md:border-b-0 md:pr-8 ${
+              className={`group flex flex-col gap-5 border-b border-[var(--color-border)] pb-7 pt-6 md:border-b-0 md:pb-10 md:pt-8 md:pr-8 ${
                 i > 0 ? 'md:border-l md:border-[var(--color-border)] md:pl-8' : ''
               }`}
             >
               <p className="text-[1.25rem] font-medium tracking-[-0.01em] text-amber">{path.name}</p>
-              <p className="max-w-[24ch] flex-1 text-sm leading-relaxed text-ink-muted">{path.description}</p>
+              <p className="flex-1 text-sm leading-relaxed text-ink-muted">{path.description}</p>
               <Link
                 to={path.to}
                 className="group/link inline-flex w-fit items-center gap-2 text-[0.7rem] font-medium uppercase tracking-[0.1em] text-ink-subtle transition-colors duration-200 hover:text-amber"

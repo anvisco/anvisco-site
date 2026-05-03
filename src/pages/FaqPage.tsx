@@ -78,10 +78,10 @@ export function FaqPage() {
     <>
       <Nav />
       <main className="pt-16 bg-[var(--color-bg)]">
-        <section className="py-16 md:py-20">
+        <section className="py-12 md:py-16 lg:py-20">
           <div className="mx-auto max-w-screen-2xl px-6 lg:px-12 xl:px-16">
             <BracketLabel>FAQ</BracketLabel>
-            <h1 className="mb-5 mt-8 max-w-4xl text-[2.75rem] font-medium leading-[1.02] tracking-[-0.03em] text-ink sm:text-[3.5rem] md:leading-[0.98] md:tracking-[-0.04em] md:text-[5rem]">
+            <h1 className="mb-5 mt-8 max-w-4xl text-[2rem] font-medium leading-[1.02] tracking-[-0.03em] text-ink sm:text-[2.75rem] md:leading-[0.98] md:tracking-[-0.04em] md:text-[5rem]">
               Common questions.
             </h1>
             <p className="max-w-[62ch] text-base leading-relaxed text-ink-muted sm:text-[1.125rem]">
@@ -94,7 +94,7 @@ export function FaqPage() {
         <FaqGroup number="02" label="AI and discovery" items={aiAndDiscovery} tone="surface" />
         <FaqGroup number="03" label="Services and pricing" items={servicesAndPricing} />
         <FaqGroup number="04" label="Payments" items={payments} tone="surface" />
-        <FaqGroup number="05" label="Care" items={care} />
+        <FaqGroup number="05" label="Monthly plans" items={care} />
       </main>
       <Footer />
     </>
@@ -113,7 +113,7 @@ function FaqGroup({
   tone?: 'bg' | 'surface'
 }) {
   return (
-    <section className={tone === 'surface' ? 'bg-[var(--color-surface)] py-8 md:py-10' : 'bg-[var(--color-bg)] py-8 md:py-10'}>
+    <section className={tone === 'surface' ? 'bg-[var(--color-surface)] py-6 md:py-8 lg:py-10' : 'bg-[var(--color-bg)] py-6 md:py-8 lg:py-10'}>
       <div className="mx-auto max-w-screen-2xl px-6 lg:px-12 xl:px-16">
         <div className="grid gap-6 lg:grid-cols-[240px_minmax(0,1fr)] lg:items-start">
           <div className="border-t border-[var(--color-border)] pt-6">
