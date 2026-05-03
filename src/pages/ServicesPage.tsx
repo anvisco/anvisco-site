@@ -178,7 +178,7 @@ export function ServicesPage() {
           <div className="max-w-screen-xl mx-auto px-6 lg:px-12">
             <SectionHeader number="04" label="Full custom build" title="Full Custom Build" />
             <p className="mb-12 max-w-[62ch] text-[1.0625rem] leading-relaxed text-ink-muted">
-              Built around how your business actually operates, not around a template. Public rates start at $2,200, with founding rates available for the first 3 clients.
+              Built around how your business actually operates, not around a template. Public rates start at $2,200, with founding rates available while founding slots remain.
             </p>
             <div className="grid grid-cols-1 border-t border-[var(--color-border)] lg:grid-cols-3">
               {buildTiers.map((tier, i) => (

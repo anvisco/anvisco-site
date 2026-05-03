@@ -11,7 +11,7 @@ Public navigation:
 - Work -> `/work`
 - Services -> `/services`
 - FAQ -> `/faq`
-- Get Free Audit -> `/audit`
+- Client Login -> `/portal`
 
 Footer is minimal and does not repeat navigation links. Keep the wordmark, email, and copyright only.
 
@@ -54,7 +54,7 @@ Websites built to run, grow, and get discovered.
 I build custom websites for local service businesses that improve operations, trust, and conversion. The site should also work for how people search through Google, AI tools, Maps, and local recommendations.
 
 **Primary CTA:** Get Free Audit
-**Secondary CTA:** See Selected Work
+**Secondary CTA:** Compare Services
 
 ---
 
@@ -146,7 +146,7 @@ For businesses ready to rebuild properly.
 **Body:**
 A custom website gives more control over structure, speed, design, content architecture, search readiness, and the full path from discovery to booking. Built around how your business actually operates, not around a template.
 
-Three tiers: Essentials, Standard, Premium. Public rates start at $2,200, with founding rates available for the first few dental and local service clients.
+Build tiers: Essentials, Standard, Premium. Public rates start at $2,200, with founding rates available while founding slots remain.
 
 **CTA:** Choose Your Build
 

@@ -64,6 +64,12 @@ SITE_URL=http://localhost:5173
 
 `.env.local` is gitignored. Never commit it.
 
+### Local/test vs production
+
+- Local/test uses `http://localhost:5173` for redirects and `SITE_URL`.
+- Production uses `https://anvisco.com` and `https://anvisco.com/portal`.
+- Stripe test mode is for local verification; live keys stay out of frontend env files.
+
 ## 2b. Configure Supabase secrets for Edge Functions
 
 Store server-only values with the Supabase CLI so they are available to Edge Functions but never
@@ -175,7 +181,6 @@ from trusted data before it talks to Stripe.
 - Audits, module bundles, build deposits, and recurring plans all use Stripe-hosted Checkout.
 - No card data is stored on this site.
 - Stripe secret keys stay in Edge Function secrets and are never exposed to the browser.
-- Manual `payment_url` fallback is still supported in the admin portal when needed.
 - Stripe webhook processing updates payment and package status after Checkout completes.
 - `/checkout/success` loads `session_id` and uses the summary function to show package-specific
   confirmation details.
@@ -232,6 +237,9 @@ In Stripe, point the webhook endpoint at the deployed `stripe-webhook` function 
 - `customer.subscription.deleted`
 
 Use Stripe test mode while verifying the flow.
+
+Production uses live Stripe keys, a live webhook secret, and the production site URL in
+`SITE_URL`. Do not move test keys into `.env.local` or frontend env vars.
 
 ## 7. Admin portal
 
@@ -296,6 +304,9 @@ Saved queries in the Supabase SQL Editor can be deleted if they are only tempora
 snippets. Do not delete migration files in `supabase/migrations`, and do not delete tables or
 data unless you are intentionally using the admin cleanup workflow.
 
+Keep `stripe_events` for webhook audit history. Use the admin cleanup tool for test clients, and
+avoid manually editing production records unless a fix requires it.
+
 ## 8. Client portal
 
 - `/portal` is authenticated with Supabase Auth using magic-link login.
@@ -312,8 +323,6 @@ data unless you are intentionally using the admin cleanup workflow.
   module selections, payment schedules, and client-visible project updates.
 - If a login has not been mapped yet, the portal shows a clean connection-pending state until the
   matching email is connected.
-- `/set-password` is not part of the primary client portal flow. Keep it only as an internal
-  fallback if you still need a manual support reset path.
 - If Supabase env vars are missing, the portal shows a setup message instead of crashing.
 - The portal never exposes other clients, email logs, or internal-only updates.
 

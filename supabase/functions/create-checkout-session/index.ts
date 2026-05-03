@@ -129,7 +129,8 @@ function checkoutFailure(message: string, debug_code: CheckoutErrorCode, step?: 
 }
 
 function logStep(step: string, details?: Record<string, unknown>) {
-  console.log('create-checkout-session', { step, ...(details ?? {}) })
+  void step
+  void details
 }
 
 function getRequiredEnv(name: string): string | null {

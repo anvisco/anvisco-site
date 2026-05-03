@@ -93,10 +93,6 @@ Deno.serve(async (request) => {
     auth: { persistSession: false, autoRefreshToken: false },
   })
 
-  console.log('claim-client-profile admin context', {
-    auth_secret_present: Boolean(ANVIS_SUPABASE_SECRET_KEY),
-  })
-
   const { data: userData, error: userError } = await authSupabase.auth.getUser(accessToken)
   const user = userData?.user ?? null
 
@@ -105,12 +101,6 @@ Deno.serve(async (request) => {
   }
 
   const normalizedEmail = normalizeEmail(user.email)
-  console.log('claim-client-profile auth context', {
-    auth_user_id: user.id,
-    auth_email: user.email,
-    normalized_email: normalizedEmail,
-  })
-
   const { data: existingLink, error: existingLinkError } = await adminSupabase
     .from('client_users')
     .select('client_id, user_id')
@@ -193,15 +183,6 @@ Deno.serve(async (request) => {
     }, 500)
   }
 
-  const matchingClientsFound = matchingClient ? 1 : 0
-
-  console.log('claim-client-profile email match scan', {
-    auth_email: normalizedEmail,
-    candidate_count: candidateCount,
-    matching_clients_found: matchingClientsFound,
-    selected_client_id: matchingClient?.id ?? null,
-  })
-
   if (!matchingClient?.id) {
     const response: ClaimResponse = {
       linked: false,
@@ -215,13 +196,6 @@ Deno.serve(async (request) => {
   const { error: insertError } = await adminSupabase.from('client_users').insert({
     user_id: user.id,
     client_id: matchingClient.id,
-  })
-
-  console.log('claim-client-profile insert attempt', {
-    auth_user_id: user.id,
-    auth_email: normalizedEmail,
-    client_id: matchingClient.id,
-    insert_error: insertError ? insertError.code ?? insertError.message ?? 'unknown' : null,
   })
 
   if (insertError) {

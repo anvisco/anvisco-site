@@ -3,10 +3,21 @@
 This project uses Stripe-hosted Checkout Sessions created in Supabase Edge Functions. The browser
 never sees the Stripe secret key.
 
+## Local/test setup
+
+- Use Stripe test mode while developing.
+- Keep `SITE_URL` pointed at `http://localhost:5173` for local redirects.
+- Use a Stripe test card when verifying checkout and webhook behavior.
+
+## Production/live setup
+
+- Use live Stripe keys and the live webhook signing secret.
+- Set `SITE_URL=https://anvisco.com`.
+- Keep `PORTAL_URL=https://anvisco.com/portal` for paid-client welcome emails.
+
 ## 1. Create or open your Stripe account
 
-1. Use Stripe test mode while developing.
-2. Keep a separate live secret for production.
+1. Keep a separate live secret for production.
 
 ## 2. Add Supabase Edge Function secrets
 

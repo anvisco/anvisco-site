@@ -1,4 +1,4 @@
--- Anvisco backend - initial schema (Pass 1)
+-- Anvis backend - initial schema (Pass 1)
 --
 -- Creates:
 --   profiles, clients, client_users, client_packages,

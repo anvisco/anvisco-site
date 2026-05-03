@@ -82,7 +82,10 @@ through as Supabase secrets.
 
 Supabase Auth must allow portal login redirects to these URLs:
 
+Local/test:
 - `http://localhost:5173/portal`
+
+Production/live:
 - `https://anvisco.com/portal`
 
 Those redirects are required for the client portal login flow.
@@ -133,11 +136,6 @@ auto-linking requires the user to log in with the same email used during Stripe 
 
 The admin cleanup tool can safely remove matching test clients and related checkout records by
 email after you have finished testing the flow.
-
-## Manual fallback
-
-Admin can still set a `payment_url` manually on a package or payment schedule when a hosted
-Stripe link or another payment path is needed.
 
 ## What happens if Supabase is not configured
 

@@ -471,7 +471,6 @@ async function handleCheckoutSessionCompleted(
   }
   await supabase.from('client_packages').update(update).eq('id', packageId)
 
-  let clientsEmailUpdated = false
   if (stripeCustomerEmail) {
     const { error: clientEmailUpdateError } = await supabase
       .from('clients')
@@ -487,16 +486,8 @@ async function handleCheckoutSessionCompleted(
         details: clientEmailUpdateError.details,
         hint: clientEmailUpdateError.hint,
       })
-    } else {
-      clientsEmailUpdated = true
     }
   }
-
-  console.log('stripe-webhook checkout email sync', {
-    client_id: clientId,
-    has_stripe_customer_email: Boolean(stripeCustomerEmail),
-    clients_email_updated: clientsEmailUpdated,
-  })
 
   if (sessionPaymentStatus === 'paid') {
     await sendPaidClientWelcomeEmail(supabase, packageId, session)

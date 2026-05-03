@@ -208,13 +208,6 @@ export function PortalPage() {
     const canClaimThisUser = claimedUserIdRef.current !== currentUserId
     const client = supabase
 
-    if (import.meta.env.DEV) {
-      console.debug('[portal] session check', {
-        email: currentEmail,
-        canClaimThisUser,
-      })
-    }
-
     function safeSetMissing(message?: string) {
       if (!alive || portalLoadId !== activeLoadIdRef.current) return
       setPortal({
@@ -238,12 +231,6 @@ export function PortalPage() {
       const token = await getAccessToken()
       if (!token) {
         throw new Error('Missing session token.')
-      }
-
-      if (import.meta.env.DEV) {
-        console.debug('[portal] claim-client-profile invoked', {
-          email: currentEmail,
-        })
       }
 
       const { data, error } = await client.functions.invoke<ClaimClientProfileResponse>(
@@ -275,10 +262,6 @@ export function PortalPage() {
         throw new Error(error.message || 'We could not connect your client profile.')
       }
 
-      if (import.meta.env.DEV) {
-        console.debug('[portal] claim-client-profile result', data)
-      }
-
       return data ?? null
     }
 
@@ -294,13 +277,6 @@ export function PortalPage() {
         .maybeSingle()
 
       if (!alive || portalLoadId !== activeLoadIdRef.current) return
-
-      if (import.meta.env.DEV) {
-        console.debug('[portal] client_users lookup', {
-          email: currentEmail,
-          hasMapping: Boolean(linkRow?.client_id),
-        })
-      }
 
       if (linkError) {
         setPortal({
@@ -330,12 +306,6 @@ export function PortalPage() {
           if (!alive || portalLoadId !== activeLoadIdRef.current) return
 
           if (claimResult?.linked) {
-            if (import.meta.env.DEV) {
-              console.debug('[portal] claim linked, refetching portal', {
-                email: currentEmail,
-              })
-            }
-
             const { data: refreshedLink, error: refreshedError } = await client
               .from('client_users')
               .select('client_id')
@@ -526,8 +496,8 @@ export function PortalPage() {
                 Welcome to your client portal.
               </h1>
               <p className="max-w-[62ch] text-base leading-relaxed text-ink-muted md:text-[1.0625rem]">
-                Log in with the same email you used at checkout. We’ll send a secure magic link to
-                connect the right account.
+                Log in with the same email you used at checkout. We’ll send you a secure link to
+                access your portal.
               </p>
             </div>
 
@@ -713,14 +683,14 @@ export function PortalPage() {
                           rel="noopener noreferrer"
                           className="inline-flex items-center gap-2 border border-amber px-5 py-3 text-[0.7rem] font-medium uppercase tracking-[0.1em] text-amber transition-all duration-200 hover:bg-amber/10"
                         >
-                          Open payment link
+                          Open secure payment
                           <span className="transition-transform duration-200 group-hover:translate-x-0.5">
                             →
                           </span>
                         </a>
                       ) : (
                         <p className="text-sm text-ink-muted">
-                          Payment link will appear here when ready.
+                          Secure payment access will appear here when ready.
                         </p>
                       )}
                     </div>
@@ -832,7 +802,7 @@ export function PortalPage() {
               <Card title="Portal snapshot" eyebrow="Client view" wide>
                 <div className="grid gap-4 sm:grid-cols-2">
                   <PortalPreview label="Active package" value="Package, type, selected modules, total, and recurring amount." />
-                  <PortalPreview label="Next payment" value="Due date, amount due, status, and payment link if ready." />
+                  <PortalPreview label="Next payment" value="Due date, amount due, status, and secure payment if ready." />
                   <PortalPreview label="Timeline" value="Audit, scope, build, launch, support, complete." />
                   <PortalPreview label="Updates" value="Only notes marked visible to the client." />
                 </div>
@@ -931,8 +901,8 @@ function LoginCard({
   return (
     <Card title="Client portal login" eyebrow="Client access">
       <p className="mb-5 text-sm leading-relaxed text-ink-muted">
-        Log in with the same email you used at checkout. We’ll send a secure magic link so your
-        portal connects to the right client record.
+        Log in with the same email you used at checkout. We’ll send you a secure link to access
+        your portal.
       </p>
       <form onSubmit={handleSendMagicLink} className="space-y-4">
         <Field label="Email" required>
