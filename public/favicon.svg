@@ -1,14 +1,5 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Brian Nguyen favicon">
-  <rect width="64" height="64" rx="14" fill="#0f1218" />
-  <text
-    x="32"
-    y="43"
-    text-anchor="middle"
-    font-family="Inter, Arial, sans-serif"
-    font-size="34"
-    font-weight="700"
-    fill="#9A9FC2"
-  >
-    B
-  </text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Anvisco favicon">
+  <rect width="64" height="64" rx="14" fill="#20352C"/>
+  <text x="32" y="44" text-anchor="middle" font-family="Arial, sans-serif" font-weight="700" font-size="43" fill="#F7F8F5">a</text>
+  <circle cx="48" cy="45" r="4" fill="#B08336"/>
 </svg>

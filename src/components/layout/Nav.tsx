@@ -1,141 +1,39 @@
 import { useState, useEffect } from 'react'
-import { Link, useLocation } from 'react-router-dom'
-import { Menu, X } from 'lucide-react'
+import { Link, NavLink, useLocation } from 'react-router-dom'
+import { ArrowUpRight, Menu, X } from 'lucide-react'
 
 const links = [
-  { label: 'Home', href: '/' },
-  { label: 'Work', href: '/work' },
-  { label: 'Services', href: '/services' },
-  { label: 'FAQ', href: '/faq' },
+  { to: '/tools', text: 'Tools' },
+  { to: '/notes', text: 'Notes' },
+  { to: '/about', text: 'About' },
 ]
 
 export function Nav() {
-  const location = useLocation()
+  const { pathname } = useLocation()
   const [open, setOpen] = useState(false)
-  const [scrolled, setScrolled] = useState(false)
-  const [activeHash, setActiveHash] = useState('')
-
-  useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 24)
-    window.addEventListener('scroll', onScroll, { passive: true })
-    return () => window.removeEventListener('scroll', onScroll)
-  }, [])
-
-  useEffect(() => {
-    const syncHash = () => setActiveHash(window.location.hash)
-    syncHash()
-    window.addEventListener('hashchange', syncHash)
-    return () => window.removeEventListener('hashchange', syncHash)
-  }, [])
-
-  useEffect(() => {
-    if (open) document.body.style.overflow = 'hidden'
-    else document.body.style.overflow = ''
-    return () => { document.body.style.overflow = '' }
-  }, [open])
+  useEffect(() => { setOpen(false) }, [pathname])
 
   return (
-    <header
-      className={`fixed inset-x-0 top-0 z-50 transition-all duration-300 ${
-        scrolled
-          ? 'bg-[var(--color-bg)]/80 backdrop-blur-md border-b border-[var(--color-border)]'
-          : 'bg-transparent border-b border-transparent'
-      }`}
-    >
-      {/* Mobile header */}
-      <div className="flex h-14 items-center justify-between px-5 md:hidden">
-        <Link
-          to="/"
-          onClick={() => { setOpen(false); window.scrollTo({ top: 0, behavior: 'auto' }) }}
-          className="text-sm font-medium tracking-tight text-ink transition-colors duration-200 hover:text-amber"
-        >
-          Anvis
-        </Link>
-        <button
-          onClick={() => setOpen((v) => !v)}
-          className="flex h-9 w-9 items-center justify-center text-ink-muted transition-colors duration-200 hover:text-amber"
-          aria-label={open ? 'Close menu' : 'Open menu'}
-        >
-          {open ? <X size={20} /> : <Menu size={20} />}
-        </button>
-      </div>
-
-      {/* Desktop header */}
-      <div className="mx-auto hidden h-16 max-w-screen-2xl grid-cols-[minmax(140px,1fr)_auto_minmax(140px,1fr)] items-center gap-4 px-6 md:grid lg:px-12">
-        <Link
-          to="/"
-          onClick={() => { setOpen(false); window.scrollTo({ top: 0, behavior: 'auto' }) }}
-          className="justify-self-start text-sm font-medium tracking-tight text-ink transition-colors duration-200 hover:text-amber"
-        >
-          Anvis
-        </Link>
-
-        <nav className="flex items-center justify-center gap-5 lg:gap-7">
-          {links.map((link) => {
-            const hashIndex = link.href.indexOf('#')
-            const hash = hashIndex >= 0 ? link.href.slice(hashIndex) : ''
-            const path = hashIndex >= 0 ? link.href.slice(0, hashIndex) : link.href
-            const isWorkLink = path === '/work'
-            const active = hash
-              ? location.pathname === (path || '/') && activeHash === hash
-              : isWorkLink
-                ? location.pathname === '/work' || location.pathname === '/portfolio'
-                : location.pathname === path && (!hash || !activeHash)
-
-            return (
-              <Link
-                key={link.href}
-                to={link.href}
-                onClick={() => window.scrollTo({ top: 0, behavior: 'auto' })}
-                className={`group relative text-[0.68rem] font-medium tracking-[0.12em] uppercase transition-colors duration-200 hover:text-ink ${
-                  active ? 'text-amber' : 'text-ink-muted'
-                }`}
-              >
-                {`[ ${link.label} ]`}
-                <span
-                  aria-hidden="true"
-                  className="absolute -bottom-1 left-0 h-px w-0 bg-amber transition-all duration-200 group-hover:w-full"
-                />
-              </Link>
-            )
-          })}
-        </nav>
-
-        <Link
-          to="/portal"
-          onClick={() => window.scrollTo({ top: 0, behavior: 'auto' })}
-          className="group inline-flex items-center gap-2 justify-self-end border border-[var(--color-border-strong)] px-4 py-2 text-[0.68rem] font-medium tracking-[0.1em] uppercase text-ink transition-all duration-200 hover:border-amber hover:text-amber"
-        >
-          <span>[ Client Login ]</span>
-          <span className="text-amber transition-transform duration-200 group-hover:translate-x-0.5">→</span>
-        </Link>
-      </div>
-
-      {/* Mobile menu */}
-      {open && (
-        <div className="md:hidden border-t border-[var(--color-border)] bg-[var(--color-bg)] px-6 py-6 flex flex-col gap-1">
-          {links.map((link) => (
-            <Link
-              key={link.href}
-              to={link.href}
-              onClick={() => { setOpen(false); window.scrollTo({ top: 0, behavior: 'auto' }) }}
-              className="flex items-center py-3 text-sm font-medium tracking-[0.06em] text-ink-muted transition-colors duration-150 hover:text-ink"
-            >
-              {link.label}
-            </Link>
-          ))}
-          <div className="mt-3 border-t border-[var(--color-border)] pt-4">
-            <Link
-              to="/portal"
-              onClick={() => { setOpen(false); window.scrollTo({ top: 0, behavior: 'auto' }) }}
-              className="flex w-full items-center justify-between gap-2 border border-[var(--color-border-strong)] px-4 py-3.5 text-[0.7rem] font-medium tracking-[0.1em] uppercase text-ink transition-all duration-150 hover:border-amber hover:text-amber"
-            >
-              <span>Client Login</span>
-              <span className="text-amber">→</span>
-            </Link>
-          </div>
+    <>
+      <a href="#main" className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:bg-white focus:p-3">Skip to content</a>
+      <header className="sticky top-0 z-40 border-b border-[#D6DFD5] bg-[#F7F8F5]/95 backdrop-blur-xl">
+        <div className="mx-auto flex h-[76px] max-w-[1440px] items-center justify-between px-6 md:px-10 lg:px-14">
+          <Link to="/" className="text-[1.65rem] font-semibold tracking-[-0.078em]" aria-label="Anvisco home">anvisco<span className="text-[#B08336]">.</span></Link>
+          <nav aria-label="Main navigation" className="hidden items-center gap-10 md:flex">
+            {links.map((item) => (
+              <NavLink key={item.to} to={item.to} className={({isActive}) => 'text-sm font-medium transition-colors hover:text-[#B08336] ' + (isActive ? 'text-[#A57830]' : 'text-[#506154]')}>
+                {item.text}
+              </NavLink>
+            ))}
+          </nav>
+          <Link to="/contact" className="hidden items-center gap-2 border border-[#C2D0C0] px-4 py-2.5 text-xs font-semibold uppercase tracking-[0.11em] hover:border-[#20352C] md:inline-flex">Get in touch <ArrowUpRight size={14} /></Link>
+          <button className="flex h-10 w-10 items-center justify-center md:hidden" type="button" aria-label={open ? 'Close menu' : 'Open menu'} aria-expanded={open} aria-controls="mobile-nav" onClick={() => setOpen(!open)}>{open ? <X size={22} /> : <Menu size={22} />}</button>
         </div>
-      )}
-    </header>
+        {open && <nav id="mobile-nav" aria-label="Mobile navigation" className="border-t border-[#D6DFD5] bg-[#F7F8F5] px-6 pb-6 md:hidden">
+          {links.map((item) => <Link key={item.to} to={item.to} className="block border-b border-[#D6DFD5] py-4 text-lg">{item.text}</Link>)}
+          <Link to="/contact" className="mt-5 inline-flex items-center gap-2 text-sm font-semibold">Get in touch <ArrowUpRight size={16}/></Link>
+        </nav>}
+      </header>
+    </>
   )
 }

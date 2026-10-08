@@ -1,1 +1,16 @@
+# Public legacy pages permanently moved to archive
+/work https://archive.anvisco.com/work 301
+/portfolio https://archive.anvisco.com/portfolio 301
+/faq https://archive.anvisco.com/faq 301
+/audit https://archive.anvisco.com/audit 301
+
+# Keep operational links temporary until auth and payments are reverified
+/portal https://archive.anvisco.com/portal 302
+/checkout https://archive.anvisco.com/checkout 302
+/checkout/* https://archive.anvisco.com/checkout/:splat 302
+/thank-you https://archive.anvisco.com/thank-you 302
+/next-steps/* https://archive.anvisco.com/next-steps/:splat 302
+/admin https://archive.anvisco.com/admin 302
+/admin/* https://archive.anvisco.com/admin/:splat 302
+
 /* /index.html 200
