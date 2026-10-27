@@ -1,5 +1,5 @@
 // Enable only after the separately approved apex cutover.
-const NEW_SITE_AVAILABLE = false
+const NEW_SITE_AVAILABLE = true
 
 export function ArchiveNotice() {
   return (
