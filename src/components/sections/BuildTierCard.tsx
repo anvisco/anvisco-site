@@ -9,8 +9,6 @@ interface BuildTierCardProps {
   delivery: string
   recommended?: boolean
   index: number
-  onCta: () => void
-  ctaLabel: string
 }
 
 export function BuildTierCard({
@@ -21,8 +19,6 @@ export function BuildTierCard({
   delivery,
   recommended,
   index,
-  onCta,
-  ctaLabel,
 }: BuildTierCardProps) {
   return (
     <motion.div
@@ -66,13 +62,7 @@ export function BuildTierCard({
 
       <p className="mb-6 text-[0.7rem] tracking-[0.06em] text-ink-subtle uppercase">{delivery}</p>
 
-      <button
-        onClick={onCta}
-        className="group mt-auto inline-flex items-center gap-2.5 border border-[var(--color-border-strong)] px-5 py-3 text-[0.7rem] tracking-[0.1em] uppercase text-ink font-medium transition-all duration-200 hover:border-amber hover:text-amber w-fit"
-      >
-        {ctaLabel}
-        <span className="transition-transform duration-200 group-hover:translate-x-0.5">→</span>
-      </button>
+
     </motion.div>
   )
 }

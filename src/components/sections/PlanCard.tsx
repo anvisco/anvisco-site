@@ -5,10 +5,9 @@ interface PlanCardProps {
   price: string
   features: string[]
   index: number
-  onCta: () => void
 }
 
-export function PlanCard({ name, price, features, index, onCta }: PlanCardProps) {
+export function PlanCard({ name, price, features, index }: PlanCardProps) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 12 }}
@@ -34,13 +33,7 @@ export function PlanCard({ name, price, features, index, onCta }: PlanCardProps)
         ))}
       </ul>
 
-      <button
-        onClick={onCta}
-        className="group mt-auto inline-flex w-full items-center justify-center gap-2.5 border border-[var(--color-border-strong)] px-5 py-3 text-[0.7rem] tracking-[0.1em] uppercase text-ink font-medium transition-all duration-200 hover:border-amber hover:text-amber sm:w-auto sm:justify-start"
-      >
-        {name.toLowerCase().includes('growth') ? 'Choose Growth Plan' : 'Choose Care Plan'}
-        <span className="transition-transform duration-200 group-hover:translate-x-0.5">→</span>
-      </button>
+
     </motion.div>
   )
 }

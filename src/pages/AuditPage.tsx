@@ -1,8 +1,6 @@
 import { Nav } from '@/components/layout/Nav'
 import { Footer } from '@/components/layout/Footer'
 import { BracketLabel } from '@/components/ui/BracketLabel'
-import { FREE_AUDIT_URL } from '@/data/contact'
-import { Link } from 'react-router-dom'
 
 const reviewAreas = [
   ['AI discovery readiness', 'can AI search tools and Google AI results clearly understand and recommend the business?'],
@@ -38,10 +36,6 @@ export function AuditPage() {
             <p className="mb-7 max-w-[30ch] break-words text-base leading-relaxed text-ink-muted sm:max-w-[62ch] sm:text-[1.125rem] md:mb-10">
               A focused review of how your site performs on visibility, trust, conversion, and AI-search readiness, so you know exactly where to invest before spending on a rebuild.
             </p>
-            <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:gap-4">
-              <AuditCta label="Get Free Audit" />
-              <AuditCta label="Start Your Audit" to="/checkout?path=audit" subtle />
-            </div>
           </div>
         </section>
 
@@ -53,14 +47,11 @@ export function AuditPage() {
                 title="Free AI-Ready Website Snapshot"
                 items={snapshotItems}
                 bestFor="Businesses wanting a quick second opinion before committing to anything."
-                cta="Get Free Audit"
               />
               <AuditOption
                 title="Full Website Audit"
                 items={fullAuditItems}
                 bestFor="Businesses that want a clear, ranked plan before deciding what to invest in."
-                cta="Start Your Audit"
-                to="/checkout?path=audit"
               />
             </div>
           </div>
@@ -105,10 +96,6 @@ export function AuditPage() {
             <p className="mb-7 max-w-[62ch] text-base leading-relaxed text-ink-muted md:mb-10 md:text-[1.125rem]">
               Most practices spend money on the wrong fix because they never had a clear picture of what was actually broken. The audit fixes that.
             </p>
-            <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:gap-4">
-              <AuditCta label="Get Free Audit" />
-              <AuditCta label="Start Your Audit" to="/checkout?path=audit" subtle />
-            </div>
           </div>
         </section>
       </main>
@@ -136,15 +123,11 @@ function AuditOption({
   items,
   bestFor,
   credit,
-  cta,
-  to,
 }: {
   title: string
   items: string[]
   bestFor: string
   credit?: string
-  cta: string
-  to?: string
 }) {
   return (
     <div className="flex min-w-0 flex-col border border-[var(--color-border)] bg-[var(--color-bg)] p-8">
@@ -159,37 +142,7 @@ function AuditOption({
       </ul>
       <p className="max-w-[28ch] break-words text-sm leading-relaxed text-ink-muted sm:max-w-none"><span className="text-ink">Best for:</span> {bestFor}</p>
       {credit && <p className="mt-4 max-w-[28ch] break-words text-sm leading-relaxed text-ink-muted sm:max-w-none"><span className="text-ink">Credit:</span> {credit}</p>}
-      <div className="mt-auto">
-        <AuditCta label={cta} to={to} compact />
-      </div>
+
     </div>
-  )
-}
-
-function AuditCta({ label, to, subtle, compact }: { label: string; to?: string; subtle?: boolean; compact?: boolean }) {
-  const className = `group inline-flex w-full items-center justify-center gap-2.5 border px-6 py-3 text-sm font-medium tracking-[-0.005em] transition-all duration-200 hover:border-amber hover:text-amber sm:w-auto sm:justify-start ${
-    compact ? 'mt-8' : ''
-  } ${subtle ? 'border-[var(--color-border-strong)] text-ink-muted' : 'border-ink text-ink'}`
-
-  const content = (
-    <>
-      {label}
-      <span className="text-amber transition-transform duration-200 group-hover:translate-x-0.5">→</span>
-    </>
-  )
-
-  return to ? (
-    <Link to={to} className={className}>
-      {content}
-    </Link>
-  ) : (
-    <a
-      href={FREE_AUDIT_URL}
-      target="_blank"
-      rel="noopener noreferrer"
-      className={className}
-    >
-      {content}
-    </a>
   )
 }

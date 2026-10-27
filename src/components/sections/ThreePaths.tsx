@@ -1,25 +1,18 @@
 import { motion } from 'motion/react'
-import { Link } from 'react-router-dom'
 import { BracketLabel } from '@/components/ui/BracketLabel'
 
 const paths = [
   {
     name: 'Audit',
     description: 'Find out where your site is losing visibility, trust, or bookings.',
-    cta: 'Start Your Audit',
-    to: '/audit',
   },
   {
     name: 'Improve',
     description: 'Upgrade specific parts of your existing website.',
-    cta: 'Choose Your Upgrades',
-    to: '/checkout?path=modules',
   },
   {
     name: 'Rebuild',
     description: 'A full custom-coded website built around your business.',
-    cta: 'Choose Your Build',
-    to: '/checkout?path=build',
   },
 ]
 
@@ -75,13 +68,7 @@ export function ThreePaths() {
             >
               <p className="text-[1.25rem] font-medium tracking-[-0.01em] text-amber">{path.name}</p>
               <p className="flex-1 text-sm leading-relaxed text-ink-muted">{path.description}</p>
-              <Link
-                to={path.to}
-                className="group/link inline-flex w-fit items-center gap-2 text-[0.7rem] font-medium uppercase tracking-[0.1em] text-ink-subtle transition-colors duration-200 hover:text-amber"
-              >
-                {path.cta}
-                <span className="text-amber transition-transform duration-200 group-hover/link:translate-x-0.5">→</span>
-              </Link>
+
             </motion.div>
           ))}
         </div>

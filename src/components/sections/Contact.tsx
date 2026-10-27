@@ -1,5 +1,4 @@
 import { motion } from 'motion/react'
-import { Link } from 'react-router-dom'
 import { BracketLabel } from '@/components/ui/BracketLabel'
 
 export function Contact() {
@@ -17,7 +16,7 @@ export function Contact() {
             viewport={{ once: true }}
             transition={{ duration: 0.4 }}
           >
-            <BracketLabel>Build your plan</BracketLabel>
+            <BracketLabel>Archive contact</BracketLabel>
           </motion.div>
         </div>
 
@@ -29,7 +28,7 @@ export function Contact() {
             transition={{ duration: 0.6, ease: 'easeOut' }}
             className="mb-6 text-[1.875rem] font-medium leading-[1.05] tracking-[-0.03em] text-ink sm:text-[2.25rem] md:text-[2.5rem] lg:text-[3rem]"
           >
-            Ready to choose the right path for your website?
+            Questions about earlier work?
           </motion.h2>
 
           <motion.p
@@ -39,7 +38,7 @@ export function Contact() {
             transition={{ duration: 0.5, ease: 'easeOut', delay: 0.1 }}
             className="mb-8 max-w-[52ch] text-base leading-relaxed text-ink-muted md:mb-12 md:text-[1.125rem]"
           >
-            Start with a simple request. Choose whether you need an audit, targeted improvements, a full build, or ongoing support.
+            For questions about a previous project, purchase, or account, please email us.
           </motion.p>
 
           <motion.div
@@ -49,23 +48,7 @@ export function Contact() {
             transition={{ duration: 0.5, ease: 'easeOut', delay: 0.18 }}
             className="flex flex-col gap-5 md:gap-6"
           >
-            <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-stretch sm:gap-4">
-              <Link
-                to="/checkout"
-                className="group inline-flex w-full items-center justify-center gap-2.5 border-[1.5px] border-ink px-8 py-4 text-sm font-medium tracking-[-0.005em] text-ink transition-all duration-200 hover:border-amber hover:text-amber sm:w-auto sm:justify-start"
-              >
-                Build Your Plan
-                <span className="text-amber transition-transform duration-200 group-hover:translate-x-0.5">→</span>
-              </Link>
 
-              <Link
-                to="/services"
-                className="group inline-flex w-full items-center justify-center gap-2.5 border-[1.5px] border-[var(--color-border-strong)] px-8 py-4 text-sm font-medium tracking-[-0.005em] text-ink-muted transition-all duration-200 hover:border-amber hover:text-ink sm:w-auto sm:justify-start"
-              >
-                Compare Services
-                <span className="text-amber opacity-60 transition-all duration-200 group-hover:translate-x-0.5 group-hover:opacity-100">→</span>
-              </Link>
-            </div>
 
             <p className="text-sm text-ink-muted">
               Questions?{' '}

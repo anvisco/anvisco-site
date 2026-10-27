@@ -23,10 +23,10 @@ export function ModuleCard({ module, index, compact, href }: ModuleCardProps) {
       <p className="mb-5 text-base font-medium text-ink tracking-[-0.005em]">{module.name}</p>
       {!compact && <p className="mb-8 flex-1 text-sm leading-relaxed text-ink-muted">{module.description}</p>}
       <div className="border-t border-[var(--color-border)] pt-5">
-        <p className="mb-1 text-[0.65rem] font-medium uppercase tracking-[0.1em] text-ink-subtle">Starting at</p>
+        <p className="mb-1 text-[0.65rem] font-medium uppercase tracking-[0.1em] text-ink-subtle">Historical starting price</p>
         <p className="flex items-center justify-between gap-3 text-xl font-medium tracking-[-0.02em] text-amber">
           <span>{module.startingAt}</span>
-          <span className="text-sm transition-transform duration-200 group-hover:translate-x-1">→</span>
+          {href && <span className="text-sm transition-transform duration-200 group-hover:translate-x-1">→</span>}
         </p>
       </div>
     </motion.div>

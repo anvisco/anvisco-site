@@ -101,14 +101,7 @@ export function Nav() {
           })}
         </nav>
 
-        <Link
-          to="/portal"
-          onClick={() => window.scrollTo({ top: 0, behavior: 'auto' })}
-          className="group inline-flex items-center gap-2 justify-self-end border border-[var(--color-border-strong)] px-4 py-2 text-[0.68rem] font-medium tracking-[0.1em] uppercase text-ink transition-all duration-200 hover:border-amber hover:text-amber"
-        >
-          <span>[ Client Login ]</span>
-          <span className="text-amber transition-transform duration-200 group-hover:translate-x-0.5">→</span>
-        </Link>
+
       </div>
 
       {/* Mobile menu */}
@@ -124,16 +117,7 @@ export function Nav() {
               {link.label}
             </Link>
           ))}
-          <div className="mt-3 border-t border-[var(--color-border)] pt-4">
-            <Link
-              to="/portal"
-              onClick={() => { setOpen(false); window.scrollTo({ top: 0, behavior: 'auto' }) }}
-              className="flex w-full items-center justify-between gap-2 border border-[var(--color-border-strong)] px-4 py-3.5 text-[0.7rem] font-medium tracking-[0.1em] uppercase text-ink transition-all duration-150 hover:border-amber hover:text-amber"
-            >
-              <span>Client Login</span>
-              <span className="text-amber">→</span>
-            </Link>
-          </div>
+
         </div>
       )}
     </header>

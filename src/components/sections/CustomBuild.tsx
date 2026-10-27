@@ -1,5 +1,4 @@
 import { motion } from 'motion/react'
-import { Link } from 'react-router-dom'
 import { BracketLabel } from '@/components/ui/BracketLabel'
 
 export function CustomBuild() {
@@ -47,7 +46,7 @@ export function CustomBuild() {
               transition={{ duration: 0.5, ease: 'easeOut', delay: 0.16 }}
               className="mb-10 max-w-[58ch] border-l border-amber/50 pl-6 text-[1.0625rem] leading-relaxed text-ink-muted"
             >
-              Built around how your business actually operates, not around a template. Public rates start at $2,200, with founding rates available for the first 3 clients.
+              Built around how your business actually operates, not around a template. Historical public rates started at $2,200, with founding rates for the first 3 clients. These offers are no longer active.
             </motion.div>
 
             <motion.div
@@ -56,13 +55,7 @@ export function CustomBuild() {
               viewport={{ once: true }}
               transition={{ duration: 0.45, ease: 'easeOut', delay: 0.22 }}
             >
-              <Link
-                to="/services"
-                className="group inline-flex w-full items-center justify-center gap-2.5 border-[1.5px] border-ink px-6 py-3 text-sm font-medium text-ink tracking-[-0.005em] transition-all duration-200 hover:border-amber hover:text-amber sm:w-auto sm:justify-start"
-              >
-                Choose Your Build
-                <span className="text-amber transition-transform duration-200 group-hover:translate-x-0.5">→</span>
-              </Link>
+
             </motion.div>
           </div>
         </div>

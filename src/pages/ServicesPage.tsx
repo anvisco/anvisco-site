@@ -1,6 +1,4 @@
 import { motion } from 'motion/react'
-import { Link, useNavigate } from 'react-router-dom'
-import { FREE_AUDIT_URL } from '@/data/contact'
 import { Nav } from '@/components/layout/Nav'
 import { Footer } from '@/components/layout/Footer'
 import { BracketLabel } from '@/components/ui/BracketLabel'
@@ -84,16 +82,14 @@ const plans = [
 ]
 
 export function ServicesPage() {
-  const navigate = useNavigate()
-  const goToBuild = () => navigate('/checkout?path=build')
-  const goToRecurring = () => navigate('/checkout?path=recurring')
   return (
     <>
       <Nav />
       <main className="pt-16">
         <section className="bg-[var(--color-bg)] py-16 md:py-24 lg:py-32">
           <div className="mx-auto max-w-screen-xl px-6 lg:px-12">
-            <BracketLabel>Services</BracketLabel>
+            <BracketLabel>Archived services and pricing</BracketLabel>
+            <p className="mt-4 text-sm text-ink-muted">The services, rates and plans below are historical and are no longer offered.</p>
             <h1 className="mb-8 mt-10 max-w-[14ch] text-[1.875rem] font-medium leading-[1.06] tracking-[-0.02em] text-ink sm:text-[3rem] md:max-w-4xl md:leading-[0.98] md:tracking-[-0.04em] md:text-[5rem]">
               <span className="block">Built modular.</span>
               <span className="block">Buy only the layer</span>
@@ -102,13 +98,7 @@ export function ServicesPage() {
             <p className="max-w-[62ch] text-base leading-relaxed text-ink-muted sm:text-[1.125rem]">
               Anvis offers four ways to work together: an audit to start, modules to upgrade specific parts, a full custom build, and recurring plans to keep the site improving.
             </p>
-            <Link
-              to="/checkout"
-              className="group mt-8 inline-flex w-full items-center justify-center gap-2.5 border border-ink px-6 py-3 text-sm font-medium text-ink transition-all duration-200 hover:border-amber hover:text-amber sm:w-auto sm:justify-start"
-            >
-              Build Your Plan
-              <span className="text-amber transition-transform duration-200 group-hover:translate-x-0.5">→</span>
-            </Link>
+
           </div>
         </section>
 
@@ -140,14 +130,10 @@ export function ServicesPage() {
               <OptionCard
                 title="Free AI-Ready Website Snapshot"
                 body="Three to five priority findings. A quick first look at where the site may be losing visibility, trust, or bookings."
-                cta="Get Free Audit"
-                to={FREE_AUDIT_URL}
               />
               <OptionCard
                 title="Full Website Audit"
                 body="A deeper review with a ranked action plan across visibility, trust, content, speed, and booking flow."
-                cta="Start Your Audit"
-                to="/checkout?path=audit"
               />
             </div>
           </div>
@@ -165,13 +151,11 @@ export function ServicesPage() {
                   <ModuleCard
                     module={module}
                     index={i}
-                    href={`/checkout?path=modules&module=${module.id}`}
                   />
                 </div>
               ))}
             </div>
             <p className="mt-8 text-sm text-ink-muted">Any three modules — 15% off the combined price.</p>
-            <ContactLink label="Choose Your Upgrades" to="/checkout?path=modules" />
           </div>
         </section>
 
@@ -187,8 +171,6 @@ export function ServicesPage() {
                   key={tier.name}
                   {...tier}
                   index={i}
-                  ctaLabel="Choose Your Build"
-                  onCta={goToBuild}
                 />
               ))}
             </div>
@@ -204,7 +186,7 @@ export function ServicesPage() {
             </p>
             <div className="grid gap-6 md:grid-cols-2">
               {plans.map((plan, i) => (
-                <PlanCard key={plan.name} {...plan} index={i} onCta={goToRecurring} />
+                <PlanCard key={plan.name} {...plan} index={i} />
               ))}
             </div>
           </div>
@@ -236,37 +218,13 @@ function SectionHeader({ number, label, title }: { number: string; label: string
   )
 }
 
-function OptionCard({ title, body, footnote, cta, to }: { title: string; body: string; footnote?: string; cta: string; to: string }) {
+function OptionCard({ title, body, footnote }: { title: string; body: string; footnote?: string }) {
   return (
     <div className="flex min-h-[300px] flex-col bg-[var(--color-surface)] p-8">
       <h3 className="mb-4 text-lg font-medium tracking-[-0.01em] text-ink">{title}</h3>
       <p className="text-sm leading-relaxed text-ink-muted">{body}</p>
       {footnote && <p className="mt-5 text-sm leading-relaxed text-ink-muted">{footnote}</p>}
-      <div className="mt-auto">
-        <ContactLink label={cta} to={to} />
-      </div>
-    </div>
-  )
-}
 
-function ContactLink({ label, to }: { label: string; to: string }) {
-  const className =
-    'group mt-8 inline-flex w-full items-center justify-center gap-2.5 border border-[var(--color-border-strong)] px-5 py-3 text-[0.7rem] font-medium uppercase tracking-[0.1em] text-ink transition-all duration-200 hover:border-amber hover:text-amber sm:w-auto sm:justify-start'
-  const arrow = (
-    <span className="text-amber transition-transform duration-200 group-hover:translate-x-0.5">→</span>
-  )
-  if (to.startsWith('http')) {
-    return (
-      <a href={to} target="_blank" rel="noopener noreferrer" className={className}>
-        {label}
-        {arrow}
-      </a>
-    )
-  }
-  return (
-    <Link to={to} className={className}>
-      {label}
-      {arrow}
-    </Link>
+    </div>
   )
 }
